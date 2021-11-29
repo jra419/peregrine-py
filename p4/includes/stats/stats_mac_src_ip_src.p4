@@ -16,10 +16,7 @@ control c_stats_mac_src_ip_src(inout header_t hdr, inout ingress_metadata_a_t ig
     Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_len;          // Packet length
     Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_ss;           // Squared sum of the packet length
 
-    /* Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_mean;         // Mean */
     Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_mean_squared; // Squared mean
-
-    /* Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_std_dev;      // Std. deviation */
 
     // ----------------------------------------
     // Register actions
@@ -76,14 +73,6 @@ control c_stats_mac_src_ip_src(inout header_t hdr, inout ingress_metadata_a_t ig
         }
     };
 
-    /*
-    RegisterAction<_, _, bit<32>>(reg_mac_src_ip_src_mean) ract_mean_write = {
-        void apply(inout bit<32> value) {
-            value = ig_md.stats_mac_src_ip_src.mean_0;
-        }
-    };
-    */
-
     MathUnit<bit<32>>(MathOp_t.SQR, 1) square_mean;
     RegisterAction<_, _, bit<32>>(reg_mac_src_ip_src_mean_squared) ract_mean_squared_calc = {
         void apply(inout bit<32> value, out bit<32> result) {
@@ -91,24 +80,6 @@ control c_stats_mac_src_ip_src(inout header_t hdr, inout ingress_metadata_a_t ig
             result = value;
         }
     };
-
-    /*
-    MathUnit<bit<32>>(MathOp_t.SQRT, 1) sqrt_std_dev;
-	RegisterAction<_, _, bit<32>>(reg_mac_src_ip_src_std_dev) ract_std_dev_calc = {
-		void apply(inout bit<32> value, out bit<32> result) {
-			value = sqrt_std_dev.execute(ig_md.stats_mac_src_ip_src.variance_0);
-			result = value;
-		}
-	};
-
-	MathUnit<bit<32>>(MathOp_t.SQRT, 1) sqrt_std_dev_neg;
-	RegisterAction<_, _, bit<32>>(reg_mac_src_ip_src_std_dev) ract_std_dev_calc_neg = {
-		void apply(inout bit<32> value, out bit<32> result) {
-			value = sqrt_std_dev_neg.execute(ig_md.stats_mac_src_ip_src.variance_0_neg);
-			result = value;
-		}
-	};
-    */
 
     // ----------------------------------------
     // Actions
@@ -142,16 +113,6 @@ control c_stats_mac_src_ip_src(inout header_t hdr, inout ingress_metadata_a_t ig
 		ig_md.stats_mac_src_ip_src.variance_0 = ig_md.stats_mac_src_ip_src.mean_squared_0 - ig_md.stats_mac_src_ip_src.mean_ss;
 		ig_md.stats_mac_src_ip_src.variance_0_neg = ig_md.stats_mac_src_ip_src.mean_ss - ig_md.stats_mac_src_ip_src.mean_squared_0;
 	}
-
-    /*
-	action std_dev_calc() {
-		ig_md.stats_mac_src_ip_src.std_dev_0 = ract_std_dev_calc.execute(ig_md.hash.mac_src_ip_src);
-	}
-
-	action std_dev_calc_neg() {
-		ig_md.stats_mac_src_ip_src.std_dev_0 = ract_std_dev_calc_neg.execute(ig_md.hash.mac_src_ip_src);
-	}
-    */
 
 	action rshift_mean_1() {
 		ig_md.stats_mac_src_ip_src.mean_0 = ig_md.stats_mac_src_ip_src.pkt_len >> 1;
@@ -281,9 +242,6 @@ control c_stats_mac_src_ip_src(inout header_t hdr, inout ingress_metadata_a_t ig
         // Additionally, we also calculate the mean for the squared sum values.
         pkt_mean.apply();
 
-        // Update the stored mean 0 value.
-        // ract_mean_write.execute(ig_md.hash.mac_src_ip_src);
-
         // Squared mean calculation.
         mean_squared_calc();
 
@@ -293,15 +251,5 @@ control c_stats_mac_src_ip_src(inout header_t hdr, inout ingress_metadata_a_t ig
 		if (ig_md.stats_mac_src_ip_src.variance_0[31:31] != 0) {
 			ig_md.stats_mac_src_ip_src.variance_0 = ig_md.stats_mac_src_ip_src.variance_0_neg;
 		}
-
-		// Std. dev 0 calculation.
-        /*
-		if (ig_md.stats_ip_src.variance_0[31:31] == 0) {
-			std_dev_calc();
-		} else {
-			std_dev_calc_neg();
-			ig_md.stats_ip_src.variance_0 = ig_md.stats_ip_src.variance_0_neg;
-		}
-        */
     }
 }

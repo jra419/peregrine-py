@@ -56,6 +56,8 @@ header kitsune_t {
     bit<32> mac_src_ip_src_pkt_cnt;
     bit<32> mac_src_ip_src_mean;
     bit<32> mac_src_ip_src_variance;
+    bit<32> five_t_hash_0;
+    bit<32> five_t_hash_1;
     bit<32> five_t_pkt_cnt;
     bit<32> five_t_mean;
     bit<32> five_t_variance;
@@ -71,6 +73,8 @@ header kitsune_t {
     bit<32> five_t_cov;
     bit<32> five_t_pcc;
     bit<32> ip_pkt_cnt;
+    bit<32> ip_hash_0;
+    bit<32> ip_hash_1;
     bit<32> ip_mean;
     bit<32> ip_variance;
     bit<32> ip_variance_neg;
@@ -124,6 +128,7 @@ header stats_meta_t {
     bit<32> variance_squared_1;
     bit<32> std_dev_0;
     bit<32> std_dev_1;
+    bit<32> std_dev_prod;
     bit<32> magnitude;
     bit<32> radius;
     bit<32> cov;

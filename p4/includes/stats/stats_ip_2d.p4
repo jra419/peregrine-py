@@ -1,13 +1,6 @@
 control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in ingress_intrinsic_metadata_t ig_intr_md) {
 
 	// ----------------------------------------
-	// Hashes
-	// ----------------------------------------
-
-	Hash<bit<32>>(HashAlgorithm_t.CRC32) hash_ip_0; // Hash for flow id (a->a)
-	Hash<bit<32>>(HashAlgorithm_t.CRC32) hash_ip_1; // Hash for flow id (b->b)
-
-	// ----------------------------------------
 	// Registers and temp. variables
 	// ----------------------------------------
 
@@ -105,47 +98,40 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	// Actions
 	// ----------------------------------------
 
-	action hash_calc_ip_0() {
-		ig_md.hash.ip_0 = (bit<32>)hash_ip_0.get({hdr.ipv4.src_addr, hdr.ipv4.dst_addr});
-	}
-	action hash_calc_ip_1() {
-		ig_md.hash.ip_1 = (bit<32>)hash_ip_1.get({hdr.ipv4.dst_addr, hdr.ipv4.src_addr});
-	}
-
 	action mean_squared_1_calc() {
-		ig_md.stats_ip.mean_squared_1 = ract_mean_squared_1_calc.execute(ig_md.hash.ip_1);
+		ig_md.stats_ip.mean_squared_1 = ract_mean_squared_1_calc.execute(hdr.kitsune.ip_hash_1);
 	}
 
 	action std_dev_0_calc() {
-		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc.execute(ig_md.hash.ip_0);
+		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc.execute(hdr.kitsune.ip_hash_0);
 	}
 
 	action std_dev_0_calc_neg() {
-		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc_neg.execute(ig_md.hash.ip_0);
+		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc_neg.execute(hdr.kitsune.ip_hash_0);
 	}
 
 	action std_dev_1_calc() {
-		ig_md.stats_ip.std_dev_1 = ract_std_dev_1_calc.execute(ig_md.hash.ip_1);
+		ig_md.stats_ip.std_dev_1 = ract_std_dev_1_calc.execute(hdr.kitsune.ip_hash_1);
 	}
 
 	action magnitude_calc() {
-		ig_md.stats_ip.magnitude = ract_magnitude_calc.execute(ig_md.hash.ip_0);
+		ig_md.stats_ip.magnitude = ract_magnitude_calc.execute(hdr.kitsune.ip_hash_0);
 	}
 
 	action variance_squared_0_calc() {
-		ig_md.stats_ip.variance_squared_0 = ract_variance_squared_0_calc.execute(ig_md.hash.ip_0);
+		ig_md.stats_ip.variance_squared_0 = ract_variance_squared_0_calc.execute(hdr.kitsune.ip_hash_0);
 	}
 
 	action variance_squared_1_calc() {
-		ig_md.stats_ip.variance_squared_1 = ract_variance_squared_1_calc.execute(ig_md.hash.ip_1);
+		ig_md.stats_ip.variance_squared_1 = ract_variance_squared_1_calc.execute(hdr.kitsune.ip_hash_1);
 	}
 
 	action radius_calc() {
-		ig_md.stats_ip.radius = ract_radius_calc.execute(ig_md.hash.ip_0);
+		ig_md.stats_ip.radius = ract_radius_calc.execute(hdr.kitsune.ip_hash_0);
 	}
 
 	action sum_res_prod() {
-		ig_md.stats_ip.sum_res_prod = ract_sum_res_prod_incr.execute(ig_md.hash.ip_0);
+		ig_md.stats_ip.sum_res_prod = ract_sum_res_prod_incr.execute(hdr.kitsune.ip_hash_0);
 	}
 
 	action rshift_cov_1() {
@@ -208,64 +194,64 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 		ig_md.stats_ip.cov = ig_md.stats_ip.sum_res_prod >> 15;
 	}
 
-	action rshift_std_dev_1_1() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 1;
+	action lshift_std_dev_prod_1() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 1;
 	}
 
-	action rshift_std_dev_1_2() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 2;
+	action lshift_std_dev_prod_2() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 2;
 	}
 
-	action rshift_std_dev_1_3() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 3;
+	action lshift_std_dev_prod_3() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 3;
 	}
 
-	action rshift_std_dev_1_4() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 4;
+	action lshift_std_dev_prod_4() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 4;
 	}
 
-	action rshift_std_dev_1_5() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 5;
+	action lshift_std_dev_prod_5() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 5;
 	}
 
-	action rshift_std_dev_1_6() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 6;
+	action lshift_std_dev_prod_6() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 6;
 	}
 
-	action rshift_std_dev_1_7() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 7;
+	action lshift_std_dev_prod_7() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 7;
 	}
 
-	action rshift_std_dev_1_8() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 8;
+	action lshift_std_dev_prod_8() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 8;
 	}
 
-	action rshift_std_dev_1_9() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 9;
+	action lshift_std_dev_prod_9() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 9;
 	}
 
-	action rshift_std_dev_1_10() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 10;
+	action lshift_std_dev_prod_10() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 10;
 	}
 
-	action rshift_std_dev_1_11() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 11;
+	action lshift_std_dev_prod_11() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 11;
 	}
 
-	action rshift_std_dev_1_12() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 12;
+	action lshift_std_dev_prod_12() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 12;
 	}
 
-	action rshift_std_dev_1_13() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 13;
+	action lshift_std_dev_prod_13() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 13;
 	}
 
-	action rshift_std_dev_1_14() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 14;
+	action lshift_std_dev_prod_14() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 14;
 	}
 
-	action rshift_std_dev_1_15() {
-		ig_md.stats_ip.std_dev_1 = hdr.kitsune.ip_std_dev_0 >> 15;
+	action lshift_std_dev_prod_15() {
+		ig_md.stats_ip.std_dev_prod = ig_md.stats_ip.std_dev_0 << 15;
 	}
 
 	action rshift_pcc_1() {
@@ -324,7 +310,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 		ig_md.stats_ip.pcc = ig_md.stats_ip.cov >> 14;
 	}
 
-		action rshift_pcc_15() {
+	action rshift_pcc_15() {
 		ig_md.stats_ip.pcc = ig_md.stats_ip.cov >> 15;
 	}
 
@@ -356,26 +342,26 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 		size = 1024;
 	}
 
-	table std_dev_1 {
+	table std_dev_prod {
 		key = {
-			hdr.kitsune.ip_std_dev_0 : ternary;
+			ig_md.stats_ip.std_dev_1 : ternary;
 		}
 		actions = {
-			rshift_std_dev_1_1;
-			rshift_std_dev_1_2;
-			rshift_std_dev_1_3;
-			rshift_std_dev_1_4;
-			rshift_std_dev_1_5;
-			rshift_std_dev_1_6;
-			rshift_std_dev_1_7;
-			rshift_std_dev_1_8;
-			rshift_std_dev_1_9;
-			rshift_std_dev_1_10;
-			rshift_std_dev_1_11;
-			rshift_std_dev_1_12;
-			rshift_std_dev_1_13;
-			rshift_std_dev_1_14;
-			rshift_std_dev_1_15;
+			lshift_std_dev_prod_1;
+			lshift_std_dev_prod_2;
+			lshift_std_dev_prod_3;
+			lshift_std_dev_prod_4;
+			lshift_std_dev_prod_5;
+			lshift_std_dev_prod_6;
+			lshift_std_dev_prod_7;
+			lshift_std_dev_prod_8;
+			lshift_std_dev_prod_9;
+			lshift_std_dev_prod_10;
+			lshift_std_dev_prod_11;
+			lshift_std_dev_prod_12;
+			lshift_std_dev_prod_13;
+			lshift_std_dev_prod_14;
+			lshift_std_dev_prod_15;
 			miss;
 		}
 		const default_action = miss;
@@ -384,7 +370,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 
 	table pcc {
 		key = {
-			ig_md.stats_ip.std_dev_1 : ternary;
+			ig_md.stats_ip.std_dev_prod : ternary;
 		}
 		actions = {
 			rshift_pcc_1;
@@ -413,10 +399,6 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	// ----------------------------------------
 
 	apply {
-
-		// Hash calculation.
-		hash_calc_ip_0();
-		hash_calc_ip_1();
 
 		// Squared mean 1 calculation.
 		mean_squared_1_calc();
@@ -457,7 +439,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 
 		// Correlation Coefficient calculation.
 
-		std_dev_1.apply();
+		std_dev_prod.apply();
 		pcc.apply();
 	}
 }

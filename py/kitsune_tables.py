@@ -247,17 +247,17 @@ class IpCov(Table):
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_' + str(div))])
 
 
-class IpStdDev1(Table):
+class IpStdDevProd(Table):
 
     def __init__(self, client, bfrt_info):
         # set up base class
-        super(IpStdDev1, self).__init__(client, bfrt_info)
+        super(IpStdDevProd, self).__init__(client, bfrt_info)
 
-        self.logger = logging.getLogger('ip_std_dev_1')
-        self.logger.info('Setting up ip_std_dev_1 table...')
+        self.logger = logging.getLogger('ip_std_dev_prod')
+        self.logger.info('Setting up ip_std_dev_prod table...')
 
         # get this table
-        self.table = self.bfrt_info.table_get('SwitchIngress_b.stats_ip_2d.std_dev_1')
+        self.table = self.bfrt_info.table_get('SwitchIngress_b.stats_ip_2d.std_dev_prod')
 
         # clear and add defaults
         self.clear()
@@ -266,14 +266,14 @@ class IpStdDev1(Table):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
-        self.logger.info('Programming entries on ip_std_dev_1 table...')
+        self.logger.info('Programming entries on ip_std_dev_prod table...')
 
         self.table.entry_add(
            target,
            [self.table.make_key(
                [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('hdr.kitsune.ip_std_dev_0', power, mask)])],
-           [self.table.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_' + str(div))])
+                gc.KeyTuple('ig_md.stats_ip.std_dev_1', power, mask)])],
+           [self.table.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_' + str(div))])
 
 
 class IpPcc(Table):
@@ -363,17 +363,17 @@ class FiveTCov(Table):
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_' + str(div))])
 
 
-class FiveTStdDev1(Table):
+class FiveTStdDevProd(Table):
 
     def __init__(self, client, bfrt_info):
         # set up base class
-        super(FiveTStdDev1, self).__init__(client, bfrt_info)
+        super(FiveTStdDevProd, self).__init__(client, bfrt_info)
 
-        self.logger = logging.getLogger('five_t_std_dev_1')
-        self.logger.info('Setting up five_t_std_dev_1 table...')
+        self.logger = logging.getLogger('five_t_std_dev_prod')
+        self.logger.info('Setting up five_t_std_dev_prod table...')
 
         # get this table
-        self.table = self.bfrt_info.table_get('SwitchIngress_b.stats_five_t_2d.std_dev_1')
+        self.table = self.bfrt_info.table_get('SwitchIngress_b.stats_five_t_2d.std_dev_prod')
 
         # clear and add defaults
         self.clear()
@@ -382,14 +382,14 @@ class FiveTStdDev1(Table):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
-        self.logger.info('Programming entries on five_t_std_dev_1 table...')
+        self.logger.info('Programming entries on five_t_std_dev_prod table...')
 
         self.table.entry_add(
            target,
            [self.table.make_key(
                [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('hdr.kitsune.five_t_std_dev_0', power, mask)])],
-           [self.table.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_' + str(div))])
+                gc.KeyTuple('ig_md.stats_five_t.std_dev_1', power, mask)])],
+           [self.table.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_' + str(div))])
 
 
 class FiveTPcc(Table):

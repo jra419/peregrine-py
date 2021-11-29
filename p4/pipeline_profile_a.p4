@@ -33,7 +33,7 @@ control SwitchIngress_a(
     c_stats_five_t()            stats_five_t;
     c_stats_ip()                stats_ip;
 
-    Register<bit<32>, _>(REG_SIZE) reg_pkt_len_squared;  // Squared packet length
+    Register<bit<32>, _>(1) reg_pkt_len_squared;  // Squared packet length
 
     MathUnit<bit<32>>(MathOp_t.SQR, 1) square_pkt_len;
     RegisterAction<_, _, bit<32>>(reg_pkt_len_squared) ract_pkt_len_squared_calc = {
@@ -82,6 +82,8 @@ control SwitchIngress_a(
     }
 
     action set_kitsune_five_t() {
+        hdr.kitsune.five_t_hash_0 = ig_md.hash.five_t_0;
+        hdr.kitsune.five_t_hash_1 = ig_md.hash.five_t_1;
         hdr.kitsune.five_t_pkt_cnt = ig_md.stats_five_t.pkt_cnt_0;
         hdr.kitsune.five_t_mean = ig_md.stats_five_t.mean_0;
         hdr.kitsune.five_t_variance = ig_md.stats_five_t.variance_0;
@@ -94,6 +96,8 @@ control SwitchIngress_a(
     }
 
     action set_kitsune_ip() {
+        hdr.kitsune.ip_hash_0 = ig_md.hash.ip_0;
+        hdr.kitsune.ip_hash_1 = ig_md.hash.ip_1;
         hdr.kitsune.ip_pkt_cnt = ig_md.stats_ip.pkt_cnt_0;
         hdr.kitsune.ip_mean = ig_md.stats_ip.mean_0;
         hdr.kitsune.ip_variance = ig_md.stats_ip.variance_0;

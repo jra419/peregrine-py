@@ -158,11 +158,11 @@ def get_all_tables(test):
     test.mac_src_ip_src_pkt_mean = test.bfrt_info.table_get("SwitchIngress_a.stats_mac_src_ip_src.pkt_mean")
     test.five_t_pkt_mean = test.bfrt_info.table_get("SwitchIngress_a.stats_five_t.pkt_mean")
     test.five_t_cov = test.bfrt_info.table_get("SwitchIngress_b.stats_five_t_2d.cov")
-    test.five_t_std_dev_1 = test.bfrt_info.table_get("SwitchIngress_b.stats_five_t_2d.std_dev_1")
+    test.five_t_std_dev_prod = test.bfrt_info.table_get("SwitchIngress_b.stats_five_t_2d.std_dev_prod")
     test.five_t_pcc = test.bfrt_info.table_get("SwitchIngress_b.stats_five_t_2d.pcc")
     test.ip_pkt_mean = test.bfrt_info.table_get("SwitchIngress_a.stats_ip.pkt_mean")
     test.ip_cov = test.bfrt_info.table_get("SwitchIngress_b.stats_ip_2d.cov")
-    test.ip_std_dev_1 = test.bfrt_info.table_get("SwitchIngress_b.stats_ip_2d.std_dev_1")
+    test.ip_std_dev_prod = test.bfrt_info.table_get("SwitchIngress_b.stats_ip_2d.std_dev_prod")
     test.ip_pcc = test.bfrt_info.table_get("SwitchIngress_b.stats_ip_2d.pcc")
 
 
@@ -604,95 +604,103 @@ def program_entries(test, target, ig_port, int_port, eg_port, tag, dmac, dip, tt
 
     # FIVE T STD DEV TABLE RULES
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 15),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 2, 0b11111110)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_1')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 15),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 2, 0b11111110)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_1')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 14),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 4, 0b11111100)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_2')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 14),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 4, 0b11111100)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_2')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 13),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 8, 0b11111000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_3')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 13),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 8, 0b11111000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_3')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 12),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 16, 0b11110000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_4')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 12),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 16, 0b11110000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_4')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 11),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 32, 0b11100000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_5')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 11),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 32, 0b11100000)])],
+            [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_5')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 10),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 64, 0b11000000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_6')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 10),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 64, 0b11000000)])],
+            [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_6')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 9),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 128, 0b10000000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_7')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 9),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 128, 0b10000000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_7')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 8),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 256, 0b1111111100000000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_8')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 8),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 256,
+                                                        0b1111111100000000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_8')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 7),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 512, 0b1111111000000000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_9')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 7),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 512,
+                                                        0b1111111000000000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_9')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 6),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 1024, 0b1111110000000000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_10')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 6),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 1024,
+                                                        0b1111110000000000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_10')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 5),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 2048, 0b1111100000000000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_11')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 5),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 2048,
+                                                        0b1111100000000000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_11')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 4),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 4096, 0b1111000000000000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_12')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 4),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 4096,
+                                                        0b1111000000000000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_12')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 3),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 8192, 0b1110000000000000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_13')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 3),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 8192,
+                                                        0b1110000000000000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_13')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 2),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 16384, 0b1100000000000000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_14')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 2),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 16384,
+                                                        0b1100000000000000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_14')])
 
-    test.five_t_std_dev_1.entry_add(
+    test.five_t_std_dev_prod.entry_add(
         target,
-        [test.five_t_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 1),
-                                         gc.KeyTuple(str('hdr.kitsune.five_t_std_dev_0'), 32768, 0b1000000000000000)])],
-        [test.five_t_std_dev_1.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_std_dev_1_15')])
+        [test.five_t_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 1),
+                                            gc.KeyTuple(str('ig_md.stats_five_t.std_dev_0'), 32768,
+                                                        0b1000000000000000)])],
+        [test.five_t_std_dev_prod.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_15')])
 
     # FIVE T CORR COEF TABLE RULES
 
@@ -972,95 +980,95 @@ def program_entries(test, target, ig_port, int_port, eg_port, tag, dmac, dip, tt
 
     # IP STD DEV TABLE RULES
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 15),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 2, 0b11111110)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_1')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 15),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 2, 0b11111110)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_1')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 14),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 4, 0b11111100)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_2')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 14),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 4, 0b11111100)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_2')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 13),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 8, 0b11111000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_3')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 13),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 8, 0b11111000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_3')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 12),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 16, 0b11110000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_4')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 12),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 16, 0b11110000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_4')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 11),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 32, 0b11100000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_5')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 11),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 32, 0b11100000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_5')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 10),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 64, 0b11000000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_6')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 10),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 64, 0b11000000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_6')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 9),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 128, 0b10000000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_7')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 9),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 128, 0b10000000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_7')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 8),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 256, 0b1111111100000000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_8')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 8),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 256, 0b1111111100000000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_8')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 7),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 512, 0b1111111000000000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_9')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 7),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 512, 0b1111111000000000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_9')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 6),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 1024, 0b1111110000000000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_10')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 6),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 1024, 0b1111110000000000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_10')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 5),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 2048, 0b1111100000000000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_11')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 5),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 2048, 0b1111100000000000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_11')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 4),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 4096, 0b1111000000000000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_12')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 4),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 4096, 0b1111000000000000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_12')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 3),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 8192, 0b1110000000000000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_13')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 3),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 8192, 0b1110000000000000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_13')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 2),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 16384, 0b1100000000000000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_14')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 2),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 16384, 0b1100000000000000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_14')])
 
-    test.ip_std_dev_1.entry_add(
+    test.ip_std_dev_prod.entry_add(
         target,
-        [test.ip_std_dev_1.make_key([gc.KeyTuple('$MATCH_PRIORITY', 1),
-                                     gc.KeyTuple(str('hdr.kitsune.ip_std_dev_0'), 32768, 0b1000000000000000)])],
-        [test.ip_std_dev_1.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_std_dev_1_15')])
+        [test.ip_std_dev_prod.make_key([gc.KeyTuple('$MATCH_PRIORITY', 1),
+                                        gc.KeyTuple(str('ig_md.stats_ip.std_dev_0'), 32768, 0b1000000000000000)])],
+        [test.ip_std_dev_prod.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_15')])
 
     # IP CORR COEF TABLE RULES
 
@@ -1178,11 +1186,11 @@ def delete_entries(test, target):
     test.mac_src_ip_src_pkt_mean.entry_del(target, [])
     test.five_t_pkt_mean.entry_del(target, [])
     test.five_t_cov.entry_del(target, [])
-    test.five_t_std_dev_1.entry_del(target, [])
+    test.five_t_std_dev_prod.entry_del(target, [])
     test.five_t_pcc.entry_del(target, [])
     test.ip_pkt_mean.entry_del(target, [])
     test.ip_cov.entry_del(target, [])
-    test.ip_std_dev_1.entry_del(target, [])
+    test.ip_std_dev_prod.entry_del(target, [])
     test.ip_pcc.entry_del(target, [])
 
 
