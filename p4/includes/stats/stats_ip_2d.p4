@@ -26,7 +26,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	MathUnit<bit<32>>(MathOp_t.SQR, 1) square_mean_1;
 	RegisterAction<_, _, bit<32>>(reg_ip_mean_squared_1) ract_mean_squared_1_calc = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = square_mean_1.execute(hdr.kitsune.ip_mean_1);
+			value = square_mean_1.execute(hdr.peregrine.ip_mean_1);
 			result = value;
 		}
 	};
@@ -34,7 +34,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	MathUnit<bit<32>>(MathOp_t.SQRT, 1) sqrt_std_dev_0;
 	RegisterAction<_, _, bit<32>>(reg_ip_std_dev_0) ract_std_dev_0_calc = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = sqrt_std_dev_0.execute(hdr.kitsune.ip_variance);
+			value = sqrt_std_dev_0.execute(hdr.peregrine.ip_variance);
 			result = value;
 		}
 	};
@@ -42,7 +42,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	MathUnit<bit<32>>(MathOp_t.SQRT, 1) sqrt_std_dev_0_neg;
 	RegisterAction<_, _, bit<32>>(reg_ip_std_dev_0) ract_std_dev_0_calc_neg = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = sqrt_std_dev_0_neg.execute(hdr.kitsune.ip_variance_neg);
+			value = sqrt_std_dev_0_neg.execute(hdr.peregrine.ip_variance_neg);
 			result = value;
 		}
 	};
@@ -50,7 +50,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	MathUnit<bit<32>>(MathOp_t.SQRT, 1) sqrt_std_dev_1;
 	RegisterAction<_, _, bit<32>>(reg_ip_std_dev_1) ract_std_dev_1_calc = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = sqrt_std_dev_1.execute(hdr.kitsune.ip_variance_1);
+			value = sqrt_std_dev_1.execute(hdr.peregrine.ip_variance_1);
 			result = value;
 		}
 	};
@@ -66,7 +66,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	MathUnit<bit<32>>(MathOp_t.SQR, 1) square_variance_0;
 	RegisterAction<_, _, bit<32>>(reg_ip_variance_squared_0) ract_variance_squared_0_calc = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = square_variance_0.execute(hdr.kitsune.ip_variance);
+			value = square_variance_0.execute(hdr.peregrine.ip_variance);
 			result = value;
 		}
 	};
@@ -74,7 +74,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	MathUnit<bit<32>>(MathOp_t.SQR, 1) square_variance_1;
 	RegisterAction<_, _, bit<32>>(reg_ip_variance_squared_1) ract_variance_squared_1_calc = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = square_variance_1.execute(hdr.kitsune.ip_variance_1);
+			value = square_variance_1.execute(hdr.peregrine.ip_variance_1);
 			result = value;
 		}
 	};
@@ -89,7 +89,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 
 	RegisterAction<_, _, bit<32>>(reg_ip_sum_res_prod) ract_sum_res_prod_incr = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = value + hdr.kitsune.ip_last_res;
+			value = value + hdr.peregrine.ip_last_res;
 			result = value;
 		}
 	};
@@ -99,39 +99,39 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	// ----------------------------------------
 
 	action mean_squared_1_calc() {
-		ig_md.stats_ip.mean_squared_1 = ract_mean_squared_1_calc.execute(hdr.kitsune.ip_hash_1);
+		ig_md.stats_ip.mean_squared_1 = ract_mean_squared_1_calc.execute(hdr.peregrine.ip_hash_1);
 	}
 
 	action std_dev_0_calc() {
-		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc.execute(hdr.kitsune.ip_hash_0);
+		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc.execute(hdr.peregrine.ip_hash_0);
 	}
 
 	action std_dev_0_calc_neg() {
-		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc_neg.execute(hdr.kitsune.ip_hash_0);
+		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc_neg.execute(hdr.peregrine.ip_hash_0);
 	}
 
 	action std_dev_1_calc() {
-		ig_md.stats_ip.std_dev_1 = ract_std_dev_1_calc.execute(hdr.kitsune.ip_hash_1);
+		ig_md.stats_ip.std_dev_1 = ract_std_dev_1_calc.execute(hdr.peregrine.ip_hash_1);
 	}
 
 	action magnitude_calc() {
-		ig_md.stats_ip.magnitude = ract_magnitude_calc.execute(hdr.kitsune.ip_hash_0);
+		ig_md.stats_ip.magnitude = ract_magnitude_calc.execute(hdr.peregrine.ip_hash_0);
 	}
 
 	action variance_squared_0_calc() {
-		ig_md.stats_ip.variance_squared_0 = ract_variance_squared_0_calc.execute(hdr.kitsune.ip_hash_0);
+		ig_md.stats_ip.variance_squared_0 = ract_variance_squared_0_calc.execute(hdr.peregrine.ip_hash_0);
 	}
 
 	action variance_squared_1_calc() {
-		ig_md.stats_ip.variance_squared_1 = ract_variance_squared_1_calc.execute(hdr.kitsune.ip_hash_1);
+		ig_md.stats_ip.variance_squared_1 = ract_variance_squared_1_calc.execute(hdr.peregrine.ip_hash_1);
 	}
 
 	action radius_calc() {
-		ig_md.stats_ip.radius = ract_radius_calc.execute(hdr.kitsune.ip_hash_0);
+		ig_md.stats_ip.radius = ract_radius_calc.execute(hdr.peregrine.ip_hash_0);
 	}
 
 	action sum_res_prod() {
-		ig_md.stats_ip.sum_res_prod = ract_sum_res_prod_incr.execute(hdr.kitsune.ip_hash_0);
+		ig_md.stats_ip.sum_res_prod = ract_sum_res_prod_incr.execute(hdr.peregrine.ip_hash_0);
 	}
 
 	action rshift_cov_1() {
@@ -318,7 +318,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 
 	table cov {
 		key = {
-			hdr.kitsune.ip_pkt_cnt_1 : ternary;
+			hdr.peregrine.ip_pkt_cnt_1 : ternary;
 		}
 		actions = {
 			rshift_cov_1;
@@ -404,11 +404,11 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 		mean_squared_1_calc();
 
 		// Std. dev 0 calculation.
-		if (hdr.kitsune.ip_variance[31:31] == 0) {
+		if (hdr.peregrine.ip_variance[31:31] == 0) {
 			std_dev_0_calc();
 		} else {
 			std_dev_0_calc_neg();
-			hdr.kitsune.ip_variance = hdr.kitsune.ip_variance_neg;
+			hdr.peregrine.ip_variance = hdr.peregrine.ip_variance_neg;
 		}
 
 		// Std. dev 1 calculation.
@@ -420,7 +420,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 
 		// Magnitude calculation.
 
-		magnitude_temp = hdr.kitsune.ip_mean_squared_0 + ig_md.stats_ip.mean_squared_1;
+		magnitude_temp = hdr.peregrine.ip_mean_squared_0 + ig_md.stats_ip.mean_squared_1;
 		magnitude_calc();
 
 		// Radius calculation.
@@ -433,7 +433,7 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 		sum_res_prod();
 
 		// Weight 1 + Weight 2
-		hdr.kitsune.ip_pkt_cnt_1 = hdr.kitsune.ip_pkt_cnt_1 + hdr.kitsune.ip_pkt_cnt;
+		hdr.peregrine.ip_pkt_cnt_1 = hdr.peregrine.ip_pkt_cnt_1 + hdr.peregrine.ip_pkt_cnt;
 
 		cov.apply();
 

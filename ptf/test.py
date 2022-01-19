@@ -1,23 +1,3 @@
-################################################################################
-# BAREFOOT NETWORKS CONFIDENTIAL & PROPRIETARY
-#
-# Copyright (c) 2019-present Barefoot Networks, Inc.
-#
-# All Rights Reserved.
-#
-# NOTICE: All information contained herein is, and remains the property of
-# Barefoot Networks, Inc. and its suppliers, if any. The intellectual and
-# technical concepts contained herein are proprietary to Barefoot Networks, Inc.
-# and its suppliers and may be covered by U.S. and Foreign Patents, patents in
-# process, and are protected by trade secret or copyright law.  Dissemination of
-# this information or reproduction of this material is strictly forbidden unless
-# prior written permission is obtained from Barefoot Networks, Inc.
-#
-# No warranty, explicit or implicit is provided, unless granted under a written
-# agreement with Barefoot Networks, Inc.
-#
-################################################################################
-
 import logging
 import random
 
@@ -153,7 +133,7 @@ def get_all_tables(test):
     test.a_fwd_e.info.key_field_annotation_add('hdr.ipv4.dst_addr', "ipv4")
     test.b_fwd_e.info.key_field_annotation_add('hdr.ipv4.dst_addr', "ipv4")
 
-    # Kitsune specific tables
+    # peregrine specific tables
     test.ip_src_pkt_mean = test.bfrt_info.table_get("SwitchIngress_a.stats_ip_src.pkt_mean")
     test.mac_src_ip_src_pkt_mean = test.bfrt_info.table_get("SwitchIngress_a.stats_mac_src_ip_src.pkt_mean")
     test.five_t_pkt_mean = test.bfrt_info.table_get("SwitchIngress_a.stats_five_t.pkt_mean")
@@ -515,91 +495,91 @@ def program_entries(test, target, ig_port, int_port, eg_port, tag, dmac, dip, tt
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 15),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 2, 0b11111110)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 2, 0b11111110)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_1')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 14),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 4, 0b11111100)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 4, 0b11111100)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_2')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 13),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 8, 0b11111000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 8, 0b11111000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_3')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 12),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 16, 0b11110000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 16, 0b11110000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_4')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 11),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 32, 0b11100000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 32, 0b11100000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_5')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 10),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 64, 0b11000000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 64, 0b11000000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_6')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 9),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 128, 0b10000000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 128, 0b10000000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_7')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 8),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 256, 0b1111111100000000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 256, 0b1111111100000000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_8')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 7),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 512, 0b1111111000000000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 512, 0b1111111000000000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_9')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 6),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 1024, 0b1111110000000000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 1024, 0b1111110000000000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_10')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 5),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 2048, 0b1111100000000000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 2048, 0b1111100000000000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_11')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 4),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 4096, 0b1111000000000000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 4096, 0b1111000000000000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_12')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 3),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 8192, 0b1110000000000000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 8192, 0b1110000000000000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_13')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 2),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 16384, 0b1100000000000000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 16384, 0b1100000000000000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_14')])
 
     test.five_t_cov.entry_add(
         target,
         [test.five_t_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 1),
-                                   gc.KeyTuple(str('hdr.kitsune.five_t_pkt_cnt_1'), 32768, 0b1000000000000000)])],
+                                   gc.KeyTuple(str('hdr.peregrine.five_t_pkt_cnt_1'), 32768, 0b1000000000000000)])],
         [test.five_t_cov.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_15')])
 
     # FIVE T STD DEV TABLE RULES
@@ -891,91 +871,91 @@ def program_entries(test, target, ig_port, int_port, eg_port, tag, dmac, dip, tt
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 15),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 2, 0b11111110)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 2, 0b11111110)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_1')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 14),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 4, 0b11111100)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 4, 0b11111100)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_2')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 13),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 8, 0b11111000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 8, 0b11111000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_3')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 12),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 16, 0b11110000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 16, 0b11110000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_4')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 11),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 32, 0b11100000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 32, 0b11100000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_5')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 10),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 64, 0b11000000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 64, 0b11000000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_6')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 9),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 128, 0b10000000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 128, 0b10000000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_7')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 8),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 256, 0b1111111100000000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 256, 0b1111111100000000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_8')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 7),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 512, 0b1111111000000000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 512, 0b1111111000000000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_9')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 6),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 1024, 0b1111110000000000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 1024, 0b1111110000000000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_10')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 5),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 2048, 0b1111100000000000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 2048, 0b1111100000000000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_11')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 4),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 4096, 0b1111000000000000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 4096, 0b1111000000000000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_12')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 3),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 8192, 0b1110000000000000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 8192, 0b1110000000000000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_13')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 2),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 16384, 0b1100000000000000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 16384, 0b1100000000000000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_14')])
 
     test.ip_cov.entry_add(
         target,
         [test.ip_cov.make_key([gc.KeyTuple('$MATCH_PRIORITY', 1),
-                               gc.KeyTuple(str('hdr.kitsune.ip_pkt_cnt_1'), 32768, 0b1000000000000000)])],
+                               gc.KeyTuple(str('hdr.peregrine.ip_pkt_cnt_1'), 32768, 0b1000000000000000)])],
         [test.ip_cov.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_15')])
 
     # IP STD DEV TABLE RULES
@@ -1201,7 +1181,7 @@ def delete_entries(test, target):
 class Sym32Q(BfRuntimeTest):
     def setUp(self):
         client_id = 0
-        p4_name = "kitsune"
+        p4_name = "peregrine"
         BfRuntimeTest.setUp(self, client_id, p4_name)
         self.bfrt_info = self.interface.bfrt_info_get(p4_name)
         get_all_tables(self)

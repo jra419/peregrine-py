@@ -4,7 +4,7 @@
 #define _DEPARSER_A_
 
 // ---------------------------------------------------------------------------
-// Ingress Deparser for pipeline A
+// Ingress Deparser for Pipeline A
 // ---------------------------------------------------------------------------
 control SwitchIngressDeparser_a(packet_out pkt, inout header_t hdr, in ingress_metadata_a_t ig_md, in ingress_intrinsic_metadata_for_deparser_t ig_dprsr_md) {
     apply {
@@ -13,12 +13,12 @@ control SwitchIngressDeparser_a(packet_out pkt, inout header_t hdr, in ingress_m
         pkt.emit(hdr.udp);
         pkt.emit(hdr.tcp);
         pkt.emit(hdr.icmp);
-        pkt.emit(hdr.kitsune);
+        pkt.emit(hdr.peregrine);
     }
 }
 
 // ---------------------------------------------------------------------------
-// Egress Deparser for pipeline B
+// Egress Deparser for Pipeline B
 // ---------------------------------------------------------------------------
 
 control SwitchEgressDeparser_a(packet_out pkt, inout header_t hdr, in egress_metadata_a_t eg_md, in egress_intrinsic_metadata_for_deparser_t eg_dprsr_md) {
@@ -29,7 +29,7 @@ control SwitchEgressDeparser_a(packet_out pkt, inout header_t hdr, in egress_met
         /* pkt.emit(hdr.udp); */
         pkt.emit(hdr.tcp);
         /* pkt.emit(hdr.icmp); */
-        pkt.emit(hdr.kitsune);
+        pkt.emit(hdr.peregrine);
     }
 }
 

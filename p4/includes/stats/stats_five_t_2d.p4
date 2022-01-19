@@ -26,7 +26,7 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 	MathUnit<bit<32>>(MathOp_t.SQR, 1) square_mean_1;
 	RegisterAction<_, _, bit<32>>(reg_five_t_mean_squared_1) ract_mean_squared_1_calc = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = square_mean_1.execute(hdr.kitsune.five_t_mean_1);
+			value = square_mean_1.execute(hdr.peregrine.five_t_mean_1);
 			result = value;
 		}
 	};
@@ -34,7 +34,7 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 	MathUnit<bit<32>>(MathOp_t.SQRT, 1) sqrt_std_dev_0;
 	RegisterAction<_, _, bit<32>>(reg_five_t_std_dev_0) ract_std_dev_0_calc = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = sqrt_std_dev_0.execute(hdr.kitsune.five_t_variance);
+			value = sqrt_std_dev_0.execute(hdr.peregrine.five_t_variance);
 			result = value;
 		}
 	};
@@ -42,7 +42,7 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 	MathUnit<bit<32>>(MathOp_t.SQRT, 1) sqrt_std_dev_0_neg;
 	RegisterAction<_, _, bit<32>>(reg_five_t_std_dev_0) ract_std_dev_0_calc_neg = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = sqrt_std_dev_0_neg.execute(hdr.kitsune.five_t_variance_neg);
+			value = sqrt_std_dev_0_neg.execute(hdr.peregrine.five_t_variance_neg);
 			result = value;
 		}
 	};
@@ -50,7 +50,7 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 	MathUnit<bit<32>>(MathOp_t.SQRT, 1) sqrt_std_dev_1;
 	RegisterAction<_, _, bit<32>>(reg_five_t_std_dev_1) ract_std_dev_1_calc = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = sqrt_std_dev_1.execute(hdr.kitsune.five_t_variance_1);
+			value = sqrt_std_dev_1.execute(hdr.peregrine.five_t_variance_1);
 			result = value;
 		}
 	};
@@ -66,7 +66,7 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 	MathUnit<bit<32>>(MathOp_t.SQR, 1) square_variance_0;
 	RegisterAction<_, _, bit<32>>(reg_five_t_variance_squared_0) ract_variance_squared_0_calc = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = square_variance_0.execute(hdr.kitsune.five_t_variance);
+			value = square_variance_0.execute(hdr.peregrine.five_t_variance);
 			result = value;
 		}
 	};
@@ -74,7 +74,7 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 	MathUnit<bit<32>>(MathOp_t.SQR, 1) square_variance_1;
 	RegisterAction<_, _, bit<32>>(reg_five_t_variance_squared_1) ract_variance_squared_1_calc = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = square_variance_1.execute(hdr.kitsune.five_t_variance_1);
+			value = square_variance_1.execute(hdr.peregrine.five_t_variance_1);
 			result = value;
 		}
 	};
@@ -89,7 +89,7 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 
 	RegisterAction<_, _, bit<32>>(reg_five_t_sum_res_prod) ract_sum_res_prod_incr = {
 		void apply(inout bit<32> value, out bit<32> result) {
-			value = value + hdr.kitsune.five_t_last_res;
+			value = value + hdr.peregrine.five_t_last_res;
 			result = value;
 		}
 	};
@@ -99,39 +99,39 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 	// ----------------------------------------
 
 	action mean_squared_1_calc() {
-		ig_md.stats_five_t.mean_squared_1 = ract_mean_squared_1_calc.execute(hdr.kitsune.five_t_hash_1);
+		ig_md.stats_five_t.mean_squared_1 = ract_mean_squared_1_calc.execute(hdr.peregrine.five_t_hash_1);
 	}
 
 	action std_dev_0_calc() {
-		ig_md.stats_five_t.std_dev_0 = ract_std_dev_0_calc.execute(hdr.kitsune.five_t_hash_0);
+		ig_md.stats_five_t.std_dev_0 = ract_std_dev_0_calc.execute(hdr.peregrine.five_t_hash_0);
 	}
 
 	action std_dev_0_calc_neg() {
-		ig_md.stats_five_t.std_dev_0 = ract_std_dev_0_calc_neg.execute(hdr.kitsune.five_t_hash_0);
+		ig_md.stats_five_t.std_dev_0 = ract_std_dev_0_calc_neg.execute(hdr.peregrine.five_t_hash_0);
 	}
 
 	action std_dev_1_calc() {
-		ig_md.stats_five_t.std_dev_1 = ract_std_dev_1_calc.execute(hdr.kitsune.five_t_hash_1);
+		ig_md.stats_five_t.std_dev_1 = ract_std_dev_1_calc.execute(hdr.peregrine.five_t_hash_1);
 	}
 
 	action magnitude_calc() {
-		ig_md.stats_five_t.magnitude = ract_magnitude_calc.execute(hdr.kitsune.five_t_hash_0);
+		ig_md.stats_five_t.magnitude = ract_magnitude_calc.execute(hdr.peregrine.five_t_hash_0);
 	}
 
 	action variance_squared_0_calc() {
-		ig_md.stats_five_t.variance_squared_0 = ract_variance_squared_0_calc.execute(hdr.kitsune.five_t_hash_0);
+		ig_md.stats_five_t.variance_squared_0 = ract_variance_squared_0_calc.execute(hdr.peregrine.five_t_hash_0);
 	}
 
 	action variance_squared_1_calc() {
-		ig_md.stats_five_t.variance_squared_1 = ract_variance_squared_1_calc.execute(hdr.kitsune.five_t_hash_1);
+		ig_md.stats_five_t.variance_squared_1 = ract_variance_squared_1_calc.execute(hdr.peregrine.five_t_hash_1);
 	}
 
 	action radius_calc() {
-		ig_md.stats_five_t.radius = ract_radius_calc.execute(hdr.kitsune.five_t_hash_0);
+		ig_md.stats_five_t.radius = ract_radius_calc.execute(hdr.peregrine.five_t_hash_0);
 	}
 
 	action sum_res_prod() {
-		ig_md.stats_five_t.sum_res_prod = ract_sum_res_prod_incr.execute(hdr.kitsune.five_t_hash_0);
+		ig_md.stats_five_t.sum_res_prod = ract_sum_res_prod_incr.execute(hdr.peregrine.five_t_hash_0);
 	}
 
 	action rshift_cov_1() {
@@ -318,7 +318,7 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 
 	table cov {
 		key = {
-			hdr.kitsune.five_t_pkt_cnt_1 : ternary;
+			hdr.peregrine.five_t_pkt_cnt_1 : ternary;
 		}
 		actions = {
 			rshift_cov_1;
@@ -404,11 +404,11 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 		mean_squared_1_calc();
 
 		// Std. dev 0 calculation.
-		if (hdr.kitsune.five_t_variance[31:31] == 0) {
+		if (hdr.peregrine.five_t_variance[31:31] == 0) {
 			std_dev_0_calc();
 		} else {
 			std_dev_0_calc_neg();
-			hdr.kitsune.five_t_variance = hdr.kitsune.five_t_variance_neg;
+			hdr.peregrine.five_t_variance = hdr.peregrine.five_t_variance_neg;
 		}
 
 		// Std. dev 1 calculation.
@@ -420,7 +420,7 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 
 		// Magnitude calculation.
 
-		magnitude_temp = hdr.kitsune.five_t_mean_squared_0 + ig_md.stats_five_t.mean_squared_1;
+		magnitude_temp = hdr.peregrine.five_t_mean_squared_0 + ig_md.stats_five_t.mean_squared_1;
 		magnitude_calc();
 
 		// Radius calculation.
@@ -433,7 +433,7 @@ control c_stats_five_t_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, 
 		sum_res_prod();
 
 		// Weight 1 + Weight 2
-		hdr.kitsune.five_t_pkt_cnt_1 = hdr.kitsune.five_t_pkt_cnt_1 + hdr.kitsune.five_t_pkt_cnt;
+		hdr.peregrine.five_t_pkt_cnt_1 = hdr.peregrine.five_t_pkt_cnt_1 + hdr.peregrine.five_t_pkt_cnt;
 
 		cov.apply();
 

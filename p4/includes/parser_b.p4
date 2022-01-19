@@ -5,7 +5,7 @@
 #define _PARSER_B_
 
 // ---------------------------------------------------------------------------
-// Ingress parser for pipeline B
+// Ingress Parser for Pipeline B
 // ---------------------------------------------------------------------------
 
 parser SwitchIngressParser_b(packet_in pkt, out header_t hdr, out ingress_metadata_b_t ig_md, out ingress_intrinsic_metadata_t ig_intr_md) {
@@ -38,29 +38,29 @@ parser SwitchIngressParser_b(packet_in pkt, out header_t hdr, out ingress_metada
         pkt.extract(hdr.udp);
         ig_md.meta.l4_src_port = hdr.udp.src_port;
         ig_md.meta.l4_dst_port = hdr.udp.dst_port;
-        transition parse_kitsune;
+        transition parse_peregrine;
     }
 
     state parse_tcp {
         pkt.extract(hdr.tcp);
         ig_md.meta.l4_src_port = hdr.tcp.src_port;
         ig_md.meta.l4_dst_port = hdr.tcp.dst_port;
-        transition parse_kitsune;
+        transition parse_peregrine;
     }
 
     state parse_icmp {
         pkt.extract(hdr.icmp);
-        transition parse_kitsune;
+        transition parse_peregrine;
     }
 
-    state parse_kitsune {
-        pkt.extract(hdr.kitsune);
+    state parse_peregrine {
+        pkt.extract(hdr.peregrine);
         transition accept;
     }
 }
 
 // ---------------------------------------------------------------------------
-// Egress parser for pipeline B
+// Egress Parser for Pipeline B
 // ---------------------------------------------------------------------------
 
 parser SwitchEgressParser_b(packet_in pkt, out header_t hdr, out egress_metadata_b_t eg_md, out egress_intrinsic_metadata_t eg_intr_md) {
@@ -90,21 +90,21 @@ parser SwitchEgressParser_b(packet_in pkt, out header_t hdr, out egress_metadata
 
     state parse_udp {
         pkt.extract(hdr.udp);
-        transition parse_kitsune;
+        transition parse_peregrine;
     }
 
     state parse_tcp {
         pkt.extract(hdr.tcp);
-        transition parse_kitsune;
+        transition parse_peregrine;
     }
 
     state parse_icmp {
         pkt.extract(hdr.icmp);
-        transition parse_kitsune;
+        transition parse_peregrine;
     }
 
-    state parse_kitsune {
-        pkt.extract(hdr.kitsune);
+    state parse_peregrine {
+        pkt.extract(hdr.peregrine);
         transition accept;
     }
 }

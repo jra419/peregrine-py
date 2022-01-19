@@ -1,5 +1,4 @@
 #include <tna.p4>
-
 #include "headers.p4"
 #include "constants.p4"
 
@@ -7,7 +6,7 @@
 #define _PARSER_A_
 
 // ---------------------------------------------------------------------------
-// Ingress parser for pipeline A
+// Ingress Parser for Pipeline A
 // ---------------------------------------------------------------------------
 
 parser SwitchIngressParser_a(packet_in pkt, out header_t hdr, out ingress_metadata_a_t ig_md, out ingress_intrinsic_metadata_t ig_intr_md) {
@@ -57,7 +56,7 @@ parser SwitchIngressParser_a(packet_in pkt, out header_t hdr, out ingress_metada
 }
 
 // ---------------------------------------------------------------------------
-// Egress parser for pipeline A
+// Egress Parser for Pipeline A
 // ---------------------------------------------------------------------------
 
 parser SwitchEgressParser_a(packet_in pkt, out header_t hdr, out egress_metadata_a_t eg_md, out egress_intrinsic_metadata_t eg_intr_md) {
@@ -87,21 +86,21 @@ parser SwitchEgressParser_a(packet_in pkt, out header_t hdr, out egress_metadata
 
     state parse_udp {
         pkt.extract(hdr.udp);
-        transition parse_kitsune;
+        transition parse_peregrine;
     }
 
     state parse_tcp {
         pkt.extract(hdr.tcp);
-        transition parse_kitsune;
+        transition parse_peregrine;
     }
 
     state parse_icmp {
         pkt.extract(hdr.icmp);
-        transition parse_kitsune;
+        transition parse_peregrine;
     }
 
-    state parse_kitsune {
-        pkt.extract(hdr.kitsune);
+    state parse_peregrine {
+        pkt.extract(hdr.peregrine);
         transition accept;
     }
 }

@@ -11,9 +11,9 @@ import Ports
 import ptf.testutils as testutils
 from ptf import config
 import random
-from kitsune_tables import PortMetadata_a, PortMetadata_b, FwdRecirculation_a, FwdRecirculation_b, Fwd_a, Fwd_b
-from kitsune_tables import MacSrcIpSrcPktMean, IpSrcPktMean
-from kitsune_tables import IpPktMean, IpCov, IpStdDevProd, IpPcc, FiveTPktMean, FiveTCov, FiveTStdDevProd, FiveTPcc
+from peregrine_tables import PortMetadata_a, PortMetadata_b, FwdRecirculation_a, FwdRecirculation_b, Fwd_a, Fwd_b
+from peregrine_tables import MacSrcIpSrcPktMean, IpSrcPktMean
+from peregrine_tables import IpPktMean, IpCov, IpStdDevProd, IpPcc, FiveTPktMean, FiveTCov, FiveTStdDevProd, FiveTPcc
 # add BF Python to search path
 try:
     # Import BFRT GRPC stuff

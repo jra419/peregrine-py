@@ -1,8 +1,8 @@
 from scapy.all import Packet, sniff, IntField, bind_layers, TCP, wrpcap, ls, hexdump, Raw
 
 
-class Kitsune(Packet):
-    name = 'kitsune'
+class Peregrine(Packet):
+    name = 'peregrine'
     fields_desc = [IntField('ip_src_pkt_cnt', 0),
                    IntField('ip_src_mean', 0),
                    IntField('ip_src_variance', 0),
@@ -38,16 +38,16 @@ class Kitsune(Packet):
 
 
 def callback(pkt):
-    if Kitsune in pkt:
+    if Peregrine in pkt:
         pkt.show()
         # hexdump(pkt)
         # print(pkt.summary())
         # ls(pkt)
         # print(len(pkt[Raw]))
-        # print(pkt[Kitsune].five_t_mean)
+        # print(pkt[Peregrine].five_t_mean)
         wrpcap('test.pcap', pkt, append=True)
 
 
-bind_layers(TCP, Kitsune, dport=64)
+bind_layers(TCP, Peregrine, dport=64)
 # sniff(iface='veth250', prn=callback)
 sniff(filter='tcp and host 5.6.7.8', prn=callback)

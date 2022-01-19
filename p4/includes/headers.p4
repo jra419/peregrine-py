@@ -49,7 +49,7 @@ header icmp_t {
     bit<16> hdrChecksum;
 }
 
-header kitsune_t {
+header peregrine_t {
     bit<32> ip_src_pkt_cnt;
     bit<32> ip_src_mean;
     bit<32> ip_src_variance;
@@ -158,10 +158,10 @@ struct egress_metadata_a_t {}
 struct egress_metadata_b_t {}
 
 header bridged_metadata_t {
-    /* // user-defined metadata carried over from ingress to egress. */
+    // user-defined metadata carried over from ingress to egress.
     bit<16> rewrite;
-    bit<1> psp; // Penultimate Segment Pop
-    bit<1> usp; // Ultimate Segment Pop
+    bit<1> psp;         // Penultimate Segment Pop
+    bit<1> usp;         // Ultimate Segment Pop
     bit<1> decap;
     bit<1> encap;
     bit<4> pad;
@@ -174,7 +174,7 @@ struct header_t {
     tcp_t		        tcp;
     udp_t		        udp;
     icmp_t 		        icmp;
-    kitsune_t           kitsune;
+    peregrine_t           peregrine;
 }
 
 #endif

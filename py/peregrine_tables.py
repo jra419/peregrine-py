@@ -243,7 +243,7 @@ class IpCov(Table):
            target,
            [self.table.make_key(
                [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('hdr.kitsune.ip_pkt_cnt_1', power, mask)])],
+                gc.KeyTuple('hdr.peregrine.ip_pkt_cnt_1', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_' + str(div))])
 
 
@@ -359,7 +359,7 @@ class FiveTCov(Table):
            target,
            [self.table.make_key(
                [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('hdr.kitsune.five_t_pkt_cnt_1', power, mask)])],
+                gc.KeyTuple('hdr.peregrine.five_t_pkt_cnt_1', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_' + str(div))])
 
 
