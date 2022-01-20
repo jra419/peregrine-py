@@ -3,7 +3,7 @@ from pprint import pprint, pformat
 import bfrt_grpc.bfruntime_pb2 as bfruntime_pb2
 import bfrt_grpc.client as gc
 import grpc
-from Table import Table
+from table import Table
 
 
 class FwdRecirculation_a(Table):
@@ -33,7 +33,7 @@ class FwdRecirculation_a(Table):
                [gc.KeyTuple('ig_intr_md.ingress_port', ig_port)])],
            [self.table.make_data(
                [gc.DataTuple('port', int_port)],
-               'SwitchIngress_a.modigy_eg_port')])
+               'SwitchIngress_a.modify_eg_port')])
 
 
 class FwdRecirculation_b(Table):
@@ -63,7 +63,7 @@ class FwdRecirculation_b(Table):
                [gc.KeyTuple('ig_intr_md.ingress_port', ig_port)])],
            [self.table.make_data(
                [gc.DataTuple('port', eg_port)],
-               'SwitchIngress_b.modigy_eg_port')])
+               'SwitchIngress_b.modify_eg_port')])
 
 
 class Fwd_a(Table):
@@ -155,8 +155,7 @@ class MacSrcIpSrcPktMean(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('ig_md.stats_mac_src_ip_src.pkt_cnt_0', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_mac_src_ip_src.pkt_cnt_0', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_mac_src_ip_src.rshift_mean_' + str(div))])
 
 
@@ -184,8 +183,7 @@ class IpSrcPktMean(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('ig_md.stats_ip_src.pkt_cnt_0', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_ip_src.pkt_cnt_0', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_ip_src.rshift_mean_' + str(div))])
 
 
@@ -213,8 +211,7 @@ class IpPktMean(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('ig_md.stats_ip.pkt_cnt_0', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_ip.pkt_cnt_0', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_ip.rshift_mean_' + str(div))])
 
 
@@ -222,7 +219,7 @@ class IpCov(Table):
 
     def __init__(self, client, bfrt_info):
         # set up base class
-        super(IpPktMean, self).__init__(client, bfrt_info)
+        super(IpCov, self).__init__(client, bfrt_info)
 
         self.logger = logging.getLogger('ip_cov')
         self.logger.info('Setting up ip_cov table...')
@@ -242,8 +239,7 @@ class IpCov(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('hdr.peregrine.ip_pkt_cnt_1', power, mask)])],
+               [gc.KeyTuple('hdr.peregrine.ip_pkt_cnt_1', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_cov_' + str(div))])
 
 
@@ -271,8 +267,7 @@ class IpStdDevProd(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('ig_md.stats_ip.std_dev_1', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_ip.std_dev_1', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_2d.lshift_std_dev_prod_' + str(div))])
 
 
@@ -300,8 +295,7 @@ class IpPcc(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('ig_md.stats_ip.std_dev_1', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_ip.std_dev_prod', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_2d.rshift_pcc_' + str(div))])
 
 
@@ -329,8 +323,7 @@ class FiveTPktMean(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('ig_md.stats_five_t.pkt_cnt_0', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_five_t.pkt_cnt_0', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_five_t.rshift_mean_' + str(div))])
 
 
@@ -358,8 +351,7 @@ class FiveTCov(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('hdr.peregrine.five_t_pkt_cnt_1', power, mask)])],
+               [gc.KeyTuple('hdr.peregrine.five_t_pkt_cnt_1', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_cov_' + str(div))])
 
 
@@ -387,8 +379,7 @@ class FiveTStdDevProd(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('ig_md.stats_five_t.std_dev_1', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_five_t.std_dev_1', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_2d.lshift_std_dev_prod_' + str(div))])
 
 
@@ -416,6 +407,5 @@ class FiveTPcc(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('MATCH_PRIORITY', priority),
-                gc.KeyTuple('ig_md.stats_five_t.std_dev_1', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_five_t.std_dev_prod', power, mask)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_2d.rshift_pcc_' + str(div))])

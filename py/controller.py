@@ -6,14 +6,9 @@ import signal
 import logging
 import argparse
 import json
-from router import flaskThread
-import Ports
 import ptf.testutils as testutils
 from ptf import config
 import random
-from peregrine_tables import PortMetadata_a, PortMetadata_b, FwdRecirculation_a, FwdRecirculation_b, Fwd_a, Fwd_b
-from peregrine_tables import MacSrcIpSrcPktMean, IpSrcPktMean
-from peregrine_tables import IpPktMean, IpCov, IpStdDevProd, IpPcc, FiveTPktMean, FiveTCov, FiveTStdDevProd, FiveTPcc
 # add BF Python to search path
 try:
     # Import BFRT GRPC stuff
@@ -21,10 +16,15 @@ try:
     import bfrt_grpc.client as gc
     import grpc
 except:
-    sys.path.append(os.environ['SDE_INSTALL'] + "/lib/python3.8/site-packages/tofino")
+    sys.path.append(os.environ['SDE_INSTALL'] + '/lib/python3.7/site-packages/tofino')
     import bfrt_grpc.bfruntime_pb2 as bfruntime_pb2
     import bfrt_grpc.client as gc
     import grpc
+
+from ports import Ports
+from peregrine_tables import FwdRecirculation_a, FwdRecirculation_b, Fwd_a, Fwd_b
+from peregrine_tables import MacSrcIpSrcPktMean, IpSrcPktMean
+from peregrine_tables import IpPktMean, IpCov, IpStdDevProd, IpPcc, FiveTPktMean, FiveTCov, FiveTStdDevProd, FiveTPcc
 
 logger = None
 grpc_client = None
@@ -52,21 +52,12 @@ def port_to_pipe(port):
     return pipe
 
 
-def get_internal_port_from_external(ext_port, internal_pipes, external_pipes, arch):
+def get_internal_port_from_external(ext_port, internal_pipes, external_pipes):
     pipe_local_port = port_to_local_port(ext_port)
     int_pipe = internal_pipes[external_pipes.index(port_to_pipe(ext_port))]
 
-    if arch == "tofino":
-        # For Tofino-1 we are currently using a 1-to-1 mapping from external
-        # port to internal port so just replace the pipe-id.
-        return make_port(int_pipe, pipe_local_port)
-    elif arch == "tofino2":
-        # For Tofino-2 we are currently using internal ports in 400g mode so up
-        # to eight external ports (if maximum break out is configured) can map
-        # to the same internal port.
-        return make_port(int_pipe, pipe_local_port & 0x1F8)
-    else:
-        assert (arch == "tofino" or arch == "tofino2")
+    # For Tofino-1 we are currently using a 1-to-1 mapping from external port to internal port so just replace the pipe-id.
+    return make_port(int_pipe, pipe_local_port)
 
 
 def get_port_from_pipes(pipes, swports_by_pipe):
@@ -91,54 +82,59 @@ def setup_grpc_client(server, port, program):
 def configure_switch(program, topology):
     # get all tables for program
     bfrt_info = grpc_client.bfrt_info_get(program)
+    # print(bfrt_info)
 
     # setup ports
-    Ports.ports = Ports.Ports(gc, bfrt_info)
+    Ports.ports = Ports(gc, bfrt_info)
 
+    print('topology ports', topology['ports'])
     for entry in topology['ports']:
         Ports.ports.add_port(entry['port'], 0, entry['capacity'], 'none')
 
     # available_ports = Ports.ports.get_available_ports()
+    # print(available_ports)
 
     # Setup pipes
-    num_pipes = int(testutils.test_param_get('num_pipes'))
+    # print('num_pipes', testutils.test_param_get('num_pipes'))
+    # num_pipes = int(testutils.test_param_get('num_pipes'))
+    num_pipes = 4
     pipes = list(range(num_pipes))
 
     swports = []
     swports_by_pipe = {p: list() for p in pipes}
-    for device, port, ifname in config["interfaces"]:
+    print(config)
+    ports = [5, 6, 10, 11, 29, 30, 31, 32]
+    for port in ports:
         swports.append(port)
         swports.sort()
         for port in swports:
             pipe = port_to_pipe(port)
             swports_by_pipe[pipe].append(port)
+    # for device, port, ifname in config["interfaces"]:
+        # swports.append(port)
+        # swports.sort()
+        # for port in swports:
+            # pipe = port_to_pipe(port)
+            # swports_by_pipe[pipe].append(port)
 
     # Tofino-1 uses pipes 0 and 2 as the external pipes while 1 and 3 are the internal pipes.
-    # Tofino-2 uses pipes 0 and 1 as the external pipes while 2 and 3 are the internal pipes.
-    arch = testutils.test_param_get('arch')
-    if arch == "tofino":
-        external_pipes = [0, 2]
-        internal_pipes = [1, 3]
-    elif arch == "tofino2":
-        external_pipes = [0, 1]
-        internal_pipes = [2, 3]
-    else:
-        assert (arch == "tofino" or arch == "tofino2")
+    external_pipes = [0, 2]
+    internal_pipes = [1, 3]
 
-        print('external pipes ', external_pipes)
-        ig_port = get_port_from_pipes(external_pipes, swports_by_pipe)
-        print('ig_port ', ig_port)
-        eg_port = get_port_from_pipes(external_pipes, swports_by_pipe)
-        print('eg_port ', eg_port)
+    print('external pipes ', external_pipes)
+    ig_port = get_port_from_pipes(external_pipes, swports_by_pipe)
+    print('ig_port ', ig_port)
+    eg_port = get_port_from_pipes(external_pipes, swports_by_pipe)
+    print('eg_port ', eg_port)
 
-        int_port = get_internal_port_from_external(ig_port, internal_pipes, external_pipes, arch)
-        print('int_port ', int_port)
-        logger.info("Expected forwarding path:")
-        logger.info(" 1. Ingress processing in external pipe %d, ingress port %d", port_to_pipe(ig_port), ig_port)
-        logger.info(" 2. Egress processing in internal pipe %d, internal port %d", port_to_pipe(int_port), int_port)
-        logger.info(" 3. Loopback on internal port %d", int_port)
-        logger.info(" 4. Ingress processing in internal pipe %d, internal port %d", port_to_pipe(int_port), int_port)
-        logger.info(" 5. Egress processing in external pipe %d, egress port %d", port_to_pipe(eg_port), eg_port)
+    int_port = get_internal_port_from_external(ig_port, internal_pipes, external_pipes)
+    print('int_port ', int_port)
+    logger.info("Expected forwarding path:")
+    logger.info(" 1. Ingress processing in external pipe %d, ingress port %d", port_to_pipe(ig_port), ig_port)
+    logger.info(" 2. Egress processing in internal pipe %d, internal port %d", port_to_pipe(int_port), int_port)
+    logger.info(" 3. Loopback on internal port %d", int_port)
+    logger.info(" 4. Ingress processing in internal pipe %d, internal port %d", port_to_pipe(int_port), int_port)
+    logger.info(" 5. Egress processing in external pipe %d, egress port %d", port_to_pipe(eg_port), eg_port)
 
     # Setup tables
 
@@ -335,10 +331,10 @@ def get_topology(topology_file):
 
 if __name__ == "__main__":
     # set up options
-    argparser = argparse.ArgumentParser(description="Port redirector controller.")
+    argparser = argparse.ArgumentParser(description="Peregrine controller.")
     argparser.add_argument('--grpc_server', type=str, default='localhost', help='GRPC server name/address')
     argparser.add_argument('--grpc_port', type=int, default=50052, help='GRPC server port')
-    argparser.add_argument('--program', type=str, default='port-redirector', help='P4 program name')
+    argparser.add_argument('--program', type=str, default='peregrine', help='P4 program name')
     argparser.add_argument('--topology', type=str, default='topology.json', help='Topology')
     args = argparser.parse_args()
 
@@ -349,8 +345,6 @@ if __name__ == "__main__":
     topology = get_topology(args.topology)
     setup_grpc_client(args.grpc_server, args.grpc_port, args.program)
     configure_switch(args.program, topology)
-
-    flaskThread()
 
     # exit (bug workaround)
     logger.info("Exiting!")
