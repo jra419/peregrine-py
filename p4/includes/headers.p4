@@ -56,8 +56,7 @@ header peregrine_t {
     bit<32> mac_src_ip_src_pkt_cnt;
     bit<32> mac_src_ip_src_mean;
     bit<32> mac_src_ip_src_variance;
-    bit<32> five_t_hash_0;
-    bit<32> five_t_hash_1;
+    bit<16> five_t_hash_0;
     bit<32> five_t_pkt_cnt;
     bit<32> five_t_mean;
     bit<32> five_t_variance;
@@ -73,8 +72,7 @@ header peregrine_t {
     bit<32> five_t_cov;
     bit<32> five_t_pcc;
     bit<32> ip_pkt_cnt;
-    bit<32> ip_hash_0;
-    bit<32> ip_hash_1;
+    bit<16> ip_hash_0;
     bit<32> ip_mean;
     bit<32> ip_variance;
     bit<32> ip_variance_neg;
@@ -93,21 +91,29 @@ header peregrine_t {
 header meta_t {
     bit<16> l4_src_port;
     bit<16> l4_dst_port;
+    bit<16> decay_cntr;
+    bit<32> decay_const;
+    bit<32> decay_reg_add;
     bit<32> current_ts;
     bit<32> pkt_len_squared;
+}
+
+header decay_t {
+    bit <32> decay_const;
 }
 
 header hash_meta_t {
     bit<16> mac_src_ip_src;
     bit<16> ip_src;
-    bit<32> ip_0;
-    bit<32> ip_1;
-    bit<32> five_t_0;
-    bit<32> five_t_1;
+    bit<16> ip_0;
+    bit<16> ip_1;
+    bit<16> five_t_0;
+    bit<16> five_t_1;
 }
 
 header stats_meta_t {
-    bit<32> decay_check;
+    bit<7> padding;
+    bit<1> decay_check;
     bit<32> pkt_cnt_0;
     bit<32> pkt_cnt_1;
     bit<32> pkt_len;
@@ -138,6 +144,7 @@ header stats_meta_t {
 struct ingress_metadata_a_t {
     bool            checksum_err;
     meta_t 	        meta;
+    decay_t         decay;
     hash_meta_t     hash;
     stats_meta_t    stats_mac_src_ip_src;
     stats_meta_t    stats_ip_src;
@@ -174,7 +181,7 @@ struct header_t {
     tcp_t		        tcp;
     udp_t		        udp;
     icmp_t 		        icmp;
-    peregrine_t           peregrine;
+    peregrine_t         peregrine;
 }
 
 #endif

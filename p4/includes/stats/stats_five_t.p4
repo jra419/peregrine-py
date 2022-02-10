@@ -4,24 +4,22 @@ control c_stats_five_t(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 	// Hashes
 	// ----------------------------------------
 
-	Hash<bit<32>>(HashAlgorithm_t.CRC32) hash_five_t_0; // Hash for flow id (a->b)
-	Hash<bit<32>>(HashAlgorithm_t.CRC32) hash_five_t_1; // Hash for flow id (b->a)
+	Hash<bit<16>>(HashAlgorithm_t.CRC16) hash_five_t_0; // Hash for flow id (a->b)
+	Hash<bit<16>>(HashAlgorithm_t.CRC16) hash_five_t_1; // Hash for flow id (b->a)
 
 	// ----------------------------------------
 	// Registers and temp. variables
 	// ----------------------------------------
 
 	Register<bit<32>, _>(REG_SIZE) reg_five_t_ts;
-	Register<bit<32>, _>(REG_SIZE) reg_five_t_cnt_0; 				// Packet count for flow id (a->b)
-	Register<bit<32>, _>(REG_SIZE) reg_five_t_cnt_1; 				// Packet count for flow id (b->a)
-	Register<bit<32>, _>(REG_SIZE) reg_five_t_len;   				// Packet length
-	Register<bit<32>, _>(REG_SIZE) reg_five_t_ss;    				// Squared sum of the packet length
-	Register<bit<32>, _>(REG_SIZE) reg_five_t_mean;					// Mean
-	Register<bit<32>, _>(REG_SIZE) reg_five_t_mean_squared_0;		// Squared mean for flow id (a->b)
-	Register<bit<32>, _>(REG_SIZE) reg_five_t_mean_squared_1;		// Squared mean for flow id (b->a)
-	Register<bit<32>, _>(REG_SIZE) reg_five_t_variance;				// Variance
-	Register<bit<32>, _>(REG_SIZE) reg_five_t_last_res; 			// Residue values
-	Register<bit<32>, _>(REG_SIZE) reg_five_t_sum_res_prod;			// Sum of residual products
+	Register<bit<32>, _>(REG_SIZE) reg_five_t_cnt_0; 		// Packet count for flow id (a->b)
+	Register<bit<32>, _>(REG_SIZE) reg_five_t_cnt_1; 		// Packet count for flow id (b->a)
+	Register<bit<32>, _>(REG_SIZE) reg_five_t_len;   		// Packet length
+	Register<bit<32>, _>(REG_SIZE) reg_five_t_ss;    		// Squared sum of the packet length
+	Register<bit<32>, _>(REG_SIZE) reg_five_t_mean;		// Mean
+	Register<bit<32>, _>(1) reg_five_t_mean_squared_0;			// Squared mean for flow id (a->b)
+	Register<bit<32>, _>(REG_SIZE) reg_five_t_variance;	// Variance
+	Register<bit<32>, _>(REG_SIZE) reg_five_t_last_res; 	// Residue values
 
 	// Temporary variables for stats calculation
 	bit<32> res_prod = 0;
@@ -30,17 +28,65 @@ control c_stats_five_t(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 	// Register actions
 	// ----------------------------------------
 
-	RegisterAction<_, _, bit<32>>(reg_five_t_ts) ract_decay_check = {
-		void apply(inout bit<32> value, out bit<32> result) {
-			result = 0;
-			if (ig_md.meta.current_ts - value > 915480 && value != 0) {
-					value = value + 915480;
-					result = 1;
-			} else {
-				value = ig_md.meta.current_ts;
-			}
-		}
-	};
+	// Check if more than 100 ms have elapsed since the last update for the current flow.
+	// If so, increase the stored value by 100 ms and set a flag.
+	// 1525 corresponds to the bit-sliced value for 100 ms (in ns).
+    RegisterAction<_, _, bit<1>>(reg_five_t_ts) ract_decay_check_100_ms = {
+        void apply(inout bit<32> value, out bit<1> result) {
+            result = 0;
+            if (DECAY_100_MS < ig_md.meta.current_ts - value) {
+                value = value + DECAY_100_MS;
+                result = 1;
+            } else {
+                value = ig_md.meta.current_ts;
+            }
+        }
+    };
+
+	// Check if more than 1 sec has elapsed since the last update for the current flow.
+	// If so, increase the stored value by 1 sec and set a flag.
+	// 15258 corresponds to the bit-sliced value for 1 sec (in ns).
+    RegisterAction<_, _, bit<1>>(reg_five_t_ts) ract_decay_check_1_s = {
+        void apply(inout bit<32> value, out bit<1> result) {
+            result = 0;
+            if (DECAY_1_S < ig_md.meta.current_ts - value) {
+                value = value + DECAY_1_S;
+                result = 1;
+            } else {
+                value = ig_md.meta.current_ts;
+            }
+        }
+    };
+
+	// Check if more than 10 secs have elapsed since the last update for the current flow.
+	// If so, increase the stored value by 10 secs and set a flag.
+	// 152587 corresponds to the bit-sliced value for 10 secs (in ns).
+    RegisterAction<_, _, bit<1>>(reg_five_t_ts) ract_decay_check_10_s = {
+        void apply(inout bit<32> value, out bit<1> result) {
+            result = 0;
+            if (DECAY_10_S < ig_md.meta.current_ts - value) {
+                value = value + DECAY_10_S;
+                result = 1;
+            } else {
+                value = ig_md.meta.current_ts;
+            }
+        }
+    };
+
+	// Check if more than 60 secs have elapsed since the last update for the current flow.
+	// If so, increase the stored value by 60 secs and set a flag.
+	// 915527 corresponds to the bit-sliced value for 60 secs (in ns).
+    RegisterAction<_, _, bit<1>>(reg_five_t_ts) ract_decay_check_60_s = {
+        void apply(inout bit<32> value, out bit<1> result) {
+            result = 0;
+            if (DECAY_60_S < ig_md.meta.current_ts - value) {
+                value = value + DECAY_60_S;
+                result = 1;
+            } else {
+                value = ig_md.meta.current_ts;
+            }
+        }
+    };
 
 	MathUnit<bit<32>>(MathOp_t.MUL, 1, 2) div_pkt_cnt;
 	RegisterAction<_, _, bit<32>>(reg_five_t_cnt_0) ract_pkt_cnt_0_incr = {
@@ -143,24 +189,36 @@ control c_stats_five_t(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 	// ----------------------------------------
 
 	action hash_calc_five_t_0() {
-		ig_md.hash.five_t_0 = (bit<32>)hash_five_t_0.get({hdr.ipv4.src_addr,
-										   				  hdr.ipv4.dst_addr,
-										   				  hdr.ipv4.protocol,
-										   				  ig_md.meta.l4_src_port,
-										   				  ig_md.meta.l4_dst_port})[13:0];
+		ig_md.hash.five_t_0 = (bit<16>)hash_five_t_0.get({hdr.ipv4.src_addr,
+														  hdr.ipv4.dst_addr,
+										   		          hdr.ipv4.protocol,
+										   		          ig_md.meta.l4_src_port,
+										   		          ig_md.meta.l4_dst_port})[12:0];
 	}
 
 	action hash_calc_five_t_1() {
-		ig_md.hash.five_t_1 = (bit<32>)hash_five_t_1.get({hdr.ipv4.dst_addr,
-										   				  hdr.ipv4.src_addr,
-										   				  hdr.ipv4.protocol,
-										   				  ig_md.meta.l4_dst_port,
-										   				  ig_md.meta.l4_src_port})[13:0];
+		ig_md.hash.five_t_1 = (bit<16>)hash_five_t_1.get({hdr.ipv4.dst_addr,
+											              hdr.ipv4.src_addr,
+										   		          hdr.ipv4.protocol,
+										   		          ig_md.meta.l4_dst_port,
+										   		          ig_md.meta.l4_src_port})[12:0];
 	}
 
-	action decay_check() {
-		ig_md.stats_five_t.decay_check = ract_decay_check.execute(ig_md.hash.five_t_0);
-	}
+    action decay_check_100_ms() {
+        ig_md.stats_five_t.decay_check = ract_decay_check_100_ms.execute(ig_md.hash.five_t_0);
+    }
+
+    action decay_check_1_s() {
+        ig_md.stats_five_t.decay_check = ract_decay_check_1_s.execute(ig_md.hash.five_t_0);
+    }
+
+    action decay_check_10_s() {
+        ig_md.stats_five_t.decay_check = ract_decay_check_10_s.execute(ig_md.hash.five_t_0);
+    }
+
+    action decay_check_60_s() {
+        ig_md.stats_five_t.decay_check = ract_decay_check_60_s.execute(ig_md.hash.five_t_0);
+    }
 
 	action pkt_cnt_0_incr() {
 		ig_md.stats_five_t.pkt_cnt_0 = ract_pkt_cnt_0_incr.execute(ig_md.hash.five_t_0);
@@ -281,6 +339,21 @@ control c_stats_five_t(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 
 	action miss() {}
 
+    table decay_check {
+        key = {
+            ig_md.meta.decay_cntr : exact;
+        }
+        actions = {
+            decay_check_100_ms;
+            decay_check_1_s;
+            decay_check_10_s;
+            decay_check_60_s;
+            miss;
+        }
+        const default_action = miss;
+        size = 1024;
+    }
+
 	table pkt_mean {
 		key = {
 			ig_md.stats_five_t.pkt_cnt_0 : ternary;
@@ -317,8 +390,12 @@ control c_stats_five_t(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 		hash_calc_five_t_0();
 		hash_calc_five_t_1();
 
+		ig_md.hash.five_t_0 = ig_md.hash.five_t_0 + ig_md.meta.decay_cntr;
+		ig_md.hash.five_t_1 = ig_md.hash.five_t_1 + ig_md.meta.decay_cntr;
+
 	    // Check if more than 60 secs have elapsed since the last update for the current flow.
-		decay_check();
+		decay_check.apply();
+		// decay_check();
 
 		// Increment the current packet count and length.
 		pkt_cnt_0_incr();

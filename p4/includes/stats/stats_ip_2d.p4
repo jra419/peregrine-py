@@ -4,15 +4,14 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	// Registers and temp. variables
 	// ----------------------------------------
 
-	Register<bit<32>, _>(REG_SIZE) reg_ip_mean_squared_1;		// Squared mean for flow id (b->a)
-	Register<bit<32>, _>(REG_SIZE) reg_ip_variance_squared_0;	// Squared variance for flow id (a->b)
-	Register<bit<32>, _>(REG_SIZE) reg_ip_variance_squared_1;	// Squared variance for flow id (b->a)
-	Register<bit<32>, _>(REG_SIZE) reg_ip_std_dev_0;			// Std. deviation for flow id (a->b)
-	Register<bit<32>, _>(REG_SIZE) reg_ip_std_dev_1;			// Std. deviation for flow id (b->a)
-	Register<bit<32>, _>(REG_SIZE) reg_ip_last_res; 			// Residue values
-	Register<bit<32>, _>(REG_SIZE) reg_ip_sum_res_prod;			// Sum of residual products
-	Register<bit<32>, _>(REG_SIZE) reg_ip_magnitude; 			// Magnitude
-	Register<bit<32>, _>(REG_SIZE) reg_ip_radius;				// Radius
+	Register<bit<32>, _>(1) reg_ip_mean_squared_1;		// Squared mean for flow id (b->a)
+	Register<bit<32>, _>(1) reg_ip_variance_squared_0;	// Squared variance for flow id (a->b)
+	Register<bit<32>, _>(1) reg_ip_variance_squared_1;	// Squared variance for flow id (b->a)
+	Register<bit<32>, _>(1) reg_ip_std_dev_0;			// Std. deviation for flow id (a->b)
+	Register<bit<32>, _>(1) reg_ip_std_dev_1;			// Std. deviation for flow id (b->a)
+	Register<bit<32>, _>(1) reg_ip_sum_res_prod;			// Sum of residual products
+	Register<bit<32>, _>(1) reg_ip_magnitude; 			// Magnitude
+	Register<bit<32>, _>(1) reg_ip_radius;				// Radius
 
 	// Temporary variables for stats calculation
 	bit<32> magnitude_temp = 0;
@@ -99,35 +98,35 @@ control c_stats_ip_2d(inout header_t hdr, inout ingress_metadata_b_t ig_md, in i
 	// ----------------------------------------
 
 	action mean_squared_1_calc() {
-		ig_md.stats_ip.mean_squared_1 = ract_mean_squared_1_calc.execute(hdr.peregrine.ip_hash_1);
+		ig_md.stats_ip.mean_squared_1 = ract_mean_squared_1_calc.execute(0);
 	}
 
 	action std_dev_0_calc() {
-		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc.execute(hdr.peregrine.ip_hash_0);
+		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc.execute(0);
 	}
 
 	action std_dev_0_calc_neg() {
-		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc_neg.execute(hdr.peregrine.ip_hash_0);
+		ig_md.stats_ip.std_dev_0 = ract_std_dev_0_calc_neg.execute(0);
 	}
 
 	action std_dev_1_calc() {
-		ig_md.stats_ip.std_dev_1 = ract_std_dev_1_calc.execute(hdr.peregrine.ip_hash_1);
+		ig_md.stats_ip.std_dev_1 = ract_std_dev_1_calc.execute(0);
 	}
 
 	action magnitude_calc() {
-		ig_md.stats_ip.magnitude = ract_magnitude_calc.execute(hdr.peregrine.ip_hash_0);
+		ig_md.stats_ip.magnitude = ract_magnitude_calc.execute(0);
 	}
 
 	action variance_squared_0_calc() {
-		ig_md.stats_ip.variance_squared_0 = ract_variance_squared_0_calc.execute(hdr.peregrine.ip_hash_0);
+		ig_md.stats_ip.variance_squared_0 = ract_variance_squared_0_calc.execute(0);
 	}
 
 	action variance_squared_1_calc() {
-		ig_md.stats_ip.variance_squared_1 = ract_variance_squared_1_calc.execute(hdr.peregrine.ip_hash_1);
+		ig_md.stats_ip.variance_squared_1 = ract_variance_squared_1_calc.execute(0);
 	}
 
 	action radius_calc() {
-		ig_md.stats_ip.radius = ract_radius_calc.execute(hdr.peregrine.ip_hash_0);
+		ig_md.stats_ip.radius = ract_radius_calc.execute(0);
 	}
 
 	action sum_res_prod() {

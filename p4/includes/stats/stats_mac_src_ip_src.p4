@@ -12,25 +12,69 @@ control c_stats_mac_src_ip_src(inout header_t hdr, inout ingress_metadata_a_t ig
 
     Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_ts;
 
-    Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_cnt;          // Packet count
-    Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_len;          // Packet length
-    Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_ss;           // Squared sum of the packet length
-
-    Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_mean_squared; // Squared mean
+    Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_cnt;    // Packet count
+    Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_len;    // Packet length
+    Register<bit<32>, _>(REG_SIZE) reg_mac_src_ip_src_ss;     // Squared sum of the packet length
+    Register<bit<32>, _>(1) reg_mac_src_ip_src_mean_squared;        // Squared mean
 
     // ----------------------------------------
     // Register actions
     // ----------------------------------------
 
+	// Check if more than 100 ms have elapsed since the last update for the current flow.
+	// If so, increase the stored value by 100 ms and set a flag.
+	// 1525 corresponds to the bit-sliced value for 100 ms (in ns).
+    RegisterAction<_, _, bit<1>>(reg_mac_src_ip_src_ts) ract_decay_check_100_ms = {
+        void apply(inout bit<32> value, out bit<1> result) {
+            result = 0;
+            if (DECAY_100_MS < ig_md.meta.current_ts - value) {
+                value = value + DECAY_100_MS;
+                result = 1;
+            } else {
+                value = ig_md.meta.current_ts;
+            }
+        }
+    };
+
+	// Check if more than 1 sec has elapsed since the last update for the current flow.
+	// If so, increase the stored value by 1 sec and set a flag.
+	// 15258 corresponds to the bit-sliced value for 1 sec (in ns).
+    RegisterAction<_, _, bit<1>>(reg_mac_src_ip_src_ts) ract_decay_check_1_s = {
+        void apply(inout bit<32> value, out bit<1> result) {
+            result = 0;
+            if (DECAY_1_S < ig_md.meta.current_ts - value) {
+                value = value + DECAY_1_S;
+                result = 1;
+            } else {
+                value = ig_md.meta.current_ts;
+            }
+        }
+    };
+
+	// Check if more than 10 secs have elapsed since the last update for the current flow.
+	// If so, increase the stored value by 10 secs and set a flag.
+	// 152587 corresponds to the bit-sliced value for 10 secs (in ns).
+    RegisterAction<_, _, bit<1>>(reg_mac_src_ip_src_ts) ract_decay_check_10_s = {
+        void apply(inout bit<32> value, out bit<1> result) {
+            result = 0;
+            if (DECAY_10_S < ig_md.meta.current_ts - value) {
+                value = value + DECAY_10_S;
+                result = 1;
+            } else {
+                value = ig_md.meta.current_ts;
+            }
+        }
+    };
+
 	// Check if more than 60 secs have elapsed since the last update for the current flow.
 	// If so, increase the stored value by 60 secs and set a flag.
 	// 915527 corresponds to the bit-sliced value for 60 secs (in ns).
-    RegisterAction<_, _, bit<32>>(reg_mac_src_ip_src_ts) ract_decay_check = {
-        void apply(inout bit<32> value, out bit<32> result) {
+    RegisterAction<_, _, bit<1>>(reg_mac_src_ip_src_ts) ract_decay_check_60_s = {
+        void apply(inout bit<32> value, out bit<1> result) {
             result = 0;
-            if (ig_md.meta.current_ts - value > 915527 && value != 0) {
-                    value = value + 915527;
-                    result = 1;
+            if (DECAY_60_S < ig_md.meta.current_ts - value) {
+                value = value + DECAY_60_S;
+                result = 1;
             } else {
                 value = ig_md.meta.current_ts;
             }
@@ -86,11 +130,23 @@ control c_stats_mac_src_ip_src(inout header_t hdr, inout ingress_metadata_a_t ig
     // ----------------------------------------
 
     action hash_calc_mac_src_ip_src() {
-        ig_md.hash.mac_src_ip_src = hash_mac_src_ip_src.get({hdr.ethernet.src_addr, hdr.ipv4.src_addr});
+        ig_md.hash.mac_src_ip_src = (bit<16>)hash_mac_src_ip_src.get({hdr.ethernet.src_addr, hdr.ipv4.src_addr})[12:0];
     }
 
-    action decay_check() {
-        ig_md.stats_mac_src_ip_src.decay_check = ract_decay_check.execute(ig_md.hash.mac_src_ip_src);
+    action decay_check_100_ms() {
+        ig_md.stats_mac_src_ip_src.decay_check = ract_decay_check_100_ms.execute(ig_md.hash.mac_src_ip_src);
+    }
+
+    action decay_check_1_s() {
+        ig_md.stats_mac_src_ip_src.decay_check = ract_decay_check_1_s.execute(ig_md.hash.mac_src_ip_src);
+    }
+
+    action decay_check_10_s() {
+        ig_md.stats_mac_src_ip_src.decay_check = ract_decay_check_10_s.execute(ig_md.hash.mac_src_ip_src);
+    }
+
+    action decay_check_60_s() {
+        ig_md.stats_mac_src_ip_src.decay_check = ract_decay_check_60_s.execute(ig_md.hash.mac_src_ip_src);
     }
 
     action pkt_cnt_incr() {
@@ -191,6 +247,21 @@ control c_stats_mac_src_ip_src(inout header_t hdr, inout ingress_metadata_a_t ig
 
     action miss() {}
 
+    table decay_check {
+        key = {
+            ig_md.meta.decay_cntr : exact;
+        }
+        actions = {
+            decay_check_100_ms;
+            decay_check_1_s;
+            decay_check_10_s;
+            decay_check_60_s;
+            miss;
+        }
+        const default_action = miss;
+        size = 1024;
+    }
+
     table pkt_mean {
 		key = {
 			ig_md.stats_mac_src_ip_src.pkt_cnt_0 : ternary;
@@ -223,11 +294,13 @@ control c_stats_mac_src_ip_src(inout header_t hdr, inout ingress_metadata_a_t ig
 
     apply {
 
-	    // Check if more than 60 secs have elapsed since the last update for the current flow.
-        decay_check();
-
         // Hash calculation.
         hash_calc_mac_src_ip_src();
+
+		ig_md.hash.mac_src_ip_src = ig_md.hash.mac_src_ip_src + ig_md.meta.decay_cntr;
+
+	    // Check if the current decay interval has elapsed.
+        decay_check.apply();
 
         // Increment the current packet count and length.
         pkt_cnt_incr();

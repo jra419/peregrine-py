@@ -18,7 +18,7 @@ control SwitchIngressDeparser_b(packet_out pkt, inout header_t hdr, in ingress_m
 }
 
 // ---------------------------------------------------------------------------
-// Egress Deparser for Pipeline B
+// Egress Deparser for Pipeline A
 // ---------------------------------------------------------------------------
 
 control SwitchEgressDeparser_b(packet_out pkt, inout header_t hdr, in egress_metadata_b_t eg_md, in egress_intrinsic_metadata_for_deparser_t eg_dprsr_md) {

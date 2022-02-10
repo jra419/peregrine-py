@@ -87,18 +87,16 @@ control SwitchEgress_b(
         eg_intr_md_for_dprs.drop_ctl = 0x1; // Drop packet.
     }
 
-    @alpm(1)
-    @alpm_partitions(1024)
-    @alpm_subtrees_per_partition(2)
     table fwd {
         key = {
-            hdr.ipv4.dst_addr : lpm;
-            hdr.ipv4.ttl : exact;
+            /* hdr.ipv4.dst_addr : ternary; */
+            hdr.ipv4.ttl : ternary;
+            /* hdr.tcp.res : exact; */
         }
 
         actions = {
             hit;
-            miss;
+            @defaultonly miss;
         }
 
         const default_action = miss;

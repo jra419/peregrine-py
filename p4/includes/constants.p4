@@ -16,6 +16,11 @@ typedef bit<9> port_t;
 
 const port_t CPU_PORT = 255;
 
-#define REG_SIZE 16384
+#define DECAY_100_MS 1525
+#define DECAY_1_S 15258
+#define DECAY_10_S 152587
+#define DECAY_60_S 915527
+
+#define REG_SIZE 32768
 
 #endif
