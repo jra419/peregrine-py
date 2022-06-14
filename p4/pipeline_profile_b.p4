@@ -4,10 +4,10 @@
 #include "includes/constants.p4"
 #include "includes/parser_b.p4"
 #include "includes/deparser_b.p4"
-#include "includes/stats/stats_five_t_2d.p4"
-#include "includes/stats/stats_ip_2d.p4"
-
-#define FORWARD_TABLE_SIZE 1024
+#include "includes/stats/stats_mac_ip_src_b.p4"
+#include "includes/stats/stats_ip_src_b.p4"
+#include "includes/stats/stats_ip_b.p4"
+#include "includes/stats/stats_five_t_b.p4"
 
 // ---------------------------------------------------------------------------
 // Pipeline B
@@ -23,11 +23,14 @@ control SwitchIngress_b(
 
     // Control block instantiations.
 
-    c_stats_five_t_2d()     stats_five_t_2d;
-    c_stats_ip_2d()         stats_ip_2d;
+    c_stats_mac_ip_src_b()      stats_mac_ip_src_b;
+    c_stats_ip_src_b()          stats_ip_src_b;
+    c_stats_ip_b()              stats_ip_b;
+    c_stats_five_t_b()          stats_five_t_b;
 
     action modify_eg_port(PortId_t port) {
         ig_tm_md.ucast_egress_port = port;
+        hdr.peregrine.forward = 3;
     }
 
     table fwd_recirculation {
@@ -41,32 +44,41 @@ control SwitchIngress_b(
         }
 
         const default_action = NoAction;
-        size = 512;
     }
 
-    action set_peregrine_ip_2d() {
+    action set_peregrine_ip_b() {
         hdr.peregrine.ip_magnitude = ig_md.stats_ip.magnitude;
         hdr.peregrine.ip_radius = ig_md.stats_ip.radius;
-        hdr.peregrine.ip_cov = ig_md.stats_ip.cov;
+    }
+
+    action set_peregrine_ip_b_64() {
+        hdr.peregrine.ip_sum_res_prod_cov = ig_md.stats_ip.cov;
         hdr.peregrine.ip_pcc = ig_md.stats_ip.pcc;
     }
 
-    action set_peregrine_five_t_2d() {
+    action set_peregrine_five_t_b() {
         hdr.peregrine.five_t_magnitude = ig_md.stats_five_t.magnitude;
         hdr.peregrine.five_t_radius = ig_md.stats_five_t.radius;
-        hdr.peregrine.five_t_cov = ig_md.stats_five_t.cov;
+    }
+
+    action set_peregrine_five_t_b_64() {
+        hdr.peregrine.five_t_sum_res_prod_cov = ig_md.stats_five_t.cov;
         hdr.peregrine.five_t_pcc = ig_md.stats_five_t.pcc;
     }
 
     apply {
 
         // Calculate stats.
-        stats_five_t_2d.apply(hdr, ig_md, ig_intr_md);
-        stats_ip_2d.apply(hdr, ig_md, ig_intr_md);
+        stats_mac_ip_src_b.apply(hdr, ig_md);
+        stats_ip_src_b.apply(hdr, ig_md);
+        stats_ip_b.apply(hdr, ig_md);
+        stats_five_t_b.apply(hdr, ig_md);
 
         fwd_recirculation.apply();
-        set_peregrine_five_t_2d();
-        set_peregrine_ip_2d();
+        set_peregrine_ip_b();
+        set_peregrine_ip_b_64();
+        set_peregrine_five_t_b();
+        set_peregrine_five_t_b_64();
     }
 }
 
@@ -80,7 +92,7 @@ control SwitchEgress_b(
 
 
     action hit() {
-        hdr.ipv4.ttl = hdr.ipv4.ttl - 1;
+        hdr.peregrine.forward = 2;
     }
 
     action miss() {
@@ -89,9 +101,7 @@ control SwitchEgress_b(
 
     table fwd {
         key = {
-            /* hdr.ipv4.dst_addr : ternary; */
-            hdr.ipv4.ttl : ternary;
-            /* hdr.tcp.res : exact; */
+            hdr.peregrine.forward : exact;
         }
 
         actions = {
@@ -100,7 +110,6 @@ control SwitchEgress_b(
         }
 
         const default_action = miss;
-        size = FORWARD_TABLE_SIZE;
     }
 
     apply {

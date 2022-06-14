@@ -16,11 +16,42 @@ typedef bit<9> port_t;
 
 const port_t CPU_PORT = 255;
 
+#define REG_SIZE 32768
+#define SAMPLING 1024
+#define FORWARD_TABLE_SIZE 1024
+
+// The decay intervals are 100ms, 1s, 10s and 60.
+// Due to limitations in the max packet rate supported by the SDE,
+// we define decays which are multiples of these,
+// and slow down the rate at which the trace is executed accordingly.
+
+/*
 #define DECAY_100_MS 1525
 #define DECAY_1_S 15258
 #define DECAY_10_S 152587
 #define DECAY_60_S 915527
+*/
 
-#define REG_SIZE 32768
+// Eval: x2 decay constants
+/*
+#define DECAY_100_MS 3051
+#define DECAY_1_S 30517
+#define DECAY_10_S 305175
+#define DECAY_60_S 1831054
+*/
+
+// Eval: x4 decay constants
+#define DECAY_100_MS 6103
+#define DECAY_1_S 61035
+#define DECAY_10_S 610351
+#define DECAY_60_S 1220703
+
+// Eval: x8 decay constants
+/*
+#define DECAY_100_MS 12207
+#define DECAY_1_S 122070
+#define DECAY_10_S 1220703
+#define DECAY_60_S 7324218
+*/
 
 #endif

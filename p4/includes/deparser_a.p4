@@ -25,11 +25,11 @@ control SwitchEgressDeparser_a(packet_out pkt, inout header_t hdr, in egress_met
 
     apply {
         pkt.emit(hdr.ethernet);
+        pkt.emit(hdr.peregrine);
         pkt.emit(hdr.ipv4);
         pkt.emit(hdr.udp);
         pkt.emit(hdr.tcp);
         pkt.emit(hdr.icmp);
-        pkt.emit(hdr.peregrine);
     }
 }
 
