@@ -210,6 +210,8 @@ control c_stats_five_t_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 		}
 	};
 
+	// Check if the current flow hash corresponds to the stored reg value.
+	// If not, then the stored value is from the reverse flow and must be updated.
 	RegisterAction<_, _, bit<32>>(reg_five_t_res_check) ract_res_check = {
 		void apply(inout bit<16> value, out bit<32> result) {
 			result = 0;
@@ -220,6 +222,8 @@ control c_stats_five_t_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 		}
 	};
 
+	// The stored values correspond to the current flow direction.
+	// Update the current residue and return the value for the other direction.
 	RegisterAction<res_current, _, bit<32>>(reg_five_t_res) ract_res_read = {
 		void apply(inout res_current res, out bit<32> result) {
 			result = res.res_1;
@@ -227,6 +231,8 @@ control c_stats_five_t_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 		}
 	};
 
+	// The stored values correspond to the reverse flow direction.
+	// Save the stored old residue as the reverse value (res_1) and update the current residue (res_0).
 	RegisterAction<res_current, _, bit<32>>(reg_five_t_res) ract_res_update = {
 		void apply(inout res_current res, out bit<32> result) {
 			result = res.res_0_old;
@@ -720,17 +726,27 @@ control c_stats_five_t_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 		// Additionally, we also calculate the mean for the squared sum values.
 		mean_0.apply();
 
-		// SR - Residue calculation.
+		// Residue calculation.
+
+		// Calculate the residue value for the current flow.
 		res_0_calc();
+		// Check if the stored residue values correspond to the current flow direction.
 		res_check();
+		// Update the stored residue values corresponding to both flow directions, as required, based on the previous check.
 		res_struct_update.apply();
 
-		// Sum of redidual products calculation.
+		// Residual product calculation.
 		res_prod.apply();
 
+		// Sum of residual products calculation (64 bit value).
+
+		// Sum of residual products - [31:0].
 		sum_res_prod_lo();
+		// Inverse value of the residual product, needed for the carry calculation.
 		res_prod_lo_inv = ~ig_md.stats_five_t.res_prod[31:0];
+		// Obtain the carry value, if it exists. Apply the current decay, if needed.
 		sum_res_prod_get_carry.apply();
+		// Sum of residual products - [63:32].
 		sum_res_prod_hi();
 
 		if (ig_md.meta.pkt_cnt_global % SAMPLING != 0) {
