@@ -32,8 +32,6 @@ control SwitchIngress_a(
     Register<bit<32>, _>(1)     reg_pkt_cnt_global;     // Global packet counter.
     Register<bit<32>, _>(1)     reg_pkt_len_squared;    // Squared packet length.
 
-    bit<1> recirculation_flag = 0;
-
     RegisterAction<decay_cntr, _, bit<16>>(reg_decay_cntr) ract_decay_cntr_check = {
         void apply(inout decay_cntr decay, out bit<16> result) {
             if (decay.cur_pkt < SAMPLING) {
@@ -148,17 +146,13 @@ control SwitchIngress_a(
             // Squared packet len calculation.
             pkt_len_squared_calc();
 
-            if (ig_md.meta.pkt_cnt_global % SAMPLING == 0) {
-                recirculation_flag = 1;
-            }
-
             // Calculate stats.
             stats_ip_src_a.apply(hdr, ig_md);
             stats_mac_ip_src_a.apply(hdr, ig_md);
             stats_ip_a.apply(hdr, ig_md);
             stats_five_t_a.apply(hdr, ig_md);
 
-            if (recirculation_flag == 1) {
+            if (ig_md.meta.pkt_cnt_global % SAMPLING == 0) {
                 fwd_recirculation.apply();
                 set_peregrine_mac_ip_src_a();
                 set_peregrine_ip_a();
