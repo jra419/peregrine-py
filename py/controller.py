@@ -8,6 +8,7 @@ import argparse
 import json
 import random
 import time
+from pathlib import Path
 # add BF Python to search path
 try:
     import bfrt_grpc.client as gc
@@ -772,11 +773,14 @@ if __name__ == "__main__":
     argparser.add_argument('--grpc_server', type=str, default='localhost', help='GRPC server name/address')
     argparser.add_argument('--grpc_port', type=int, default=50052, help='GRPC server port')
     argparser.add_argument('--program', type=str, default='peregrine', help='P4 program name')
-    argparser.add_argument('--topology', type=str, default='topology.json', help='Topology')
+    argparser.add_argument('--topology', type=str, default=str(Path(__file__).parents[0])+'/topology.json', help='Topology')
     argparser.add_argument('--pcap', type=str, help='Pcap file path')
     argparser.add_argument('--labels', type=str, help='Trace labels path')
     argparser.add_argument('--sampling', type=int, help='Execution phase sampling rate')
     argparser.add_argument('--execution', type=str, help='Execution phase location (cp/dp)')
+    argparser.add_argument('--fm', type=str, default=None, help='Feature map path')
+    argparser.add_argument('--el', type=str, default=None, help='Ensemble layer path')
+    argparser.add_argument('--ol', type=str, default=None, help='Output layer path')
     argparser.add_argument('--attack', type=str, help='Attack of the current trace')
     args = argparser.parse_args()
 
@@ -795,7 +799,8 @@ if __name__ == "__main__":
 
     # Call function to run the packet processing pipeline.
     # Encompasses both training phase + execution phase.
-    pipeline_out = pkt_pipeline(cur_eg_veth, args.pcap, args.labels, args.sampling, args.execution)
+    pipeline_out = pkt_pipeline(cur_eg_veth, args.pcap, args.labels, args.sampling, args.execution,
+                                args.fm, args.el, args.ol, args.attack)
 
     stop = time.time()
 

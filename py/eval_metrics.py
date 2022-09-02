@@ -14,7 +14,7 @@ def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, fm_grac
                  exec_phase, attack, sampling):
     outdir = str(Path(__file__).parents[0]) + '/eval/' + exec_phase
     if not os.path.exists(str(Path(__file__).parents[0]) + '/eval'):
-        os.mkdir(outdir)
+        os.makedirs(outdir, exist_ok=True)
     outpath_peregrine = os.path.join(outdir, attack + '-' + str(sampling) + '-rmse-' + ts_datetime + '.csv')
     outpath_cur_stats_global = os.path.join(outdir, attack + '-' + str(sampling) + '-stats-' + ts_datetime + '.csv')
 
@@ -109,7 +109,7 @@ def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, fm_grac
     print('EER sanity: ' + str(eer_sanity))
 
     # Write the eval to a txt.
-    f = open('eval/' + exec_phase + '/' + attack + '-' + str(sampling) + '-metrics-' + ts_datetime + '.txt', 'a+')
+    f = open(outdir + '/' + attack + '-' + str(sampling) + '-metrics-' + ts_datetime + '.txt', 'a+')
     f.write('Threshold: ' + str(threshold) + '\n')
     f.write('TP: ' + str(TP) + '\n')
     f.write('TN: ' + str(TN) + '\n')
@@ -146,4 +146,4 @@ def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, fm_grac
     plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3))
     plt.subplots_adjust(bottom=0.25)
     plt.colorbar()
-    plt.savefig('eval/' + exec_phase + '/' + attack + '-' + str(sampling) + '-' + ts_datetime + '.png')
+    plt.savefig(outdir + '/' + attack + '-' + str(sampling) + '-' + ts_datetime + '.png')

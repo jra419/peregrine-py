@@ -2,13 +2,13 @@ import pandas as pd
 from scapy.all import sniff, bind_layers, TCP, UDP, Ether, IP, split_layers
 from peregrine_header import PeregrineHdr
 from Peregrine import Peregrine
-from training import Training
+from stats_calc import StatsCalc
 import itertools
 
 # KitNET parameters
 max_ae = 10                 # Maximum size for any autoencoder in the ensemble layer.
-fm_grace = 100000           # Number of instances to learn the feature mapping.
-ad_grace = 900000           # Number of instances used to train the anomaly detector.
+fm_grace = 1000           # Number of instances to learn the feature mapping.
+ad_grace = 9000           # Number of instances used to train the anomaly detector.
 lambdas = 4                 # Number of different decay values in the data plane.
 learning_rate = 0.1
 hidden_ratio = 0.75
@@ -79,16 +79,19 @@ def pkt_callback(pkt):
         cur_stats.insert(0, pkt_header)
 
 
-def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate, exec_phase):
+def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate, exec_phase,
+                 feature_map, ensemble_layer, output_layer, attack):
 
     global cur_stats
     global threshold
     global rmse_list
     global pkt_header
     global pkt_cnt_global
+    train_skip = False
 
     # Build Peregrine.
-    peregrine = Peregrine(max_ae, fm_grace, ad_grace, learning_rate, hidden_ratio, lambdas, exec_phase)
+    peregrine = Peregrine(max_ae, fm_grace, ad_grace, learning_rate, hidden_ratio, lambdas,
+                          exec_phase, feature_map, ensemble_layer, output_layer, attack)
 
     # Read the csv containing the ground truth labels.
     trace_labels = pd.read_csv(trace_labels_path, header=None)
@@ -98,10 +101,13 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate, exec_
         bind_layers(Ether, PeregrineHdr, type=0x0800)
         bind_layers(PeregrineHdr, IP)
 
-    # Build the training phase feature extractor.
-    peregrine_train = Training(pcap_path, sampling_rate, fm_grace+ad_grace)
+    if feature_map is not None and ensemble_layer is not None and output_layer is not None:
+        train_skip = True
 
-    trace_size = peregrine_train.trace_size()
+    # Initialize the feature extraction and calculation of statistics class.
+    peregrine_stats = StatsCalc(pcap_path, sampling_rate, fm_grace+ad_grace, train_skip)
+
+    trace_size = peregrine_stats.trace_size()
 
     # Process the trace, packet by packet.
     while True:
@@ -109,26 +115,26 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate, exec_
         train_flag = 0
 
         # Training phase.
-        if len(rmse_list) < fm_grace + ad_grace:
-            peregrine_train.feature_extract()
-            cur_stats = peregrine_train.process('training')
+        if len(rmse_list) < fm_grace + ad_grace and train_skip == False:
+            peregrine_stats.feature_extract()
+            cur_stats = peregrine_stats.process('training')
             train_flag = 1
 
-            if (len(rmse_list) % 10000 == 0):
+            if (len(rmse_list) % 1000 == 0):
                 print('RMSEs: ', len(rmse_list))
 
         # Execution phase.
         else:
-            # Execution - data plane
+            # Execution:  data plane
             if exec_phase == 'dp':
                 # Callback function to retrieve the packet's custom header.
                 sniff(iface=cur_eg_veth, count=1, prn=pkt_callback, timeout=120)
 
-            # Execution - control plane
+            # Execution:  control plane
             else:
                 pkt_cnt_global += 1
-                peregrine_train.feature_extract()
-                cur_stats = peregrine_train.process('execution')
+                peregrine_stats.feature_extract()
+                cur_stats = peregrine_stats.process('execution')
 
         # If any statistics were obtained, send them to the ML pipeline.
         if cur_stats != 0:

@@ -17,14 +17,17 @@ sqrt = MathUnit(shift=-1, invert=False, scale=-7,
                 lookup=lookup_sqrt)
 
 
-class Training:
-    def __init__(self, file_path, sampling_rate, train_pkts):
+class StatsCalc:
+    def __init__(self, file_path, sampling_rate, train_pkts, train_skip):
         self.file_path = file_path              # Path of the trace file / csv.
         self.df_csv = None                      # Dataframe for the trace csv.
         self.cur_pkt = None                     # Stats of the packet being processed.
         self.sampling_rate = sampling_rate      # Sampling rate during the execution phase.
         self.train_pkts = train_pkts            # Number of packets in the training phase.
-        self.global_pkt_index = 0
+        if train_skip:
+            self.global_pkt_index = train_pkts
+        else:
+            self.global_pkt_index = 0
         self.phase_pkt_index = 0                # Packet index for the current phase.
         self.sampl_pkt_index = 0                # Packet index to track the sampling rate (based on the tna impl).
 
@@ -66,7 +69,10 @@ class Training:
         file_path = self.file_path.split('.')[0]
         file_type = self.file_path.split('.')[-1]
 
-        if not os.path.isfile(file_path + '.csv') and file_type == 'pcap':
+        # if not os.path.isfile(file_path + '.csv') and file_type == 'pcap':
+        print(file_path)
+        print(file_type)
+        if not os.path.isfile(file_path + '.csv'):
             self.parse_pcap(self.file_path)
 
         self.df_csv = pd.read_csv(file_path + '.csv')

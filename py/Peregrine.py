@@ -25,13 +25,13 @@ import numpy as np
 
 
 class Peregrine:
-    def __init__(self, max_autoencoder_size=10,
-                 fm_grace_period=None, ad_grace_period=10000,
-                 learning_rate=0.1, hidden_ratio=0.75, lambdas=4, exec_phase='dp'):
+    def __init__(self, max_autoencoder_size=10, fm_grace_period=None, ad_grace_period=10000,
+                 learning_rate=0.1, hidden_ratio=0.75, lambdas=4, exec_phase='dp',
+                 feature_map=None, ensemble_layer=None, output_layer=None, attack=''):
 
         self.AnomDetector = KitNET(80, max_autoencoder_size, fm_grace_period,
-                                   ad_grace_period, learning_rate,
-                                   hidden_ratio)
+                                   ad_grace_period, learning_rate, hidden_ratio,
+                                   feature_map, ensemble_layer, output_layer, attack)
 
         self.decay_to_pos = {0: 0,
                              8192: 1,
