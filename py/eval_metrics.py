@@ -85,10 +85,10 @@ def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, fm_grac
     except ZeroDivisionError:
         f1_score = 0
 
-    roc_curve_fpr, roc_curve_tpr, roc_curve_thres = metrics.roc_curve(df_peregrine.label, df_peregrine.rmse)
+    roc_curve_fpr, roc_curve_tpr, roc_curve_thres = metrics.roc_curve(df_peregrine_cut.label, df_peregrine_cut.rmse)
     roc_curve_fnr = 1 - roc_curve_tpr
 
-    auc = metrics.roc_auc_score(df_peregrine.label, df_peregrine.rmse)
+    auc = metrics.roc_auc_score(df_peregrine_cut.label, df_peregrine_cut.rmse)
     eer = roc_curve_fpr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
     eer_sanity = roc_curve_fnr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
 
