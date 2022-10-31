@@ -67,11 +67,7 @@ class StatsCalc:
     def __check_csv__(self):
         # Check the file type.
         file_path = self.file_path.split('.')[0]
-        file_type = self.file_path.split('.')[-1]
 
-        # if not os.path.isfile(file_path + '.csv') and file_type == 'pcap':
-        print(file_path)
-        print(file_type)
         if not os.path.isfile(file_path + '.csv'):
             self.parse_pcap(self.file_path)
 
@@ -138,7 +134,7 @@ class StatsCalc:
 
         self.global_pkt_index = self.global_pkt_index + 1
         self.phase_pkt_index = self.phase_pkt_index + 1
-        self.cur_pkt = [pkt_len, timestamp, mac_src, mac_dst, ip_src, ip_dst,
+        self.cur_pkt = [pkt_len, timestamp, mac_dst, mac_src, ip_src, ip_dst,
                         str(ip_proto), str(port_src), str(port_dst)]
 
     def process(self, phase):
@@ -169,7 +165,7 @@ class StatsCalc:
         # CRC16, sliced to 13 bits (0-8191).
         # To each hash value we then sum 8192 * (self.decay_cntr - 1)
         # in order to obtain the current position based on the decay counter value.
-        mac_src_bytes = binascii.unhexlify(self.cur_pkt[2].replace(':', ''))
+        mac_src_bytes = binascii.unhexlify(self.cur_pkt[3].replace(':', ''))
         ip_src_bytes = socket.inet_aton(self.cur_pkt[4])
         ip_dst_bytes = socket.inet_aton(self.cur_pkt[5])
         ip_proto_bytes = struct.pack("!B", int(self.cur_pkt[6]))
@@ -395,7 +391,7 @@ class StatsCalc:
                      five_t_pkt_cnt_0, five_t_mean_0, five_t_std_dev_0,
                      five_t_magnitude, five_t_radius, five_t_cov, five_t_pcc]
 
-        self.cur_pkt = self.cur_pkt[4:]
+        self.cur_pkt = self.cur_pkt[3:]
 
         return [self.cur_pkt, cur_stats]
 

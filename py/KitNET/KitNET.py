@@ -68,7 +68,7 @@ class KitNET:
     # Note: KitNET automatically performs 0-1 normalization on all attributes.
     def process(self, x):
         # If both the FM and AD are in execute-mode
-        if self.n_trained > self.FM_grace_period + self.AD_grace_period:
+        if self.n_trained >= self.FM_grace_period + self.AD_grace_period:
             return self.execute(x)
         else:
             return self.train(x)
@@ -76,11 +76,11 @@ class KitNET:
     # force train KitNET on x
     # returns the anomaly score of x during training (do not use for alerting)
     def train(self, x):
-        if self.n_trained <= self.FM_grace_period and self.v is None:
+        if self.n_trained < self.FM_grace_period and self.v is None:
             # If the FM is in train-mode, and the user has not supplied a feature mapping
             # update the incremental correlation matrix
             self.FM.update(x)
-            if self.n_trained == self.FM_grace_period:  # If the feature mapping should be instantiated
+            if self.n_trained == self.FM_grace_period - 1:  # If the feature mapping should be instantiated
                 self.v = self.FM.cluster(self.m)
                 self.__createAD__()
                 print("The Feature-Mapper found a mapping: " + str(self.n) + " features to " + str(
@@ -96,7 +96,8 @@ class KitNET:
                 xi = x[self.v[a]]
                 S_l1[a] = self.ensembleLayer[a].train(xi)
             # OutputLayer
-            if self.n_trained == self.AD_grace_period + self.FM_grace_period:
+            output = self.outputLayer.train(S_l1)
+            if self.n_trained == self.AD_grace_period + self.FM_grace_period - 1:
                 print("Feature-Mapper: execute-mode, Anomaly-Detector: execute-mode")
 
                 ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
@@ -110,7 +111,7 @@ class KitNET:
                 with open(outdir + '/' + self.attack + '-' + ts_datetime + '-ol' + '.txt', 'wb') as f_ol:
                     pickle.dump(self.outputLayer, f_ol)
             self.n_trained += 1
-            return self.outputLayer.train(S_l1)
+            return output
 
     # force execute KitNET on x
     def execute(self, x):

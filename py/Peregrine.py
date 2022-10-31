@@ -33,37 +33,50 @@ class Peregrine:
                                    ad_grace_period, learning_rate, hidden_ratio,
                                    feature_map, ensemble_layer, output_layer, attack)
 
-        self.decay_to_pos = {0: 0,
-                             8192: 1,
-                             16384: 2,
-                             24576: 3}
+        self.decay_to_pos = {0: 0, 1: 0, 2: 1, 3: 2, 4: 3,
+                             8192: 1, 16384: 2, 24576: 3}
 
         self.exec_phase = exec_phase
+        self.lambdas = lambdas
 
-        self.stats_ip_src = np.zeros((3*lambdas))
-        self.stats_mac_src_ip_src = np.zeros((3*lambdas))
-        self.stats_ip = np.zeros((7*lambdas))
-        self.stats_five_t = np.zeros((7*lambdas))
+        self.stats_mac_ip_src = {}
+        self.stats_ip_src = {}
+        self.stats_ip = {}
+        self.stats_five_t = {}
 
     def proc_next_packet(self, cur_stats, train_flag):
 
-        if self.exec_phase == 'cp':
-            cur_decay_pos = self.decay_to_pos[cur_stats[0] * 8192 - 8192]
-        else:
-            if train_flag:
-                cur_decay_pos = self.decay_to_pos[cur_stats[0] * 8192 - 8192]
-            else:
-                cur_decay_pos = self.decay_to_pos[cur_stats[0]]
+        cur_decay_pos = self.decay_to_pos[cur_stats[6]]
 
-        self.stats_mac_src_ip_src[(3*cur_decay_pos):(3*cur_decay_pos+3)] = cur_stats[1:4]
-        self.stats_ip_src[(3*cur_decay_pos):(3*cur_decay_pos+3)] = cur_stats[4:7]
-        self.stats_ip[(7*cur_decay_pos):(7*cur_decay_pos+7)] = cur_stats[7:14]
-        self.stats_five_t[(7*cur_decay_pos):(7*cur_decay_pos+7)] = cur_stats[14:]
+        hdr_mac_ip_src = cur_stats[0] + cur_stats[1]
+        hdr_ip_src = cur_stats[1]
+        hdr_ip = cur_stats[1] + cur_stats[2]
+        hdr_five_t = cur_stats[1] + cur_stats[2] + cur_stats[3] + cur_stats[4] + cur_stats[5]
 
-        processed_stats = np.concatenate((self.stats_mac_src_ip_src,
-                                          self.stats_ip_src,
-                                          self.stats_ip,
-                                          self.stats_five_t))
+        if hdr_mac_ip_src not in self.stats_mac_ip_src:
+            self.stats_mac_ip_src[hdr_mac_ip_src] = np.zeros(3 * self.lambdas)
+        self.stats_mac_ip_src[hdr_mac_ip_src][(3*cur_decay_pos):(3*cur_decay_pos+3)] = \
+            cur_stats[7:10]
+
+        if hdr_ip_src not in self.stats_ip_src:
+            self.stats_ip_src[hdr_ip_src] = np.zeros(3 * self.lambdas)
+        self.stats_ip_src[hdr_ip_src][(3*cur_decay_pos):(3*cur_decay_pos+3)] = \
+            cur_stats[10:13]
+
+        if hdr_ip not in self.stats_ip:
+            self.stats_ip[hdr_ip] = np.zeros(7 * self.lambdas)
+        self.stats_ip[hdr_ip][(7*cur_decay_pos):(7*cur_decay_pos+7)] = \
+            cur_stats[13:20]
+
+        if hdr_five_t not in self.stats_five_t:
+            self.stats_five_t[hdr_five_t] = np.zeros(7 * self.lambdas)
+        self.stats_five_t[hdr_five_t][(7*cur_decay_pos):(7*cur_decay_pos+7)] = \
+            cur_stats[20:]
+
+        processed_stats = np.concatenate((self.stats_mac_ip_src[hdr_mac_ip_src],
+                                          self.stats_ip_src[hdr_ip_src],
+                                          self.stats_ip[hdr_ip],
+                                          self.stats_five_t[hdr_five_t]))
 
         # Convert any existing NaNs to 0.
         processed_stats[np.isnan(processed_stats)] = 0
@@ -71,3 +84,10 @@ class Peregrine:
         # process KitNET
         # will train during the grace periods, then execute on all the rest.
         return self.AnomDetector.process(processed_stats)
+
+    def reset_stats(self):
+
+        self.stats_mac_ip_src = {}
+        self.stats_ip_src = {}
+        self.stats_ip = {}
+        self.stats_five_t = {}

@@ -773,7 +773,7 @@ if __name__ == "__main__":
     argparser.add_argument('--grpc_server', type=str, default='localhost', help='GRPC server name/address')
     argparser.add_argument('--grpc_port', type=int, default=50052, help='GRPC server port')
     argparser.add_argument('--program', type=str, default='peregrine', help='P4 program name')
-    argparser.add_argument('--topology', type=str, default=str(Path(__file__).parents[0])+'/topology.json', help='Topology')
+    argparser.add_argument('--topo', type=str, default=str(Path(__file__).parents[0])+'/topology.json', help='Topology')
     argparser.add_argument('--pcap', type=str, help='Pcap file path')
     argparser.add_argument('--labels', type=str, help='Trace labels path')
     argparser.add_argument('--sampling', type=int, help='Execution phase sampling rate')
@@ -809,8 +809,8 @@ if __name__ == "__main__":
 
     # Call function to perform eval/csv, also based on kitsune's main.
     # Args are rmse_list [0], cur_stats_global [1], peregrine_eval[2], threshold [3], fm_grace [4], ad_grace [5].
-    eval_metrics(pipeline_out[0], pipeline_out[1], pipeline_out[2],
-                 pipeline_out[3], pipeline_out[4], pipeline_out[5],
+    eval_metrics(pipeline_out[0], pipeline_out[1], pipeline_out[2], pipeline_out[3],
+                 pipeline_out[4], pipeline_out[5], pipeline_out[6],
                  args.execution, args.attack, args.sampling)
 
     # exit (bug workaround)
