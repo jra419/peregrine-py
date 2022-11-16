@@ -257,7 +257,7 @@ class StatsCalc:
 
         # Update the counters for flow A->B / Read the counters for flow B->A.
         # Training phase: both are performed for all flows.
-        if phase == 'training':
+        if phase == 'training' or self.sampling_rate == 1:
             self.stats_ip[self.hash_ip_0][self.decay_cntr][3] = ip_pkt_cnt_0
             self.stats_ip[self.hash_ip_0][self.decay_cntr][4] = ip_pkt_len_sqr
             self.stats_ip[self.hash_ip_0][self.decay_cntr][5] = ip_mean_0
@@ -312,7 +312,7 @@ class StatsCalc:
 
         # Update the counters for flow A->B / Read the counters for flow B->A.
         # Training phase: both are performed for all flows.
-        if phase == 'training':
+        if phase == 'training' or self.sampling_rate == 1:
             self.stats_five_t[self.hash_five_t_0][self.decay_cntr][3] = five_t_pkt_cnt_0
             self.stats_five_t[self.hash_five_t_0][self.decay_cntr][4] = five_t_pkt_len_sqr
             self.stats_five_t[self.hash_five_t_0][self.decay_cntr][5] = five_t_mean_0

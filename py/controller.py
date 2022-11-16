@@ -10,22 +10,6 @@ import random
 import time
 from pathlib import Path
 # add BF Python to search path
-try:
-    import bfrt_grpc.client as gc
-except ImportError:
-    sys.path.append(os.environ['SDE_INSTALL'] + '/lib/python3.7/site-packages/tofino')
-    import bfrt_grpc.client as gc
-from ports import Ports
-from peregrine_tables import MacIpSrcDecayCheck, IpSrcDecayCheck, IpDecayCheck, FiveTDecayCheck
-from peregrine_tables import FwdRecirculation_a, FwdRecirculation_b, Fwd_a, Fwd_b
-from peregrine_tables import MacIpSrcMean, IpSrcMean
-from peregrine_tables import IpMean0, IpResStructUpdate, IpResProd, IpSumResProdGetCarry
-from peregrine_tables import IpPktCnt1Access, IpSs1Access, IpMean1Access
-from peregrine_tables import IpMeanSs0, IpMeanSs1, IpVariance0Abs, IpVariance1Abs, IpCov, IpStdDevProd, IpPcc
-from peregrine_tables import FiveTMean0, FiveTResStructUpdate, FiveTResProd, FiveTSumResProdGetCarry
-from peregrine_tables import FiveTPktCnt1Access, FiveTSs1Access, FiveTMean1Access
-from peregrine_tables import FiveTMeanSs0, FiveTMeanSs1, FiveTVariance0Abs, FiveTVariance1Abs
-from peregrine_tables import FiveTCov, FiveTStdDevProd, FiveTPcc
 import pipeline
 from pipeline import pkt_pipeline
 from eval_metrics import eval_metrics
@@ -777,18 +761,37 @@ if __name__ == "__main__":
     argparser.add_argument('--pcap', type=str, help='Pcap file path')
     argparser.add_argument('--labels', type=str, help='Trace labels path')
     argparser.add_argument('--sampling', type=int, help='Execution phase sampling rate')
-    argparser.add_argument('--execution', type=str, help='Execution phase location (cp/dp)')
-    argparser.add_argument('--fm', type=str, default=None, help='Feature map path')
-    argparser.add_argument('--el', type=str, default=None, help='Ensemble layer path')
-    argparser.add_argument('--ol', type=str, default=None, help='Output layer path')
-    argparser.add_argument('--attack', type=str, help='Attack of the current trace')
+    argparser.add_argument('--exec_phase', type=str, help='Execution phase location (cp/dp)')
+    argparser.add_argument('--fm_grace', type=int, default=100000, help='FM grace period.')
+    argparser.add_argument('--ad_grace', type=int, default=900000, help='AD grace period.')
+    argparser.add_argument('--max_ae', type=int, default=10, help='KitNET: m value')
+    argparser.add_argument('--fm_model', type=str, default=None, help='Prev. trained FM model path')
+    argparser.add_argument('--el_model', type=str, default=None, help='Prev. trained EL path')
+    argparser.add_argument('--ol_model', type=str, default=None, help='Prev. trained OL path')
+    argparser.add_argument('--attack', type=str, help='Current trace attack name')
     args = argparser.parse_args()
 
     # configure logging
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(args.program)
 
-    if args.execution == 'dp':
+    if args.exec_phase == 'dp':
+        try:
+            import bfrt_grpc.client as gc
+        except ImportError:
+            sys.path.append(os.environ['SDE_INSTALL'] + '/lib/python3.7/site-packages/tofino')
+            import bfrt_grpc.client as gc
+        from ports import Ports
+        from peregrine_tables import MacIpSrcDecayCheck, IpSrcDecayCheck, IpDecayCheck, FiveTDecayCheck
+        from peregrine_tables import FwdRecirculation_a, FwdRecirculation_b, Fwd_a, Fwd_b
+        from peregrine_tables import MacIpSrcMean, IpSrcMean
+        from peregrine_tables import IpMean0, IpResStructUpdate, IpResProd, IpSumResProdGetCarry
+        from peregrine_tables import IpPktCnt1Access, IpSs1Access, IpMean1Access
+        from peregrine_tables import IpMeanSs0, IpMeanSs1, IpVariance0Abs, IpVariance1Abs, IpCov, IpStdDevProd, IpPcc
+        from peregrine_tables import FiveTMean0, FiveTResStructUpdate, FiveTResProd, FiveTSumResProdGetCarry
+        from peregrine_tables import FiveTPktCnt1Access, FiveTSs1Access, FiveTMean1Access
+        from peregrine_tables import FiveTMeanSs0, FiveTMeanSs1, FiveTVariance0Abs, FiveTVariance1Abs
+        from peregrine_tables import FiveTCov, FiveTStdDevProd, FiveTPcc
         topology = get_topology(args.topology)
         setup_grpc_client(args.grpc_server, args.grpc_port, args.program)
         cur_eg_veth = configure_switch(args.program, topology)
@@ -799,8 +802,9 @@ if __name__ == "__main__":
 
     # Call function to run the packet processing pipeline.
     # Encompasses both training phase + execution phase.
-    pipeline_out = pkt_pipeline(cur_eg_veth, args.pcap, args.labels, args.sampling, args.execution,
-                                args.fm, args.el, args.ol, args.attack)
+    pipeline_out = pkt_pipeline(cur_eg_veth, args.pcap, args.labels, args.sampling,
+                                args.exec_phase, args.fm_grace, args.ad_grace, args.max_ae,
+                                args.fm_model, args.el_model, args.ol_model, args.attack)
 
     stop = time.time()
 
@@ -808,10 +812,10 @@ if __name__ == "__main__":
     print('Threshold: ', pipeline.threshold)
 
     # Call function to perform eval/csv, also based on kitsune's main.
-    # Args are rmse_list [0], cur_stats_global [1], peregrine_eval[2], threshold [3], fm_grace [4], ad_grace [5].
+    # pipeline_out values are rmse_list [0], cur_stats_global [1], peregrine_eval[2], threshold [3], train_skip flag [4].
     eval_metrics(pipeline_out[0], pipeline_out[1], pipeline_out[2], pipeline_out[3],
-                 pipeline_out[4], pipeline_out[5], pipeline_out[6],
-                 args.execution, args.attack, args.sampling)
+                 pipeline_out[4], args.fm_grace, args.ad_grace, args.exec_phase,
+                 args.attack, args.sampling)
 
     # exit (bug workaround)
     logger.info("Exiting!")

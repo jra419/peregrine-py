@@ -86,6 +86,7 @@ class Peregrine:
         return self.AnomDetector.process(processed_stats)
 
     def reset_stats(self):
+        print('Reset stats')
 
         self.stats_mac_ip_src = {}
         self.stats_ip_src = {}

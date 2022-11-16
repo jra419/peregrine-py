@@ -6,12 +6,11 @@ from stats_calc import StatsCalc
 import itertools
 
 # KitNET parameters
-max_ae = 10                 # Maximum size for any autoencoder in the ensemble layer.
-fm_grace = 100000           # Number of instances to learn the feature mapping.
-ad_grace = 900000           # Number of instances used to train the anomaly detector.
-lambdas = 4                 # Number of different decay values in the data plane.
+
 learning_rate = 0.1
 hidden_ratio = 0.75
+# Number of different decay values in the data plane.
+lambdas = 4
 
 # List containing the custom header statistics from the last received packet.
 cur_stats = []
@@ -63,10 +62,7 @@ def pkt_callback(pkt):
                      pkt[PeregrineHdr].five_t_radius,
                      pkt[PeregrineHdr].five_t_sum_res_prod_cov,
                      pkt[PeregrineHdr].five_t_pcc]]
-        pkt_header = [pkt[Ether].src,
-                      pkt[IP].src,
-                      pkt[IP].dst,
-                      pkt[IP].proto]
+        pkt_header = [pkt[Ether].src, pkt[IP].src, pkt[IP].dst, pkt[IP].proto]
         if UDP in pkt:
             pkt_header.append(str(pkt[UDP].sport))
             pkt_header.append(str(pkt[UDP].dport))
@@ -80,8 +76,9 @@ def pkt_callback(pkt):
         cur_stats.insert(0, pkt_header)
 
 
-def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate, exec_phase,
-                 feature_map, ensemble_layer, output_layer, attack):
+def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
+                 exec_phase, fm_grace, ad_grace, max_ae, feature_map,
+                 ensemble_layer, output_layer, attack):
 
     global cur_stats
     global threshold
@@ -115,14 +112,14 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate, exec_
         cur_stats = 0
         train_flag = 0
 
-        if len(rmse_list) % 1000 == 0 and train_skip is False:
+        if len(rmse_list) % 1000 == 0 and not train_skip:
             print('RMSEs: ', len(rmse_list))
         else:
-            if pkt_cnt_global % 1000 == 0 and train_skip is True:
+            if pkt_cnt_global % 1000 == 0 and train_skip:
                 print('RMSEs: ', pkt_cnt_global)
 
         # Training phase.
-        if len(rmse_list) < fm_grace + ad_grace and train_skip is False:
+        if len(rmse_list) < fm_grace + ad_grace and not train_skip:
             peregrine_stats.feature_extract()
             cur_stats = peregrine_stats.process('training')
             train_flag = 1
@@ -157,14 +154,19 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate, exec_
             # Call function with the content of kitsune's main (before the eval/csv part).
             rmse = peregrine.proc_next_packet(cur_stats, train_flag)
             rmse_list.append(rmse)
-            peregrine_eval.append([cur_stats[0], cur_stats[1], cur_stats[2],
-                                   cur_stats[3], cur_stats[4], cur_stats[5],
-                                   rmse,
-                                   trace_labels.iloc[fm_grace + ad_grace + pkt_cnt_global - 1][0]])
+            try:
+                peregrine_eval.append([cur_stats[0], cur_stats[1], cur_stats[2],
+                                    cur_stats[3], cur_stats[4], cur_stats[5],
+                                    rmse,
+                                    trace_labels.iloc[fm_grace + ad_grace + pkt_cnt_global - 1][0]])
+            except:
+                print(trace_labels.shape[0])
+                print(pkt_cnt_global)
+                print(fm_grace + ad_grace + pkt_cnt_global -1)
 
             # At the end of the training phase, store the highest rmse value as the threshold.
             # Also, reset the stored stat values.
-            if len(rmse_list) == fm_grace + ad_grace:
+            if not train_skip and len(rmse_list) == fm_grace + ad_grace:
                 threshold = max(rmse_list, key=float)
                 peregrine.reset_stats()
                 print('Starting execution phase...')
@@ -176,4 +178,4 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate, exec_
             print('TIMEOUT.')
             break
 
-    return [rmse_list, cur_stats_global, peregrine_eval, threshold, fm_grace, ad_grace, train_skip]
+    return [rmse_list, cur_stats_global, peregrine_eval, threshold, train_skip]
