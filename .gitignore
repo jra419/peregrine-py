@@ -1,3 +1,5 @@
 # Specify filepatterns you want git to ignore.
 *.pyc
 *.pcap
+py/KitNET/models/
+py/eval/
