@@ -78,7 +78,7 @@ def pkt_callback(pkt):
 
 def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
                  exec_phase, fm_grace, ad_grace, max_ae, feature_map,
-                 ensemble_layer, output_layer, attack):
+                 ensemble_layer, output_layer, train_stats, attack):
 
     global cur_stats
     global threshold
@@ -86,10 +86,6 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
     global pkt_header
     global pkt_cnt_global
     train_skip = False
-
-    # Build Peregrine.
-    peregrine = Peregrine(max_ae, fm_grace, ad_grace, learning_rate, hidden_ratio, lambdas,
-                          exec_phase, feature_map, ensemble_layer, output_layer, attack)
 
     # Read the csv containing the ground truth labels.
     trace_labels = pd.read_csv(trace_labels_path, header=None)
@@ -99,8 +95,13 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
         bind_layers(Ether, PeregrineHdr, type=0x0800)
         bind_layers(PeregrineHdr, IP)
 
-    if feature_map is not None and ensemble_layer is not None and output_layer is not None:
+    if feature_map is not None and ensemble_layer is not None and output_layer is not None and train_stats is not None:
         train_skip = True
+
+    # Build Peregrine.
+    peregrine = Peregrine(max_ae, fm_grace, ad_grace, learning_rate, hidden_ratio, lambdas,
+                          exec_phase, feature_map, ensemble_layer, output_layer, train_stats,
+                          attack, train_skip)
 
     # Initialize the feature extraction and calculation of statistics class.
     peregrine_stats = StatsCalc(pcap_path, sampling_rate, fm_grace+ad_grace, train_skip)
@@ -110,19 +111,20 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
     # Process the trace, packet by packet.
     while True:
         cur_stats = 0
-        train_flag = 0
 
-        if len(rmse_list) % 1000 == 0 and not train_skip:
-            print('RMSEs: ', len(rmse_list))
+        if not train_skip:
+            if len(rmse_list) % 1000 == 0 and len(rmse_list) < fm_grace + ad_grace:
+                print('Processed packets: ', len(rmse_list))
+            elif pkt_cnt_global % 1000 == 0 and len(rmse_list) >= fm_grace + ad_grace:
+                print('Processed packets: ', fm_grace + ad_grace + pkt_cnt_global)
         else:
-            if pkt_cnt_global % 1000 == 0 and train_skip:
-                print('RMSEs: ', pkt_cnt_global)
+            if pkt_cnt_global % 1000 == 0:
+                print('Processed packets: ', fm_grace + ad_grace + pkt_cnt_global)
 
         # Training phase.
         if len(rmse_list) < fm_grace + ad_grace and not train_skip:
             peregrine_stats.feature_extract()
             cur_stats = peregrine_stats.process('training')
-            train_flag = 1
 
         # Execution phase.
         else:
@@ -152,23 +154,23 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
             cur_stats = list(itertools.chain(*cur_stats))
             cur_stats_global.append(cur_stats)
             # Call function with the content of kitsune's main (before the eval/csv part).
-            rmse = peregrine.proc_next_packet(cur_stats, train_flag)
+            rmse = peregrine.proc_next_packet(cur_stats)
             rmse_list.append(rmse)
             try:
                 peregrine_eval.append([cur_stats[0], cur_stats[1], cur_stats[2],
-                                    cur_stats[3], cur_stats[4], cur_stats[5],
-                                    rmse,
-                                    trace_labels.iloc[fm_grace + ad_grace + pkt_cnt_global - 1][0]])
-            except:
+                                       cur_stats[3], cur_stats[4], cur_stats[5],
+                                       rmse,
+                                       trace_labels.iloc[fm_grace + ad_grace + pkt_cnt_global - 1][0]])
+            except IndexError:
                 print(trace_labels.shape[0])
                 print(pkt_cnt_global)
-                print(fm_grace + ad_grace + pkt_cnt_global -1)
+                print(fm_grace + ad_grace + pkt_cnt_global - 1)
 
             # At the end of the training phase, store the highest rmse value as the threshold.
-            # Also, reset the stored stat values.
+            # Also, save the stored stat values.
             if not train_skip and len(rmse_list) == fm_grace + ad_grace:
                 threshold = max(rmse_list, key=float)
-                peregrine.reset_stats()
+                peregrine.save_stats()
                 print('Starting execution phase...')
 
             # Break when we reach the end of the trace file.

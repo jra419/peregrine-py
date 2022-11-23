@@ -1,5 +1,9 @@
+import os
 from KitNET.KitNET import KitNET
 import numpy as np
+import pickle
+from pathlib import Path
+from datetime import datetime
 
 # MIT License
 #
@@ -27,7 +31,8 @@ import numpy as np
 class Peregrine:
     def __init__(self, max_autoencoder_size=10, fm_grace_period=None, ad_grace_period=10000,
                  learning_rate=0.1, hidden_ratio=0.75, lambdas=4, exec_phase='dp',
-                 feature_map=None, ensemble_layer=None, output_layer=None, attack=''):
+                 feature_map=None, ensemble_layer=None, output_layer=None, train_stats=None,
+                 attack='', train_skip=False):
 
         self.AnomDetector = KitNET(80, max_autoencoder_size, fm_grace_period,
                                    ad_grace_period, learning_rate, hidden_ratio,
@@ -38,13 +43,24 @@ class Peregrine:
 
         self.exec_phase = exec_phase
         self.lambdas = lambdas
+        self.fm_grace = fm_grace_period
+        self.ad_grace = ad_grace_period
+        self.attack = attack
 
-        self.stats_mac_ip_src = {}
-        self.stats_ip_src = {}
-        self.stats_ip = {}
-        self.stats_five_t = {}
+        if train_skip:
+            with open(train_stats, 'rb') as f_stats:
+                stats = pickle.load(f_stats)
+                self.stats_mac_ip_src = stats[0]
+                self.stats_ip_src = stats[1]
+                self.stats_ip = stats[2]
+                self.stats_five_t = stats[3]
+        else:
+            self.stats_mac_ip_src = {}
+            self.stats_ip_src = {}
+            self.stats_ip = {}
+            self.stats_five_t = {}
 
-    def proc_next_packet(self, cur_stats, train_flag):
+    def proc_next_packet(self, cur_stats):
 
         cur_decay_pos = self.decay_to_pos[cur_stats[6]]
 
@@ -81,9 +97,27 @@ class Peregrine:
         # Convert any existing NaNs to 0.
         processed_stats[np.isnan(processed_stats)] = 0
 
-        # process KitNET
+        # process KitNET.
         # will train during the grace periods, then execute on all the rest.
         return self.AnomDetector.process(processed_stats)
+
+    def save_stats(self):
+
+        train_stats = [self.stats_mac_ip_src,
+                       self.stats_ip_src,
+                       self.stats_ip,
+                       self.stats_five_t]
+
+        print(train_stats)
+
+        ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
+        outdir = str(Path(__file__).parents[0]) + '/KitNET/models'
+
+        if not os.path.exists(str(Path(__file__).parents[0]) + '/KitNET/models'):
+            os.mkdir(outdir)
+
+        with open(outdir + '/' + self.attack + '-' + ts_datetime + '-train-stats' + '.txt', 'wb') as f_stats:
+            pickle.dump(train_stats, f_stats)
 
     def reset_stats(self):
         print('Reset stats')
