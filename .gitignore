@@ -3,3 +3,4 @@
 *.pcap
 py/KitNET/models/
 py/eval/
+runs/

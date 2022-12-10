@@ -758,7 +758,7 @@ if __name__ == "__main__":
     argparser.add_argument('--grpc_port', type=int, default=50052, help='GRPC server port')
     argparser.add_argument('--program', type=str, default='peregrine', help='P4 program name')
     argparser.add_argument('--topo', type=str, default=str(Path(__file__).parents[0])+'/topology.json', help='Topology')
-    argparser.add_argument('--pcap', type=str, help='Pcap file path')
+    argparser.add_argument('--trace', type=str, help='Pcap file path')
     argparser.add_argument('--labels', type=str, help='Trace labels path')
     argparser.add_argument('--sampling', type=int, help='Execution phase sampling rate')
     argparser.add_argument('--exec_phase', type=str, help='Execution phase location (cp/dp)')
@@ -803,7 +803,7 @@ if __name__ == "__main__":
 
     # Call function to run the packet processing pipeline.
     # Encompasses both training phase + execution phase.
-    pipeline_out = pkt_pipeline(cur_eg_veth, args.pcap, args.labels, args.sampling,
+    pipeline_out = pkt_pipeline(cur_eg_veth, args.trace, args.labels, args.sampling,
                                 args.exec_phase, args.fm_grace, args.ad_grace, args.max_ae,
                                 args.fm_model, args.el_model, args.ol_model, args.train_stats,
                                 args.attack)
@@ -814,10 +814,11 @@ if __name__ == "__main__":
     print('Threshold: ', pipeline.threshold)
 
     # Call function to perform eval/csv, also based on kitsune's main.
-    # pipeline_out: rmse_list [0], cur_stats_global [1], peregrine_eval[2], threshold [3], train_skip flag [4].
+    # pipeline_out: rmse_list [0], cur_stats_global [1], peregrine_eval[2],
+    # threshold [3], train_skip flag [4].
     eval_metrics(pipeline_out[0], pipeline_out[1], pipeline_out[2], pipeline_out[3],
                  pipeline_out[4], args.fm_grace, args.ad_grace, args.exec_phase,
-                 args.attack, args.sampling)
+                 args.attack, args.sampling, args.max_ae)
 
     # exit (bug workaround)
     logger.info("Exiting!")

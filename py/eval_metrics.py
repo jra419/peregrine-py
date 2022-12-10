@@ -11,12 +11,14 @@ ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
 
 
 def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, train_skip,
-                 fm_grace, ad_grace, exec_phase, attack, sampling):
+                 fm_grace, ad_grace, exec_phase, attack, sampling, max_ae):
     outdir = str(Path(__file__).parents[0]) + '/eval/' + exec_phase
     if not os.path.exists(str(Path(__file__).parents[0]) + '/eval'):
         os.makedirs(outdir, exist_ok=True)
-    outpath_peregrine = os.path.join(outdir, attack + '-' + str(sampling) + '-rmse-' + ts_datetime + '.csv')
-    outpath_cur_stats_global = os.path.join(outdir, attack + '-' + str(sampling) + '-stats-' + ts_datetime + '.csv')
+    outpath_peregrine = os.path.join(outdir, attack + '-m-' + str(max_ae) + '-'
+                                     + str(sampling) + '-rmse-' + ts_datetime + '.csv')
+    outpath_cur_stats_global = os.path.join(outdir, attack + '-m-' + str(max_ae) + '-'
+                                            + str(sampling) + '-stats-' + ts_datetime + '.csv')
 
     # Collect the global stats and save to a csv.
     df_cur_stats_global = pd.DataFrame(cur_stats_global)
@@ -113,7 +115,8 @@ def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, train_s
     print('EER sanity: ' + str(eer_sanity))
 
     # Write the eval to a txt.
-    f = open(outdir + '/' + attack + '-' + str(sampling) + '-metrics-' + ts_datetime + '.txt', 'a+')
+    f = open(outdir + '/' + attack + '-m-' + str(max_ae) + '-' + str(sampling)
+             + '-metrics-' + ts_datetime + '.txt', 'a+')
     f.write('Threshold: ' + str(threshold) + '\n')
     f.write('TP: ' + str(TP) + '\n')
     f.write('TN: ' + str(TN) + '\n')
@@ -131,23 +134,3 @@ def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, train_s
     f.write('EER: ' + str(eer) + '\n')
     f.write('EER sanity: ' + str(eer_sanity) + '\n')
     f.close()
-
-    # Plot the RMSE anomaly scores.
-    # print("Plotting results")
-    # plt.figure(figsize=(10, 5))
-    # cmap = colors.ListedColormap(['green', 'red'])
-    # bounds = [0, threshold, max(rmse_list[fm_grace+ad_grace+1:])]
-    # norm = colors.BoundaryNorm(bounds, cmap.N)
-    # cmap.set_over('red')
-    # cmap.set_under('green')
-    # plt.scatter(range(fm_grace+ad_grace+1, len(rmse_list)), rmse_list[fm_grace+ad_grace+1:],
-    #             s=0.1, c=rmse_list[fm_grace+ad_grace+1:], cmap=cmap, norm=norm)
-    # plt.yscale("log")
-    # plt.title("Anomaly Scores from Peregrine's Execution Phase")
-    # plt.ylabel("RMSE (log scaled)")
-    # plt.xlabel("Packets")
-    # plt.hlines(xmin=0, xmax=len(rmse_list), y=threshold, colors='blue', label=threshold)
-    # plt.legend(loc='lower center', bbox_to_anchor=(0.5, -0.3))
-    # plt.subplots_adjust(bottom=0.25)
-    # plt.colorbar()
-    # plt.savefig(outdir + '/' + attack + '-' + str(sampling) + '-' + ts_datetime + '.png')

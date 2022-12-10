@@ -77,10 +77,12 @@ class StatsCalc:
         return len(self.df_csv)
 
     def parse_pcap(self, pcap_path):
-        fields = '-e frame.time_epoch -e eth.src -e eth.dst \
-                -e ip.src -e ip.dst -e ip.len -e ip.proto -e tcp.srcport -e tcp.dstport \
-                -e udp.srcport -e udp.dstport'
-
+        fields = "-e frame.time_epoch -e frame.len -e eth.src -e eth.dst \
+                    -e ip.src -e ip.dst -e ip.len -e ip.proto -e tcp.srcport \
+                    -e tcp.dstport -e udp.srcport -e udp.dstport -e icmp.type \
+                    -e icmp.code -e arp.opcode -e arp.src.hw_mac \
+                    -e arp.src.proto_ipv4 -e arp.dst.hw_mac -e arp.dst.proto_ipv4 \
+                    -e ipv6.src -e ipv6.dst"
         cmd = 'tshark -r ' + pcap_path + ' -T fields ' + \
             fields + ' -E separator=\',\' -E header=y -E occurrence=f > ' + self.file_path.split('.')[0] + '.csv'
 
@@ -103,31 +105,30 @@ class StatsCalc:
             self.phase_pkt_index = 0
 
         timestamp = float(row[0])
-        mac_src = str(row[1])
-        mac_dst = str(row[2])
-        if not isnan(row[5]):
-            pkt_len = (row[5])
+        mac_src = str(row[2])
+        mac_dst = str(row[3])
+        if not isnan(row[6]):
+            pkt_len = (row[6])
         else:
             pkt_len = 0
-        if not str(row[3]) == 'nan':
-            ip_src = str(row[3])
+        if not str(row[4]) == 'nan':
+            ip_src = str(row[4])
         else:
             ip_src = '0.0.0.0'
-        if not str(row[4]) == 'nan':
-            ip_dst = str(row[4])
+        if not str(row[5]) == 'nan':
+            ip_dst = str(row[5])
         else:
             ip_dst = '0.0.0.0'
-        if not isnan(row[6]):
-            ip_proto = int(row[6])
+        if not isnan(row[7]):
+            ip_proto = int(row[7])
         else:
             ip_proto = 0
-        # UDP/TCP port: concat of strings will result in an OR "[tcp|udp]"
-        if ip_proto == 17 and not isnan(row[9]) and not isnan(row[10]):
-            port_src = int(row[9])
-            port_dst = int(row[10])
-        elif ip_proto == 6 and not isnan(row[7]) and not isnan(row[8]):
-            port_src = int(row[7])
-            port_dst = int(row[8])
+        if ip_proto == 17 and not isnan(row[10]) and not isnan(row[11]):
+            port_src = int(row[10])
+            port_dst = int(row[11])
+        elif ip_proto == 6 and not isnan(row[8]) and not isnan(row[9]):
+            port_src = int(row[8])
+            port_dst = int(row[9])
         else:
             port_src = 0
             port_dst = 0

@@ -3,7 +3,6 @@ from KitNET.KitNET import KitNET
 import numpy as np
 import pickle
 from pathlib import Path
-from datetime import datetime
 
 # MIT License
 #
@@ -46,6 +45,7 @@ class Peregrine:
         self.fm_grace = fm_grace_period
         self.ad_grace = ad_grace_period
         self.attack = attack
+        self.m = max_autoencoder_size
 
         if train_skip:
             with open(train_stats, 'rb') as f_stats:
@@ -108,15 +108,11 @@ class Peregrine:
                        self.stats_ip,
                        self.stats_five_t]
 
-        print(train_stats)
-
-        ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
         outdir = str(Path(__file__).parents[0]) + '/KitNET/models'
-
         if not os.path.exists(str(Path(__file__).parents[0]) + '/KitNET/models'):
             os.mkdir(outdir)
 
-        with open(outdir + '/' + self.attack + '-' + ts_datetime + '-train-stats' + '.txt', 'wb') as f_stats:
+        with open(outdir + '/' + self.attack + '-m-' + str(self.m) + '-train-stats' + '.txt', 'wb') as f_stats:
             pickle.dump(train_stats, f_stats)
 
     def reset_stats(self):

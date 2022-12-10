@@ -2,7 +2,6 @@ import os
 import numpy as np
 import pickle
 from pathlib import Path
-from datetime import datetime
 from .dA import DA, DAParams
 from .CorClust import CorClust
 
@@ -20,7 +19,9 @@ class KitNET:
     # 0.75 will cause roughly a 25% compression in the hidden layer. feature_map: One may optionally provide a
     # feature map instead of learning one. The map must be a list, where the i-th entry contains a list of the
     # feature indices to be assigned to the i-th autoencoder in the ensemble. For example, [[2,5,3],[4,0,1],[6,7]]
-    def __init__(self, n, max_autoencoder_size=10, fm_grace_period=None, ad_grace_period=10000, learning_rate=0.1, hidden_ratio=0.75, feature_map=None, ensemble_layer=None, output_layer=None, attack=''):
+    def __init__(self, n, max_autoencoder_size=10, fm_grace_period=None, ad_grace_period=10000,
+                 learning_rate=0.1, hidden_ratio=0.75, feature_map=None, ensemble_layer=None,
+                 output_layer=None, attack=''):
         # Parameters:
         self.AD_grace_period = ad_grace_period
         if fm_grace_period is None:
@@ -57,9 +58,9 @@ class KitNET:
 
         if ensemble_layer is not None and output_layer is not None:
             with open(ensemble_layer, 'rb') as f_el:
-                    self.ensembleLayer = pickle.load(f_el)
+                self.ensembleLayer = pickle.load(f_el)
             with open(output_layer, 'rb') as f_ol:
-                    self.outputLayer = pickle.load(f_ol)
+                self.outputLayer = pickle.load(f_ol)
             self.n_trained = self.FM_grace_period + self.AD_grace_period + 1
             print("Feature-Mapper: execute-mode, Anomaly-Detector: execute-mode")
 
@@ -100,15 +101,15 @@ class KitNET:
             if self.n_trained == self.AD_grace_period + self.FM_grace_period - 1:
                 print("Feature-Mapper: execute-mode, Anomaly-Detector: execute-mode")
 
-                ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
                 outdir = str(Path(__file__).parents[0]) + '/models'
                 if not os.path.exists(str(Path(__file__).parents[0]) + '/models'):
                     os.mkdir(outdir)
-                with open(outdir + '/' + self.attack + '-' + ts_datetime + '-fm' + '.txt', 'wb') as f_fm:
+
+                with open(outdir + '/' + self.attack + '-m-' + str(self.m) + '-fm' + '.txt', 'wb') as f_fm:
                     pickle.dump(self.v, f_fm)
-                with open(outdir + '/' + self.attack + '-' + ts_datetime + '-el' + '.txt', 'wb') as f_el:
+                with open(outdir + '/' + self.attack + '-m-' + str(self.m) + '-el' + '.txt', 'wb') as f_el:
                     pickle.dump(self.ensembleLayer, f_el)
-                with open(outdir + '/' + self.attack + '-' + ts_datetime + '-ol' + '.txt', 'wb') as f_ol:
+                with open(outdir + '/' + self.attack + '-m-' + str(self.m) + '-ol' + '.txt', 'wb') as f_ol:
                     pickle.dump(self.outputLayer, f_ol)
             self.n_trained += 1
             return output
