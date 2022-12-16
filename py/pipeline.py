@@ -2,7 +2,6 @@ import pandas as pd
 from scapy.all import sniff, bind_layers, TCP, UDP, Ether, IP, split_layers
 from peregrine_header import PeregrineHdr
 from Peregrine import Peregrine
-from stats_calc import StatsCalc
 import itertools
 
 # KitNET parameters
@@ -78,14 +77,20 @@ def pkt_callback(pkt):
 
 def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
                  exec_phase, fm_grace, ad_grace, max_ae, feature_map,
-                 ensemble_layer, output_layer, train_stats, attack):
-
+                 ensemble_layer, output_layer, train_stats, attack, exact_stats):
     global cur_stats
     global threshold
     global rmse_list
     global pkt_header
     global pkt_cnt_global
     train_skip = False
+
+    # Statistics are calculated with/without data plane approximations according
+    # to the exact_stats flag.
+    if exact_stats:
+        from stats_calc_exact import StatsCalc
+    else:
+        from stats_calc import StatsCalc
 
     # Read the csv containing the ground truth labels.
     trace_labels = pd.read_csv(trace_labels_path, header=None)

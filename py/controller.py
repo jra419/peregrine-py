@@ -770,6 +770,7 @@ if __name__ == "__main__":
     argparser.add_argument('--el_model', type=str, default=None, help='Prev. trained EL path')
     argparser.add_argument('--ol_model', type=str, default=None, help='Prev. trained OL path')
     argparser.add_argument('--attack', type=str, help='Current trace attack name')
+    argparser.add_argument('--exact_stats', action='store_true')
     args = argparser.parse_args()
 
     # configure logging
@@ -806,7 +807,7 @@ if __name__ == "__main__":
     pipeline_out = pkt_pipeline(cur_eg_veth, args.trace, args.labels, args.sampling,
                                 args.exec_phase, args.fm_grace, args.ad_grace, args.max_ae,
                                 args.fm_model, args.el_model, args.ol_model, args.train_stats,
-                                args.attack)
+                                args.attack, args.exact_stats)
 
     stop = time.time()
 
