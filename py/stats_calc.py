@@ -91,7 +91,6 @@ class StatsCalc:
 
     def feature_extract(self):
         # Parse the next packet from the csv.
-        row = self.df_csv.iloc[self.global_pkt_index]
         if self.global_pkt_index == self.train_pkts:
             self.stats_mac_ip_src = {}
             self.stats_ip_src = {}
@@ -104,39 +103,38 @@ class StatsCalc:
             self.decay_cntr = 1
             self.phase_pkt_index = 0
 
-        timestamp = float(row[0])
-        mac_src = str(row[2])
-        mac_dst = str(row[3])
-        if not isnan(row[6]):
-            pkt_len = (row[6])
-        else:
+        timestamp = float(self.df_csv.iat[self.global_pkt_index, 0])
+        mac_src = str(self.df_csv.iat[self.global_pkt_index, 2])
+        mac_dst = str(self.df_csv.iat[self.global_pkt_index, 3])
+        pkt_len = self.df_csv.iat[self.global_pkt_index, 6]
+        if isnan(pkt_len):
             pkt_len = 0
-        if not str(row[4]) == 'nan':
-            ip_src = str(row[4])
-        else:
+        ip_src = self.df_csv.iat[self.global_pkt_index, 4]
+        if str(ip_src) == 'nan':
             ip_src = '0.0.0.0'
-        if not str(row[5]) == 'nan':
-            ip_dst = str(row[5])
-        else:
+        ip_dst = self.df_csv.iat[self.global_pkt_index, 5]
+        if str(ip_dst) == 'nan':
             ip_dst = '0.0.0.0'
-        if not isnan(row[7]):
-            ip_proto = int(row[7])
-        else:
+        ip_proto = self.df_csv.iat[self.global_pkt_index, 7]
+        if isnan(ip_proto):
             ip_proto = 0
-        if ip_proto == 17 and not isnan(row[10]) and not isnan(row[11]):
-            port_src = int(row[10])
-            port_dst = int(row[11])
-        elif ip_proto == 6 and not isnan(row[8]) and not isnan(row[9]):
-            port_src = int(row[8])
-            port_dst = int(row[9])
+        if ip_proto == 17:
+            port_src = self.df_csv.iat[self.global_pkt_index, 10]
+            port_dst = self.df_csv.iat[self.global_pkt_index, 11]
+        elif ip_proto == 6:
+            port_src = self.df_csv.iat[self.global_pkt_index, 8]
+            port_dst = self.df_csv.iat[self.global_pkt_index, 9]
         else:
+            port_src = 0
+            port_dst = 0
+        if isnan(port_src) or isnan(port_dst):
             port_src = 0
             port_dst = 0
 
         self.global_pkt_index = self.global_pkt_index + 1
         self.phase_pkt_index = self.phase_pkt_index + 1
         self.cur_pkt = [pkt_len, timestamp, mac_dst, mac_src, ip_src, ip_dst,
-                        str(ip_proto), str(port_src), str(port_dst)]
+                        str(int(ip_proto)), str(int(port_src)), str(int(port_dst))]
 
     def process(self, phase):
         # Update the current decay counter value.
@@ -175,6 +173,7 @@ class StatsCalc:
 
         hash_mac_ip_src_temp = self.crc16(mac_src_bytes)
         hash_mac_ip_src_temp = '{:016b}'.format(self.crc16(ip_src_bytes, hash_mac_ip_src_temp))
+
         self.hash_mac_ip_src = int(hash_mac_ip_src_temp[-13:], 2) + 8192 * (self.decay_cntr - 1)
 
         hash_ip_src_temp = '{:016b}'.format(self.crc16(ip_src_bytes))
@@ -240,9 +239,7 @@ class StatsCalc:
         ip_pkt_len = int(self.stats_ip[self.hash_ip_0][self.decay_cntr][1])
         ip_pkt_len_sqr = int(self.stats_ip[self.hash_ip_0][self.decay_cntr][2])
         ip_mean_0, ip_std_dev_0 = \
-            self.stats_calc_1d(ip_pkt_cnt_0,
-                               ip_pkt_len,
-                               ip_pkt_len_sqr)
+            self.stats_calc_1d(ip_pkt_cnt_0, ip_pkt_len, ip_pkt_len_sqr)
 
         # Calculate the residual products from flows A->B and B->A.
         ip_res_0 = ip_pkt_len - ip_mean_0
@@ -263,9 +260,9 @@ class StatsCalc:
             self.stats_ip[self.hash_ip_0][self.decay_cntr][4] = ip_pkt_len_sqr
             self.stats_ip[self.hash_ip_0][self.decay_cntr][5] = ip_mean_0
             if self.hash_ip_1 in self.stats_ip:
-                ip_pkt_cnt_1 = self.stats_ip[self.hash_ip_1][self.decay_cntr][3]
-                ip_pkt_len_sqr_1 = self.stats_ip[self.hash_ip_1][self.decay_cntr][4]
-                ip_mean_1 = self.stats_ip[self.hash_ip_1][self.decay_cntr][5]
+                ip_pkt_cnt_1 = int(self.stats_ip[self.hash_ip_1][self.decay_cntr][3])
+                ip_pkt_len_sqr_1 = int(self.stats_ip[self.hash_ip_1][self.decay_cntr][4])
+                ip_mean_1 = int(self.stats_ip[self.hash_ip_1][self.decay_cntr][5])
             else:
                 ip_pkt_cnt_1 = 0
                 ip_pkt_len_sqr_1 = 0
@@ -281,9 +278,9 @@ class StatsCalc:
         else:
             # Read
             if self.hash_ip_1 in self.stats_ip:
-                ip_pkt_cnt_1 = self.stats_ip[self.hash_ip_1][self.decay_cntr][3]
-                ip_pkt_len_sqr_1 = self.stats_ip[self.hash_ip_1][self.decay_cntr][4]
-                ip_mean_1 = self.stats_ip[self.hash_ip_1][self.decay_cntr][5]
+                ip_pkt_cnt_1 = int(self.stats_ip[self.hash_ip_1][self.decay_cntr][3])
+                ip_pkt_len_sqr_1 = int(self.stats_ip[self.hash_ip_1][self.decay_cntr][4])
+                ip_mean_1 = int(self.stats_ip[self.hash_ip_1][self.decay_cntr][5])
             else:
                 ip_pkt_cnt_1 = 0
                 ip_pkt_len_sqr_1 = 0
@@ -295,9 +292,7 @@ class StatsCalc:
         five_t_pkt_len = int(self.stats_five_t[self.hash_five_t_0][self.decay_cntr][1])
         five_t_pkt_len_sqr = int(self.stats_five_t[self.hash_five_t_0][self.decay_cntr][2])
         five_t_mean_0, five_t_std_dev_0 = \
-            self.stats_calc_1d(five_t_pkt_cnt_0,
-                               five_t_pkt_len,
-                               five_t_pkt_len_sqr)
+            self.stats_calc_1d(five_t_pkt_cnt_0, five_t_pkt_len, five_t_pkt_len_sqr)
 
         # Calculate the residual products from flows A->B and B->A.
         five_t_res_0 = five_t_pkt_len - five_t_mean_0
@@ -318,9 +313,9 @@ class StatsCalc:
             self.stats_five_t[self.hash_five_t_0][self.decay_cntr][4] = five_t_pkt_len_sqr
             self.stats_five_t[self.hash_five_t_0][self.decay_cntr][5] = five_t_mean_0
             if self.hash_five_t_1 in self.stats_five_t:
-                five_t_pkt_cnt_1 = self.stats_five_t[self.hash_five_t_1][self.decay_cntr][3]
-                five_t_pkt_len_sqr_1 = self.stats_five_t[self.hash_five_t_1][self.decay_cntr][4]
-                five_t_mean_1 = self.stats_five_t[self.hash_five_t_1][self.decay_cntr][5]
+                five_t_pkt_cnt_1 = int(self.stats_five_t[self.hash_five_t_1][self.decay_cntr][3])
+                five_t_pkt_len_sqr_1 = int(self.stats_five_t[self.hash_five_t_1][self.decay_cntr][4])
+                five_t_mean_1 = int(self.stats_five_t[self.hash_five_t_1][self.decay_cntr][5])
             else:
                 five_t_pkt_cnt_1 = 0
                 five_t_pkt_len_sqr_1 = 0
@@ -336,9 +331,9 @@ class StatsCalc:
         else:
             # Read
             if self.hash_five_t_1 in self.stats_five_t:
-                five_t_pkt_cnt_1 = self.stats_five_t[self.hash_five_t_1][self.decay_cntr][3]
-                five_t_pkt_len_sqr_1 = self.stats_five_t[self.hash_five_t_1][self.decay_cntr][4]
-                five_t_mean_1 = self.stats_five_t[self.hash_five_t_1][self.decay_cntr][5]
+                five_t_pkt_cnt_1 = int(self.stats_five_t[self.hash_five_t_1][self.decay_cntr][3])
+                five_t_pkt_len_sqr_1 = int(self.stats_five_t[self.hash_five_t_1][self.decay_cntr][4])
+                five_t_mean_1 = int(self.stats_five_t[self.hash_five_t_1][self.decay_cntr][5])
             else:
                 five_t_pkt_cnt_1 = 0
                 five_t_pkt_len_sqr_1 = 0
@@ -385,12 +380,12 @@ class StatsCalc:
             five_t_pcc = 0
 
         cur_stats = [self.decay_cntr,
-                     mac_ip_src_pkt_cnt, mac_ip_src_mean, mac_ip_src_std_dev,
-                     ip_src_pkt_cnt, ip_src_mean, ip_src_std_dev,
-                     ip_pkt_cnt_0, ip_mean_0, ip_std_dev_0,
-                     ip_magnitude, ip_radius, ip_cov, ip_pcc,
-                     five_t_pkt_cnt_0, five_t_mean_0, five_t_std_dev_0,
-                     five_t_magnitude, five_t_radius, five_t_cov, five_t_pcc]
+                     int(mac_ip_src_pkt_cnt), int(mac_ip_src_mean), int(mac_ip_src_std_dev),
+                     int(ip_src_pkt_cnt), int(ip_src_mean), int(ip_src_std_dev),
+                     int(ip_pkt_cnt_0), int(ip_mean_0), int(ip_std_dev_0),
+                     int(ip_magnitude), int(ip_radius), int(ip_cov), int(ip_pcc),
+                     int(five_t_pkt_cnt_0), int(five_t_mean_0), int(five_t_std_dev_0),
+                     int(five_t_magnitude), int(five_t_radius), int(five_t_cov), int(five_t_pcc)]
 
         self.cur_pkt = self.cur_pkt[3:]
 
@@ -400,7 +395,7 @@ class StatsCalc:
         # Mean
         mean = pkt_len >> self.pow_2(pkt_cnt)
 
-        # Std. Dev.
+        # Std. Dev
         std_dev = int(sqrt.compute(abs((pkt_len_sqr >> self.pow_2(pkt_cnt)) - sqr.compute(mean))))
 
         return [mean, std_dev]
@@ -491,9 +486,7 @@ class StatsCalc:
                                                             [0, 0, 0]])
             self.stats_mac_ip_src[self.hash_mac_ip_src][0][self.decay_cntr-1] = self.cur_pkt[1]
             self.stats_mac_ip_src[self.hash_mac_ip_src][self.decay_cntr] = \
-                [1,
-                 self.cur_pkt[0],
-                 sqr.compute(self.cur_pkt[0])]
+                [1, self.cur_pkt[0], sqr.compute(self.cur_pkt[0])]
 
         # IP src
 
@@ -555,9 +548,7 @@ class StatsCalc:
                                                     [0, 0, 0]])
             self.stats_ip_src[self.hash_ip_src][0][self.decay_cntr-1] = self.cur_pkt[1]
             self.stats_ip_src[self.hash_ip_src][self.decay_cntr] = \
-                [1,
-                 self.cur_pkt[0],
-                 sqr.compute(self.cur_pkt[0])]
+                [1, self.cur_pkt[0], sqr.compute(self.cur_pkt[0])]
 
         # IP
 

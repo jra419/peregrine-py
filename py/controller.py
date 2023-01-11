@@ -830,4 +830,4 @@ if __name__ == "__main__":
     sys.stderr.flush()
 
     # exit (bug workaround)
-    os.kill(os.getpid(), signal.SIGTERM)
+    # os.kill(os.getpid(), signal.SIGTERM)
