@@ -4,3 +4,8 @@
 py/KitNET/models/
 py/eval/
 runs/
+*.patch
+*.tgz
+*.log
+*.report
+build
