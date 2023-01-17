@@ -7,7 +7,8 @@ ENV TZ=Europe/Lisbon
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # The install scripts require sudo (no need to clean apt cache, the setup script will install stuff)
-RUN apt-get update && apt-get install -y sudo
+RUN apt-get update
+RUN apt-get install -y sudo
 
 # Create a user with passwordless sudo
 RUN adduser --disabled-password --gecos '' docker
@@ -16,6 +17,10 @@ RUN echo '%docker ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 
 USER docker
 WORKDIR /home/docker
+
+# Create the shared folder
+RUN sudo mkdir /shared
+RUN sudo chown -R docker:docker /shared
 
 # Configure ssh directory
 RUN mkdir /home/docker/.ssh
@@ -52,7 +57,18 @@ RUN sudo dpkg-reconfigure --frontend noninteractive tzdata
 RUN curl -fsSL https://raw.githubusercontent.com/zimfw/install/master/install.zsh | zsh
 
 # Change default shell
-RUN sudo chsh -s $(which zsh) 
+RUN sudo chsh -s $(which zsh)
+
+# Use the provided tmux configuration
+COPY --chown=docker:docker ./resources/.tmux.conf /home/docker
+
+# Copy setup-shared script into workspace and make executable
+COPY --chown=docker:docker ./scripts/share-sde.sh /opt/scripts/share-sde.sh
+RUN chmod +x /opt/scripts/share-sde.sh
+
+# Setting up shared environment
+RUN echo "/opt/scripts/share-sde.sh" >> /home/docker/.profile
+RUN echo "source ~/.profile" >> /home/docker/.zshrc
 
 ######################
 #  Building SDE env  #
@@ -74,5 +90,14 @@ COPY --chown=docker:docker ./resources/ica-tools.tgz /opt/files/ica-tools.tgz
 
 RUN /opt/scripts/build-p4.sh
 RUN /opt/scripts/build-barefoot-sde.sh
+
+#######################################
+#  Installing Peregrine dependencies  #
+#######################################
+
+RUN pip3 install pandas
+RUN pip3 install scipy
+RUN pip3 install matplotlib
+RUN pip3 install scikit-learn
 
 CMD [ "/usr/bin/zsh" ]

@@ -9,3 +9,8 @@ runs/
 *.log
 *.report
 build
+*.vscode
+bf-sde-*
+zlog-cfg-cur
+*.log
+bf_drivers.log*
