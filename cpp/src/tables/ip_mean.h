@@ -1,17 +1,16 @@
 #pragma once
 
-#include "packet.h"
-#include "table.h"
+#include "../table.h"
 
 namespace peregrine {
 
-class MacIpSrcMean : public Table {
+class IpMean : public Table {
 private:
-	static constexpr uint32_t NUM_ACTIONS = 32;
+	static constexpr uint32_t NUM_ACTIONS = 21;
 
 	struct key_fields_t {
 		// Key fields IDs
-		bf_rt_id_t mac_ip_src_pkt_cnt;
+		bf_rt_id_t pkt_cnt_0;
 	};
 
 	struct actions_t {
@@ -25,21 +24,19 @@ private:
 	actions_t actions;
 
 public:
-	MacIpSrcMean(const bfrt::BfRtInfo *info,
-				 std::shared_ptr<bfrt::BfRtSession> session,
-				 const bf_rt_target_t &dev_tgt)
-		: Table(info, session, dev_tgt,
-				"SwitchIngress_b.stats_mac_ip_src_b.mean") {
+	IpMean(const bfrt::BfRtInfo *info,
+		   std::shared_ptr<bfrt::BfRtSession> session,
+		   const bf_rt_target_t &dev_tgt)
+		: Table(info, session, dev_tgt, "SwitchIngress_a.stats_ip_a.mean_0") {
 		init_key({
-			{"hdr.peregrine.mac_ip_src_pkt_cnt",
-			 &key_fields.mac_ip_src_pkt_cnt},
+			{"ig_md.stats_ip.pkt_cnt_0", &key_fields.pkt_cnt_0},
 		});
 
 		auto actions_to_init = std::unordered_map<std::string, bf_rt_id_t *>();
 
 		for (auto i = 0u; i < NUM_ACTIONS; i++) {
 			std::stringstream ss;
-			ss << "SwitchIngress_b.stats_mac_ip_src_b.rshift_mean_";
+			ss << "SwitchIngress_a.stats_ip_a.rshift_mean_";
 			ss << i;
 
 			auto action_name = ss.str();
@@ -70,7 +67,7 @@ private:
 
 	void key_setup(uint32_t power, uint32_t mask) {
 		table->keyReset(key.get());
-		auto bf_status = key->setValueandMask(key_fields.mac_ip_src_pkt_cnt,
+		auto bf_status = key->setValueandMask(key_fields.pkt_cnt_0,
 											  static_cast<uint64_t>(power),
 											  static_cast<uint64_t>(mask));
 		assert(bf_status == BF_SUCCESS);

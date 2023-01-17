@@ -1,47 +1,46 @@
 #pragma once
 
-#include "packet.h"
-#include "table.h"
+#include "../table.h"
 
 namespace peregrine {
 
-class IpSrcMean : public Table {
+class IpMeanSs1 : public Table {
 private:
-	static constexpr uint32_t NUM_ACTIONS = 32;
+	static constexpr uint32_t NUM_ACTIONS = 21;
 
 	struct key_fields_t {
 		// Key fields IDs
-		bf_rt_id_t ip_src_pkt_cnt;
+		bf_rt_id_t ip_pkt_cnt_1;
 	};
 
 	struct actions_t {
 		// Actions ids
-		std::vector<bf_rt_id_t> rshift_means;
+		std::vector<bf_rt_id_t> rshift_means_ss_0;
 
-		actions_t() : rshift_means(NUM_ACTIONS) {}
+		actions_t() : rshift_means_ss_0(NUM_ACTIONS) {}
 	};
 
 	key_fields_t key_fields;
 	actions_t actions;
 
 public:
-	IpSrcMean(const bfrt::BfRtInfo *info,
-			  std::shared_ptr<bfrt::BfRtSession> session,
-			  const bf_rt_target_t &dev_tgt)
-		: Table(info, session, dev_tgt, "SwitchIngress_b.stats_ip_src_b.mean") {
+	IpMeanSs1(const bfrt::BfRtInfo *info,
+		   std::shared_ptr<bfrt::BfRtSession> session,
+		   const bf_rt_target_t &dev_tgt)
+		: Table(info, session, dev_tgt, "SwitchIngress_b.stats_ip_b.mean_ss_1") {
 		init_key({
-			{"hdr.peregrine.ip_src_pkt_cnt", &key_fields.ip_src_pkt_cnt},
+			{"hdr.peregrine.ip_pkt_cnt_1", &key_fields.ip_pkt_cnt_1},
 		});
 
 		auto actions_to_init = std::unordered_map<std::string, bf_rt_id_t *>();
 
 		for (auto i = 0u; i < NUM_ACTIONS; i++) {
 			std::stringstream ss;
-			ss << "SwitchIngress_b.stats_ip_src_b.rshift_mean_";
+			ss << "SwitchIngress_b.stats_ip_b.rshift_mean_ss_1_";
 			ss << i;
 
 			auto action_name = ss.str();
-			auto *action_id = &actions.rshift_means[i];
+			auto *action_id = &actions.rshift_means_ss_0[i];
 
 			actions_to_init[action_name] = action_id;
 		}
@@ -52,7 +51,7 @@ public:
 		for (auto i = 0u; i < NUM_ACTIONS; i++) {
 			uint32_t power = 1 << i;
 			uint32_t mask = 0xffffffff << i;
-			auto action_id = actions.rshift_means[i];
+			auto action_id = actions.rshift_means_ss_0[i];
 			add_entry(power, mask, action_id);
 		}
 	}
@@ -68,7 +67,7 @@ private:
 
 	void key_setup(uint32_t power, uint32_t mask) {
 		table->keyReset(key.get());
-		auto bf_status = key->setValueandMask(key_fields.ip_src_pkt_cnt,
+		auto bf_status = key->setValueandMask(key_fields.ip_pkt_cnt_1,
 											  static_cast<uint64_t>(power),
 											  static_cast<uint64_t>(mask));
 		assert(bf_status == BF_SUCCESS);

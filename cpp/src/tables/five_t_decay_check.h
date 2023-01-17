@@ -1,11 +1,10 @@
 #pragma once
 
-#include "packet.h"
-#include "table.h"
+#include "../table.h"
 
 namespace peregrine {
 
-class IpDecayCheck : public Table {
+class FiveTDecayCheck : public Table {
 private:
 	struct key_fields_t {
 		// Key fields IDs
@@ -24,23 +23,23 @@ private:
 	actions_t actions;
 
 public:
-	IpDecayCheck(const bfrt::BfRtInfo *info,
+	FiveTDecayCheck(const bfrt::BfRtInfo *info,
 					   std::shared_ptr<bfrt::BfRtSession> session,
 					   const bf_rt_target_t &dev_tgt)
 		: Table(info, session, dev_tgt,
-				"SwitchIngress_a.stats_ip_a.decay_check") {
+				"SwitchIngress_a.stats_five_t_a.decay_check") {
 		init_key({
 			{"ig_md.meta.decay_cntr", &key_fields.decay_cntr},
 		});
 
 		init_actions({
-			{"SwitchIngress_a.stats_ip_a.decay_check_100_ms",
+			{"SwitchIngress_a.stats_five_t_a.decay_check_100_ms",
 			 &actions.decay_check_100_ms},
-			{"SwitchIngress_a.stats_ip_a.decay_check_1_s",
+			{"SwitchIngress_a.stats_five_t_a.decay_check_1_s",
 			 &actions.decay_check_1_s},
-			{"SwitchIngress_a.stats_ip_a.decay_check_10_s",
+			{"SwitchIngress_a.stats_five_t_a.decay_check_10_s",
 			 &actions.decay_check_10_s},
-			{"SwitchIngress_a.stats_ip_a.decay_check_60_s",
+			{"SwitchIngress_a.stats_five_t_a.decay_check_60_s",
 			 &actions.decay_check_60_s},
 		});
 

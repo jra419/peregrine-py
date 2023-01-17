@@ -1,7 +1,6 @@
 #pragma once
 
-#include "packet.h"
-#include "table.h"
+#include "../table.h"
 
 namespace peregrine {
 
