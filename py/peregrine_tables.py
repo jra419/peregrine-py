@@ -255,7 +255,8 @@ class MacIpSrcMean(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('hdr.peregrine.mac_ip_src_pkt_cnt', power, mask)])],
+               [gc.KeyTuple('hdr.peregrine.mac_ip_src_pkt_cnt', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_mac_ip_src_b.rshift_mean_' + str(div))])
 
 
@@ -283,7 +284,8 @@ class IpSrcMean(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('hdr.peregrine.ip_src_pkt_cnt', power, mask)])],
+               [gc.KeyTuple('hdr.peregrine.ip_src_pkt_cnt', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_src_b.rshift_mean_' + str(div))])
 
 
@@ -339,7 +341,8 @@ class IpMean0(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_ip.pkt_cnt_0', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_ip.pkt_cnt_0', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_ip_a.rshift_mean_' + str(div))])
 
 
@@ -358,7 +361,7 @@ class IpResStructUpdate(Table):
         # clear and add defaults
         self.clear()
 
-    def add_entry(self, priority, flag, div):
+    def add_entry(self, flag, div):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
@@ -395,7 +398,8 @@ class IpResProd(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_ip.res_1', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_ip.res_1', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_ip_a.lshift_res_prod_' + str(div))])
 
 
@@ -414,7 +418,7 @@ class IpSumResProdGetCarry(Table):
         # clear and add defaults
         self.clear()
 
-    def add_entry(self, priority, power, div):
+    def add_entry(self, power, div):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
@@ -451,7 +455,8 @@ class IpPktCnt1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask)])],
+               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_ip_a.pkt_cnt_1_' + div)])
 
 
@@ -479,7 +484,8 @@ class IpSs1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask)])],
+               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_ip_a.ss_1_' + div)])
 
 
@@ -507,7 +513,8 @@ class IpMean1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask)])],
+               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_ip_a.mean_' + div)])
 
 
@@ -535,7 +542,8 @@ class IpMeanSs0(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('hdr.peregrine.ip_pkt_cnt', const, mask)])],
+               [gc.KeyTuple('hdr.peregrine.ip_pkt_cnt', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_b.rshift_mean_ss_0_' + str(div))])
 
 
@@ -563,7 +571,8 @@ class IpMeanSs1(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('hdr.peregrine.ip_pkt_cnt_1', const, mask)])],
+               [gc.KeyTuple('hdr.peregrine.ip_pkt_cnt_1', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_b.rshift_mean_ss_1_' + str(div))])
 
 
@@ -591,7 +600,8 @@ class IpVariance0Abs(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_ip.variance_0', const, mask)])],
+               [gc.KeyTuple('ig_md.stats_ip.variance_0', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_b.variance_0_' + div)])
 
 
@@ -619,7 +629,8 @@ class IpVariance1Abs(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_ip.variance_1', const, mask)])],
+               [gc.KeyTuple('ig_md.stats_ip.variance_1', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_b.variance_1_' + div)])
 
 
@@ -647,7 +658,8 @@ class IpCov(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('hdr.peregrine.ip_pkt_cnt_1', power, mask)])],
+               [gc.KeyTuple('hdr.peregrine.ip_pkt_cnt_1', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_b.rshift_cov_' + str(div))])
 
 
@@ -675,7 +687,8 @@ class IpStdDevProd(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_ip.std_dev_1', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_ip.std_dev_1', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_b.lshift_std_dev_prod_' + str(div))])
 
 
@@ -703,7 +716,8 @@ class IpPcc(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_ip.std_dev_prod', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_ip.std_dev_prod', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_b.rshift_pcc_' + str(div))])
 
 # class FiveTHashSubAbs(Table):
@@ -758,7 +772,8 @@ class FiveTMean0(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_five_t.pkt_cnt_0', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_five_t.pkt_cnt_0', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_five_t_a.rshift_mean_' + str(div))])
 
 
@@ -777,7 +792,7 @@ class FiveTResStructUpdate(Table):
         # clear and add defaults
         self.clear()
 
-    def add_entry(self, priority, flag, div):
+    def add_entry(self, flag, div):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
@@ -814,7 +829,8 @@ class FiveTResProd(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_five_t.res_1', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_five_t.res_1', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_five_t_a.lshift_res_prod_' + str(div))])
 
 
@@ -833,7 +849,7 @@ class FiveTSumResProdGetCarry(Table):
         # clear and add defaults
         self.clear()
 
-    def add_entry(self, priority, power, div):
+    def add_entry(self, power, div):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
@@ -870,7 +886,8 @@ class FiveTPktCnt1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask)])],
+               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_five_t_a.pkt_cnt_1_' + div)])
 
 
@@ -898,7 +915,8 @@ class FiveTSs1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask)])],
+               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_five_t_a.ss_1_' + div)])
 
 
@@ -926,7 +944,8 @@ class FiveTMean1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask)])],
+               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_five_t_a.mean_' + div)])
 
 
@@ -954,7 +973,8 @@ class FiveTMeanSs0(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('hdr.peregrine.five_t_pkt_cnt', const, mask)])],
+               [gc.KeyTuple('hdr.peregrine.five_t_pkt_cnt', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_b.rshift_mean_ss_0_' + str(div))])
 
 
@@ -982,7 +1002,8 @@ class FiveTMeanSs1(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('hdr.peregrine.five_t_pkt_cnt_1', const, mask)])],
+               [gc.KeyTuple('hdr.peregrine.five_t_pkt_cnt_1', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_b.rshift_mean_ss_1_' + str(div))])
 
 
@@ -1010,7 +1031,8 @@ class FiveTVariance0Abs(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_five_t.variance_0', const, mask)])],
+               [gc.KeyTuple('ig_md.stats_five_t.variance_0', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_b.variance_0_' + div)])
 
 
@@ -1038,7 +1060,8 @@ class FiveTVariance1Abs(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_five_t.variance_1', const, mask)])],
+               [gc.KeyTuple('ig_md.stats_five_t.variance_1', const, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_b.variance_1_' + div)])
 
 
@@ -1066,7 +1089,8 @@ class FiveTCov(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('hdr.peregrine.five_t_pkt_cnt_1', power, mask)])],
+               [gc.KeyTuple('hdr.peregrine.five_t_pkt_cnt_1', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_b.rshift_cov_' + str(div))])
 
 
@@ -1094,7 +1118,8 @@ class FiveTStdDevProd(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_five_t.std_dev_1', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_five_t.std_dev_1', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_b.lshift_std_dev_prod_' + str(div))])
 
 
@@ -1122,5 +1147,6 @@ class FiveTPcc(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.stats_five_t.std_dev_prod', power, mask)])],
+               [gc.KeyTuple('ig_md.stats_five_t.std_dev_prod', power, mask),
+                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_five_t_b.rshift_pcc_' + str(div))])

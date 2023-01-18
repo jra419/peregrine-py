@@ -284,8 +284,8 @@ def configure_switch(program, topology):
     ip_mean_0.add_entry(13, 524288, 0b11111111111110000000000000000000, 19)
     ip_mean_0.add_entry(12, 1048576, 0b11111111111100000000000000000000, 20)
 
-    ip_res_struct_update.add_entry(1, 0, 'read')
-    ip_res_struct_update.add_entry(1, 1, 'update')
+    ip_res_struct_update.add_entry(0, 'read')
+    ip_res_struct_update.add_entry(1, 'update')
 
     ip_res_prod.add_entry(32, 1, 0b11111111111111111111111111111111, 0)
     ip_res_prod.add_entry(31, 2, 0b11111111111111111111111111111110, 1)
@@ -318,8 +318,8 @@ def configure_switch(program, topology):
     ip_res_prod.add_entry(4, 268435456, 0b11110000000000000000000000000000, 28)
     ip_res_prod.add_entry(3, 536870912, 0b11100000000000000000000000000000, 29)
 
-    ip_sum_res_prod_get_carry.add_entry(1, 0, '0')
-    ip_sum_res_prod_get_carry.add_entry(1, 1, '1')
+    ip_sum_res_prod_get_carry.add_entry(0, '0')
+    ip_sum_res_prod_get_carry.add_entry(1, '1')
 
     ip_pkt_cnt_1_access.add_entry(3,
                                   0b00000000000000000000000000000000,
@@ -522,8 +522,8 @@ def configure_switch(program, topology):
     five_t_mean_0.add_entry(13, 524288, 0b11111111111110000000000000000000, 19)
     five_t_mean_0.add_entry(12, 1048576, 0b11111111111100000000000000000000, 20)
 
-    five_t_res_struct_update.add_entry(1, 0, 'read')
-    five_t_res_struct_update.add_entry(1, 1, 'update')
+    five_t_res_struct_update.add_entry(0, 'read')
+    five_t_res_struct_update.add_entry(1, 'update')
 
     five_t_res_prod.add_entry(32, 1, 0b11111111111111111111111111111111, 0)
     five_t_res_prod.add_entry(31, 2, 0b11111111111111111111111111111110, 1)
@@ -556,8 +556,8 @@ def configure_switch(program, topology):
     five_t_res_prod.add_entry(4, 268435456, 0b11110000000000000000000000000000, 28)
     five_t_res_prod.add_entry(3, 536870912, 0b11100000000000000000000000000000, 29)
 
-    five_t_sum_res_prod_get_carry.add_entry(1, 0, '0')
-    five_t_sum_res_prod_get_carry.add_entry(1, 1, '1')
+    five_t_sum_res_prod_get_carry.add_entry(0, '0')
+    five_t_sum_res_prod_get_carry.add_entry(1, '1')
 
     five_t_pkt_cnt_1_access.add_entry(3,
                                       0b00000000000000000000000000000000,
@@ -794,7 +794,7 @@ if __name__ == "__main__":
         from peregrine_tables import FiveTPktCnt1Access, FiveTSs1Access, FiveTMean1Access
         from peregrine_tables import FiveTMeanSs0, FiveTMeanSs1, FiveTVariance0Abs, FiveTVariance1Abs
         from peregrine_tables import FiveTCov, FiveTStdDevProd, FiveTPcc
-        topology = get_topology(args.topology)
+        topology = get_topology(args.topo)
         setup_grpc_client(args.grpc_server, args.grpc_port, args.program)
         cur_eg_veth = configure_switch(args.program, topology)
     else:
@@ -811,7 +811,9 @@ if __name__ == "__main__":
 
     stop = time.time()
 
-    print('Complete. Time elapsed: ', stop - start)
+    total_time = stop - start
+
+    print('Complete. Time elapsed: ', total_time)
     print('Threshold: ', pipeline.threshold)
 
     # Call function to perform eval/csv, also based on kitsune's main.
@@ -819,7 +821,7 @@ if __name__ == "__main__":
     # threshold [3], train_skip flag [4].
     eval_metrics(pipeline_out[0], pipeline_out[1], pipeline_out[2], pipeline_out[3],
                  pipeline_out[4], args.fm_grace, args.ad_grace, args.exec_phase,
-                 args.attack, args.sampling, args.max_ae)
+                 args.attack, args.sampling, args.max_ae, total_time)
 
     # exit (bug workaround)
     logger.info("Exiting!")
