@@ -11,7 +11,7 @@ ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
 
 
 def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, train_skip,
-                 fm_grace, ad_grace, exec_phase, attack, sampling, max_ae):
+                 fm_grace, ad_grace, exec_phase, attack, sampling, max_ae, total_time):
     outdir = str(Path(__file__).parents[0]) + '/eval/' + exec_phase
     if not os.path.exists(str(Path(__file__).parents[0]) + '/eval'):
         os.makedirs(outdir, exist_ok=True)
@@ -117,6 +117,7 @@ def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, train_s
     # Write the eval to a txt.
     f = open(outdir + '/' + attack + '-m-' + str(max_ae) + '-' + str(sampling)
              + '-metrics-' + ts_datetime + '.txt', 'a+')
+    f.write('Time elapsed: ' + str(total_time) + '\n')
     f.write('Threshold: ' + str(threshold) + '\n')
     f.write('TP: ' + str(TP) + '\n')
     f.write('TN: ' + str(TN) + '\n')

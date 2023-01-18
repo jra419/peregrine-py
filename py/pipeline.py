@@ -165,7 +165,7 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
                 peregrine_eval.append([cur_stats[0], cur_stats[1], cur_stats[2],
                                        cur_stats[3], cur_stats[4], cur_stats[5],
                                        rmse,
-                                       trace_labels.iloc[fm_grace + ad_grace + pkt_cnt_global - 1][0]])
+                                       trace_labels.iat[fm_grace + ad_grace + pkt_cnt_global - 1, 0]])
             except IndexError:
                 print(trace_labels.shape[0])
                 print(pkt_cnt_global)

@@ -82,7 +82,6 @@ class StatsCalc:
 
     def feature_extract(self):
         # Parse the next packet from the csv.
-        row = self.df_csv.iloc[self.global_pkt_index]
         if self.global_pkt_index == self.train_pkts:
             self.stats_mac_ip_src = {}
             self.stats_ip_src = {}
@@ -95,39 +94,38 @@ class StatsCalc:
             self.decay_cntr = 1
             self.phase_pkt_index = 0
 
-        timestamp = float(row[0])
-        mac_src = str(row[2])
-        mac_dst = str(row[3])
-        if not isnan(row[6]):
-            pkt_len = (row[6])
-        else:
+        timestamp = float(self.df_csv.iat[self.global_pkt_index, 0])
+        mac_src = str(self.df_csv.iat[self.global_pkt_index, 2])
+        mac_dst = str(self.df_csv.iat[self.global_pkt_index, 3])
+        pkt_len = self.df_csv.iat[self.global_pkt_index, 6]
+        if isnan(pkt_len):
             pkt_len = 0
-        if not str(row[4]) == 'nan':
-            ip_src = str(row[4])
-        else:
+        ip_src = self.df_csv.iat[self.global_pkt_index, 4]
+        if str(ip_src) == 'nan':
             ip_src = '0.0.0.0'
-        if not str(row[5]) == 'nan':
-            ip_dst = str(row[5])
-        else:
+        ip_dst = self.df_csv.iat[self.global_pkt_index, 5]
+        if str(ip_dst) == 'nan':
             ip_dst = '0.0.0.0'
-        if not isnan(row[7]):
-            ip_proto = int(row[7])
-        else:
+        ip_proto = self.df_csv.iat[self.global_pkt_index, 7]
+        if isnan(ip_proto):
             ip_proto = 0
-        if ip_proto == 17 and not isnan(row[10]) and not isnan(row[11]):
-            port_src = int(row[10])
-            port_dst = int(row[11])
-        elif ip_proto == 6 and not isnan(row[8]) and not isnan(row[9]):
-            port_src = int(row[8])
-            port_dst = int(row[9])
+        if ip_proto == 17:
+            port_src = self.df_csv.iat[self.global_pkt_index, 10]
+            port_dst = self.df_csv.iat[self.global_pkt_index, 11]
+        elif ip_proto == 6:
+            port_src = self.df_csv.iat[self.global_pkt_index, 8]
+            port_dst = self.df_csv.iat[self.global_pkt_index, 9]
         else:
+            port_src = 0
+            port_dst = 0
+        if isnan(port_src) or isnan(port_dst):
             port_src = 0
             port_dst = 0
 
         self.global_pkt_index = self.global_pkt_index + 1
         self.phase_pkt_index = self.phase_pkt_index + 1
         self.cur_pkt = [pkt_len, timestamp, mac_dst, mac_src, ip_src, ip_dst,
-                        str(ip_proto), str(port_src), str(port_dst)]
+                        str(int(ip_proto)), str(int(port_src)), str(int(port_dst))]
 
     def process(self, phase):
         # Update the current decay counter value.
