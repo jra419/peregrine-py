@@ -6,6 +6,7 @@
 #include <string>
 
 #include "peregrine.h"
+#include "ports.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -28,6 +29,8 @@ extern "C" {
 #define SWITCH_PACKET_MAX_BUFFER_SIZE 10000
 #define SWITCH_MEMCPY memcpy
 
+#define IN_VIRTUAL_IFACE "veth251"
+
 #define SWITCH_PKT_ERROR(fmt, arg...)                                 \
 	bf_sys_log_and_trace(BF_MOD_SWITCHAPI, BF_LOG_ERR, "%s:%d: " fmt, \
 						 __FUNCTION__, __LINE__, ##arg)
@@ -49,24 +52,9 @@ bf_pkt_tx_ring_t tx_ring = BF_PKT_TX_RING_0;
 
 void pcap_callback_func(u_char *args, const struct pcap_pkthdr *pkthdr,
 						const u_char *packetData) {
-	auto out_handle = (pcap_t *)args;
 	auto pkt_hdr = (pkt_hdr_t *)packetData;
-
-	assert(out_handle);
 	assert(pkt_hdr);
-
-	auto forward = Controller::controller->process(pkt_hdr);
-
-	if (!forward) {
-		return;
-	}
-
-	if (pcap_sendpacket(out_handle, packetData + sizeof(meta_hdr_t),
-						pkthdr->caplen) != 0) {
-		fprintf(stderr, "Error sending the packet: %s\n",
-				pcap_geterr(out_handle));
-		exit(2);
-	}
+	Controller::controller->process(pkt_hdr);
 }
 
 bf_status_t pcie_tx(bf_dev_id_t device, bf_pkt_tx_ring_t tx_ring,
@@ -104,24 +92,7 @@ bf_status_t pcie_rx(bf_dev_id_t device, bf_pkt *pkt, void *data,
 	} while (pkt);
 
 	pkt_hdr_t *pkt_hdr = (pkt_hdr_t *)in_packet;
-	auto forward = Controller::controller->process(pkt_hdr);
-
-	if (!forward) {
-		bf_pkt_free(device, orig_pkt);
-		return 0;
-	}
-
-	if (bf_pkt_data_copy(tx_pkt, (uint8_t *)in_packet + sizeof(meta_hdr_t),
-						 packet_size - sizeof(meta_hdr_t)) != 0) {
-		SWITCH_PKT_ERROR("bf_pkt_data_copy failed: pkt_size=%d\n", packet_size);
-		bf_pkt_free(device, tx_pkt);
-		return SWITCH_STATUS_FAILURE;
-	}
-
-	if (bf_pkt_tx(device, tx_pkt, tx_ring, (void *)tx_pkt) != BF_SUCCESS) {
-		SWITCH_PKT_ERROR("bf_pkt_tx failed\n");
-		bf_pkt_free(device, tx_pkt);
-	}
+	Controller::controller->process(pkt_hdr);
 
 	bf_pkt_free(device, orig_pkt);
 	return 0;
@@ -146,32 +117,18 @@ void register_pcie_pkt_ops(bf_rt_target_t dev_tgt) {
 }
 
 void *register_ethernet_pkt_ops(void *args) {
-	const char *in_dev = "veth251";
-	const char *out_dev = "veth0";
-
 	char errbuf[PCAP_ERRBUF_SIZE];
-
-	pcap_t *in_handle;
-	pcap_t *out_handle;
-
-	in_handle = pcap_open_live(in_dev, BUFSIZ, true, 1000, errbuf);
+	auto in_handle =
+		pcap_open_live(IN_VIRTUAL_IFACE, BUFSIZ, true, 1000, errbuf);
 
 	if (in_handle == nullptr) {
-		fprintf(stderr, "Couldn't open device %s: %s\n", in_dev, errbuf);
-		exit(2);
-	}
-
-	out_handle = pcap_open_live(out_dev, BUFSIZ, true, 1000, errbuf);
-
-	if (out_handle == NULL) {
-		fprintf(stderr, "Couldn't open device %s: %s\n", out_dev, errbuf);
+		fprintf(stderr, "Couldn't open device %s: %s\n", IN_VIRTUAL_IFACE,
+				errbuf);
 		exit(2);
 	}
 
 	pcap_setdirection(in_handle, PCAP_D_IN);
-	pcap_loop(in_handle, -1, pcap_callback_func, (u_char *)out_handle);
-
-	pcap_setdirection(in_handle, PCAP_D_IN);
+	pcap_loop(in_handle, -1, pcap_callback_func, nullptr);
 
 	return nullptr;
 }
@@ -227,7 +184,24 @@ void init_bf_switchd() {
 	}
 }
 
-void setup_controller() {
+void configure_ports(const bfrt::BfRtInfo *info,
+					 std::shared_ptr<bfrt::BfRtSession> session,
+					 bf_rt_target_t dev_tgt, Ports& ports, const topology_t &topology) {
+	for (auto connection : topology.connections) {
+		auto in_speed = Ports::gbps_to_bf_port_speed(connection.in.capacity);
+		auto out_speed = Ports::gbps_to_bf_port_speed(connection.out.capacity);
+
+		ports.add_port(connection.in.port, 0, in_speed);
+		ports.add_port(connection.out.port, 0, out_speed);
+	}
+}
+
+void setup_controller(const std::string &topology_file_path, bool model) {
+	auto topology = parse_topology_file(topology_file_path);
+	setup_controller(topology, model);
+}
+
+void setup_controller(const topology_t &topology, bool model) {
 	bf_rt_target_t dev_tgt;
 	dev_tgt.dev_id = 0;
 	dev_tgt.pipe_id = ALL_PIPES;
@@ -248,13 +222,13 @@ void setup_controller() {
 	// Create a session object
 	auto session = bfrt::BfRtSession::sessionCreate();
 
-	// Ports ports(info, session, dev_tgt);
-	// ports.add_port(LAN, 0, BF_SPEED_100G);
-	// ports.add_port(WAN, 0, BF_SPEED_100G);
+	Ports ports(info, session, dev_tgt);
 
-	Controller::init(info, session, dev_tgt);
+	if (!model) {
+		configure_ports(info, session, dev_tgt, ports, topology);
+	}
 
-	std::cerr << "Controller setup done!\n";
+	Controller::init(info, session, dev_tgt, ports, topology, model);
 }
 
 void run(bool model) {

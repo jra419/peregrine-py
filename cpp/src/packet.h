@@ -4,6 +4,10 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define IP_PROTO_ICMP 1
+#define IP_PROTO_TCP 6
+#define IP_PROTO_UDP 17
+
 namespace peregrine {
 
 typedef uint8_t mac_t[6];
@@ -14,10 +18,6 @@ struct eth_hdr_t {
 	mac_t dst_mac;
 	mac_t src_mac;
 	uint16_t eth_type;
-} __attribute__((packed));
-
-struct meta_hdr_t {
-	port_t public_port;
 } __attribute__((packed));
 
 struct ipv4_hdr_t {
@@ -35,21 +35,81 @@ struct ipv4_hdr_t {
 	ipv4_t dst_ip;
 } __attribute__((packed));
 
-struct tcpudp_hdr_t {
+struct tcp_hdr_t {
+	uint16_t src_port;
+	uint16_t dst_port;
+	uint32_t seq_no;
+	uint32_t ack_no;
+	uint16_t opts;
+	uint16_t window;
+	uint16_t checksum;
+	uint16_t urgent_ptr;
+} __attribute__((packed));
+
+struct udp_hdr_t {
 	port_t src_port;
 	port_t dst_port;
+	port_t length;
+	port_t checksum;
+} __attribute__((packed));
+
+struct icmp_hdr_t {
+	uint8_t type;
+	uint8_t code;
+	uint16_t checksum;
+} __attribute__((packed));
+
+struct peregrine_hdr_t {
+	uint32_t forward;
+	uint32_t decay;
+	uint32_t pkt_cnt_global;
+	uint32_t mac_ip_src_pkt_cnt;
+	uint32_t mac_ip_src_pkt_len;
+	uint32_t mac_ip_src_ss;
+	uint32_t mac_ip_src_mean;
+	uint32_t mac_ip_src_std_dev;
+	uint32_t ip_src_pkt_cnt;
+	uint32_t ip_src_pkt_len;
+	uint32_t ip_src_ss;
+	uint32_t ip_src_mean;
+	uint32_t ip_src_std_dev;
+	uint32_t ip_pkt_cnt;
+	uint32_t ip_ss_0;
+	uint32_t ip_ss_1;
+	uint32_t ip_mean_0;
+	uint32_t ip_pkt_cnt_1;
+	uint32_t ip_mean_1;
+	uint32_t ip_std_dev_0;
+	uint32_t ip_magnitude;
+	uint32_t ip_radius;
+	uint32_t five_t_pkt_cnt;
+	uint32_t five_t_ss_0;
+	uint32_t five_t_ss_1;
+	uint32_t five_t_mean_0;
+	uint32_t five_t_pkt_cnt_1;
+	uint32_t five_t_mean_1;
+	uint32_t five_t_std_dev_0;
+	uint32_t five_t_magnitude;
+	uint32_t five_t_radius;
+	uint64_t ip_sum_res_prod_cov;
+	uint64_t ip_pcc;
+	uint64_t five_t_sum_res_prod_cov;
+	uint64_t five_t_pcc;
 } __attribute__((packed));
 
 struct pkt_hdr_t {
-	struct meta_hdr_t meta_hdr;
-	struct eth_hdr_t eth_hdr;
-	struct ipv4_hdr_t ip_hdr;
-	struct tcpudp_hdr_t tcpudp_hdr;
+	eth_hdr_t eth_hdr;
+	ipv4_hdr_t ip_hdr;
+
+	union {
+		tcp_hdr_t tcp_hdr;
+		udp_hdr_t udp_hdr;
+		icmp_hdr_t icmp_hdr;
+	};
+
+	peregrine_hdr_t peregrine_hdr;
 
 	void pretty_print() {
-		printf("###[ Meta ]###\n");
-		printf("  port   %u\n", ntohs(meta_hdr.public_port));
-
 		printf("###[ Ethernet ]###\n");
 		printf("  dst  %02x:%02x:%02x:%02x:%02x:%02x\n", eth_hdr.dst_mac[0],
 			   eth_hdr.dst_mac[1], eth_hdr.dst_mac[2], eth_hdr.dst_mac[3],
@@ -76,9 +136,71 @@ struct pkt_hdr_t {
 			   (ip_hdr.dst_ip >> 8) & 0xff, (ip_hdr.dst_ip >> 16) & 0xff,
 			   (ip_hdr.dst_ip >> 24) & 0xff);
 
-		printf("###[ TCP/UDP ]###\n");
-		printf("  sport   %u\n", ntohs(tcpudp_hdr.src_port));
-		printf("  dport   %u\n", ntohs(tcpudp_hdr.dst_port));
+		switch (ip_hdr.protocol) {
+			case IP_PROTO_TCP: {
+				printf("###[ TCP ]###\n");
+				printf("  sport   %u\n", ntohs(tcp_hdr.src_port));
+				printf("  dport   %u\n", ntohs(tcp_hdr.dst_port));
+			} break;
+			case IP_PROTO_UDP: {
+				printf("###[ UDP ]###\n");
+				printf("  sport   %u\n", ntohs(udp_hdr.src_port));
+				printf("  dport   %u\n", ntohs(udp_hdr.dst_port));
+			} break;
+			case IP_PROTO_ICMP: {
+				printf("###[ ICMP ]###\n");
+				printf("  type    %u\n", icmp_hdr.type);
+				printf("  code    %u\n", icmp_hdr.code);
+			} break;
+			default: {
+				printf("\n*** Not TCP/UDP/ICMP packet! ***\n");
+			} break;
+		}
+
+		printf("###[ Peregrine ]###\n");
+		printf("  forward                 %d\n", peregrine_hdr.forward);
+		printf("  decay                   %d\n", peregrine_hdr.decay);
+		printf("  pkt_cnt_global          %d\n", peregrine_hdr.pkt_cnt_global);
+		printf("  mac_ip_src_pkt_cnt      %d\n",
+			   peregrine_hdr.mac_ip_src_pkt_cnt);
+		printf("  mac_ip_src_pkt_len      %d\n",
+			   peregrine_hdr.mac_ip_src_pkt_len);
+		printf("  mac_ip_src_ss           %d\n", peregrine_hdr.mac_ip_src_ss);
+		printf("  mac_ip_src_mean         %d\n", peregrine_hdr.mac_ip_src_mean);
+		printf("  mac_ip_src_std_dev      %d\n",
+			   peregrine_hdr.mac_ip_src_std_dev);
+		printf("  ip_src_pkt_cnt          %d\n", peregrine_hdr.ip_src_pkt_cnt);
+		printf("  ip_src_pkt_len          %d\n", peregrine_hdr.ip_src_pkt_len);
+		printf("  ip_src_ss               %d\n", peregrine_hdr.ip_src_ss);
+		printf("  ip_src_mean             %d\n", peregrine_hdr.ip_src_mean);
+		printf("  ip_src_std_dev          %d\n", peregrine_hdr.ip_src_std_dev);
+		printf("  ip_pkt_cnt              %d\n", peregrine_hdr.ip_pkt_cnt);
+		printf("  ip_ss_0                 %d\n", peregrine_hdr.ip_ss_0);
+		printf("  ip_ss_1                 %d\n", peregrine_hdr.ip_ss_1);
+		printf("  ip_mean_0               %d\n", peregrine_hdr.ip_mean_0);
+		printf("  ip_pkt_cnt_1            %d\n", peregrine_hdr.ip_pkt_cnt_1);
+		printf("  ip_mean_1               %d\n", peregrine_hdr.ip_mean_1);
+		printf("  ip_std_dev_0            %d\n", peregrine_hdr.ip_std_dev_0);
+		printf("  ip_magnitude            %d\n", peregrine_hdr.ip_magnitude);
+		printf("  ip_radius               %d\n", peregrine_hdr.ip_radius);
+		printf("  five_t_pkt_cnt          %d\n", peregrine_hdr.five_t_pkt_cnt);
+		printf("  five_t_ss_0             %d\n", peregrine_hdr.five_t_ss_0);
+		printf("  five_t_ss_1             %d\n", peregrine_hdr.five_t_ss_1);
+		printf("  five_t_mean_0           %d\n", peregrine_hdr.five_t_mean_0);
+		printf("  five_t_pkt_cnt_1        %d\n",
+			   peregrine_hdr.five_t_pkt_cnt_1);
+		printf("  five_t_mean_1           %d\n", peregrine_hdr.five_t_mean_1);
+		printf("  five_t_std_dev_0        %d\n",
+			   peregrine_hdr.five_t_std_dev_0);
+		printf("  five_t_magnitude        %d\n",
+			   peregrine_hdr.five_t_magnitude);
+		printf("  five_t_radius           %d\n", peregrine_hdr.five_t_radius);
+		printf("  ip_sum_res_prod_cov     %ld\n",
+			   peregrine_hdr.ip_sum_res_prod_cov);
+		printf("  ip_pcc                  %ld\n", peregrine_hdr.ip_pcc);
+		printf("  five_t_sum_res_prod_cov %ld\n",
+			   peregrine_hdr.five_t_sum_res_prod_cov);
+		printf("  five_t_pcc              %ld\n", peregrine_hdr.five_t_pcc);
 	}
 } __attribute__((packed));
 

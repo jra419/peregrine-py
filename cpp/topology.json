@@ -1,0 +1,20 @@
+{
+	"pipes": {
+		"external": [ 0 ],
+		"internal": [ 1 ]
+	},
+    "connections": [
+        {
+            "in": {
+				"port": 5,
+            	"capacity": 100,
+            	"comment": "e291427x1300275 E810"
+			},
+			"out": {
+				"port": 6,
+				"capacity": 100,
+				"comment": "e291427x1300275 E810"
+			}	
+        }
+    ]
+}

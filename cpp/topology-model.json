@@ -1,0 +1,20 @@
+{
+	"pipes": {
+		"external": [ 0 ],
+		"internal": [ 1 ]
+	},
+    "connections": [
+        {
+            "in": {
+				"port": 0,
+            	"capacity": 100,
+            	"comment": "veth0"
+			},
+			"out": {
+				"port": 1,
+				"capacity": 100,
+				"comment": "veth2"
+			}	
+        }
+    ]
+}
