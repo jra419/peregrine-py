@@ -4,7 +4,7 @@
 
 namespace peregrine {
 
-class IpPktCnt1Access : public Table {
+class FiveTMean1Access : public Table {
 private:
 	struct key_fields_t {
 		// Key fields IDs
@@ -14,38 +14,36 @@ private:
 
 	struct actions_t {
 		// Actions ids
-		bf_rt_id_t pkt_cnt_1_incr;
-		bf_rt_id_t pkt_cnt_1_read;
+		bf_rt_id_t mean_0_write;
+		bf_rt_id_t mean_1_read;
 	};
 
 	key_fields_t key_fields;
 	actions_t actions;
 
 public:
-	IpPktCnt1Access(const bfrt::BfRtInfo *info,
-					std::shared_ptr<bfrt::BfRtSession> session,
-					const bf_rt_target_t &dev_tgt)
+	FiveTMean1Access(const bfrt::BfRtInfo *info,
+				  std::shared_ptr<bfrt::BfRtSession> session,
+				  const bf_rt_target_t &dev_tgt)
 		: Table(info, session, dev_tgt,
-				"SwitchIngress_a.stats_ip_a.pkt_cnt_1_access") {
+				"SwitchIngress_a.stats_five_t_a.mean_1_access") {
 		init_key({
 			{"ig_md.meta.pkt_cnt_global", &key_fields.pkt_cnt_global},
 			{"$MATCH_PRIORITY", &key_fields.priority},
 		});
 
 		init_actions({
-			{"SwitchIngress_a.stats_ip_a.pkt_cnt_1_incr",
-			 &actions.pkt_cnt_1_incr},
-			{"SwitchIngress_a.stats_ip_a.pkt_cnt_1_read",
-			 &actions.pkt_cnt_1_read},
+			{"SwitchIngress_a.stats_five_t_a.mean_0_write", &actions.mean_0_write},
+			{"SwitchIngress_a.stats_five_t_a.mean_1_read", &actions.mean_1_read},
 		});
 
 		// fill up table
 		add_entry(3, 0b00000000000000000000000000000000,
-				  0b11111111111111111111111111111111, actions.pkt_cnt_1_incr);
+				  0b11111111111111111111111111111111, actions.mean_0_write);
 		add_entry(2, 0b11111111111111111111110000000000,
-				  0b00000000000000000000001111111111, actions.pkt_cnt_1_read);
+				  0b00000000000000000000001111111111, actions.mean_1_read);
 		add_entry(1, 0b11111111111111111111111111111111,
-				  0b00000000000000000000000000000000, actions.pkt_cnt_1_incr);
+				  0b00000000000000000000000000000000, actions.mean_0_write);
 	}
 
 private:

@@ -16,7 +16,7 @@ if ! ps -e | grep -q "$TOFINO_MODEL_EXE_NAME"; then
 fi
 
 # Compile
-make -j
+make debug -j
 
 # Setup virtual ports
 sudo $VETH_SETUP_SCRIPT

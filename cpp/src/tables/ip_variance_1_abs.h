@@ -4,53 +4,50 @@
 
 namespace peregrine {
 
-class IpPktCnt1Access : public Table {
+class IpVariance1Abs : public Table {
 private:
 	struct key_fields_t {
 		// Key fields IDs
-		bf_rt_id_t pkt_cnt_global;
+		bf_rt_id_t variance_1;
 		bf_rt_id_t priority;
 	};
 
 	struct actions_t {
 		// Actions ids
-		bf_rt_id_t pkt_cnt_1_incr;
-		bf_rt_id_t pkt_cnt_1_read;
+		bf_rt_id_t variance_1_pos;
+		bf_rt_id_t variance_1_neg;
 	};
 
 	key_fields_t key_fields;
 	actions_t actions;
 
 public:
-	IpPktCnt1Access(const bfrt::BfRtInfo *info,
-					std::shared_ptr<bfrt::BfRtSession> session,
-					const bf_rt_target_t &dev_tgt)
+	IpVariance1Abs(const bfrt::BfRtInfo *info,
+				   std::shared_ptr<bfrt::BfRtSession> session,
+				   const bf_rt_target_t &dev_tgt)
 		: Table(info, session, dev_tgt,
-				"SwitchIngress_a.stats_ip_a.pkt_cnt_1_access") {
+				"SwitchIngress_b.stats_ip_b.variance_1_abs") {
 		init_key({
-			{"ig_md.meta.pkt_cnt_global", &key_fields.pkt_cnt_global},
+			{"ig_md.stats_ip.variance_1", &key_fields.variance_1},
 			{"$MATCH_PRIORITY", &key_fields.priority},
 		});
 
 		init_actions({
-			{"SwitchIngress_a.stats_ip_a.pkt_cnt_1_incr",
-			 &actions.pkt_cnt_1_incr},
-			{"SwitchIngress_a.stats_ip_a.pkt_cnt_1_read",
-			 &actions.pkt_cnt_1_read},
+			{"SwitchIngress_b.stats_ip_b.variance_1_pos",
+			 &actions.variance_1_pos},
+			{"SwitchIngress_b.stats_ip_b.variance_1_neg",
+			 &actions.variance_1_neg},
 		});
 
 		// fill up table
-		add_entry(3, 0b00000000000000000000000000000000,
-				  0b11111111111111111111111111111111, actions.pkt_cnt_1_incr);
-		add_entry(2, 0b11111111111111111111110000000000,
-				  0b00000000000000000000001111111111, actions.pkt_cnt_1_read);
-		add_entry(1, 0b11111111111111111111111111111111,
-				  0b00000000000000000000000000000000, actions.pkt_cnt_1_incr);
+		add_entry(2, 0b00000000000000000000000000000000,
+				  0b10000000000000000000000000000000, actions.variance_1_pos);
+		add_entry(1, 0b10000000000000000000000000000000,
+				  0b10000000000000000000000000000000, actions.variance_1_neg);
 	}
 
 private:
-	void add_entry(uint32_t priority, uint32_t value, uint32_t mask,
-				   bf_rt_id_t action_id) {
+	void add_entry(uint32_t priority, uint32_t value, uint32_t mask, bf_rt_id_t action_id) {
 		key_setup(priority, value, mask);
 		data_setup(action_id);
 
@@ -60,8 +57,8 @@ private:
 
 	void key_setup(uint32_t priority, uint32_t value, uint32_t mask) {
 		table->keyReset(key.get());
-
-		auto bf_status = key->setValueandMask(key_fields.pkt_cnt_global,
+		
+		auto bf_status = key->setValueandMask(key_fields.variance_1,
 											  static_cast<uint64_t>(value),
 											  static_cast<uint64_t>(mask));
 		assert(bf_status == BF_SUCCESS);

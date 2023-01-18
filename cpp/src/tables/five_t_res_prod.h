@@ -4,13 +4,13 @@
 
 namespace peregrine {
 
-class MacIpSrcMean : public Table {
+class FiveTResProd : public Table {
 private:
-	static constexpr uint32_t NUM_ACTIONS = 32;
+	static constexpr uint32_t NUM_ACTIONS = 30;
 
 	struct key_fields_t {
 		// Key fields IDs
-		bf_rt_id_t mac_ip_src_pkt_cnt;
+		bf_rt_id_t res_1;
 		bf_rt_id_t priority;
 	};
 
@@ -25,14 +25,12 @@ private:
 	actions_t actions;
 
 public:
-	MacIpSrcMean(const bfrt::BfRtInfo *info,
-				 std::shared_ptr<bfrt::BfRtSession> session,
-				 const bf_rt_target_t &dev_tgt)
-		: Table(info, session, dev_tgt,
-				"SwitchIngress_b.stats_mac_ip_src_b.mean") {
+	FiveTResProd(const bfrt::BfRtInfo *info,
+			  std::shared_ptr<bfrt::BfRtSession> session,
+			  const bf_rt_target_t &dev_tgt)
+		: Table(info, session, dev_tgt, "SwitchIngress_a.stats_five_t_a.res_prod") {
 		init_key({
-			{"hdr.peregrine.mac_ip_src_pkt_cnt",
-			 &key_fields.mac_ip_src_pkt_cnt},
+			{"ig_md.stats_five_t.res_1", &key_fields.res_1},
 			{"$MATCH_PRIORITY", &key_fields.priority},
 		});
 
@@ -40,7 +38,7 @@ public:
 
 		for (auto i = 0u; i < NUM_ACTIONS; i++) {
 			std::stringstream ss;
-			ss << "SwitchIngress_b.stats_mac_ip_src_b.rshift_mean_";
+			ss << "SwitchIngress_a.stats_five_t_a.lshift_res_prod_";
 			ss << i;
 
 			auto action_name = ss.str();
@@ -74,7 +72,7 @@ private:
 	void key_setup(uint32_t priority, uint32_t power, uint32_t mask) {
 		table->keyReset(key.get());
 
-		auto bf_status = key->setValueandMask(key_fields.mac_ip_src_pkt_cnt,
+		auto bf_status = key->setValueandMask(key_fields.res_1,
 											  static_cast<uint64_t>(power),
 											  static_cast<uint64_t>(mask));
 		assert(bf_status == BF_SUCCESS);

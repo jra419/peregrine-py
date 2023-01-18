@@ -4,7 +4,7 @@
 
 namespace peregrine {
 
-class IpResStructUpdate : public Table {
+class FiveTResStructUpdate : public Table {
 private:
 	struct key_fields_t {
 		// Key fields IDs
@@ -21,19 +21,19 @@ private:
 	actions_t actions;
 
 public:
-	IpResStructUpdate(const bfrt::BfRtInfo *info,
+	FiveTResStructUpdate(const bfrt::BfRtInfo *info,
 					  std::shared_ptr<bfrt::BfRtSession> session,
 					  const bf_rt_target_t &dev_tgt)
 		: Table(info, session, dev_tgt,
-				"SwitchIngress_a.stats_ip_a.res_struct_update") {
+				"SwitchIngress_a.stats_five_t_a.res_struct_update") {
 		init_key({
-			{"ig_md.stats_ip.res_check", &key_fields.res_check},
+			{"ig_md.stats_five_t.res_check", &key_fields.res_check},
 		});
 
 		init_actions({
-			{"SwitchIngress_a.stats_ip_a.res_read",
+			{"SwitchIngress_a.stats_five_t_a.res_read",
 			 &actions.res_read},
-			{"SwitchIngress_a.stats_ip_a.res_update",
+			{"SwitchIngress_a.stats_five_t_a.res_update",
 			 &actions.res_update},
 		});
 

@@ -215,7 +215,7 @@ void init_bf_switchd() {
 	switchd_main_ctx->conf_file = const_cast<char *>(target_conf_file.c_str());
 	switchd_main_ctx->skip_p4 = false;
 	switchd_main_ctx->skip_port_add = false;
-	switchd_main_ctx->running_in_background = false;
+	switchd_main_ctx->running_in_background = true;
 	switchd_main_ctx->dev_sts_thread = true;
 	switchd_main_ctx->dev_sts_port = THRIFT_PORT_NUM;
 

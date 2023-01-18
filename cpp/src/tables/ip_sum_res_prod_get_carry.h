@@ -37,7 +37,7 @@ public:
 			 &actions.sum_res_prod_get_carry_decay_1},
 		});
 
-		// fill mac ip src decay check table
+		// fill up table
 		add_entry(0, actions.sum_res_prod_get_carry_decay_0);
 		add_entry(1, actions.sum_res_prod_get_carry_decay_1);
 	}

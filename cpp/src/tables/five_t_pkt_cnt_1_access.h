@@ -4,7 +4,7 @@
 
 namespace peregrine {
 
-class IpPktCnt1Access : public Table {
+class FiveTPktCnt1Access : public Table {
 private:
 	struct key_fields_t {
 		// Key fields IDs
@@ -22,20 +22,20 @@ private:
 	actions_t actions;
 
 public:
-	IpPktCnt1Access(const bfrt::BfRtInfo *info,
+	FiveTPktCnt1Access(const bfrt::BfRtInfo *info,
 					std::shared_ptr<bfrt::BfRtSession> session,
 					const bf_rt_target_t &dev_tgt)
 		: Table(info, session, dev_tgt,
-				"SwitchIngress_a.stats_ip_a.pkt_cnt_1_access") {
+				"SwitchIngress_a.stats_five_t_a.pkt_cnt_1_access") {
 		init_key({
 			{"ig_md.meta.pkt_cnt_global", &key_fields.pkt_cnt_global},
 			{"$MATCH_PRIORITY", &key_fields.priority},
 		});
 
 		init_actions({
-			{"SwitchIngress_a.stats_ip_a.pkt_cnt_1_incr",
+			{"SwitchIngress_a.stats_five_t_a.pkt_cnt_1_incr",
 			 &actions.pkt_cnt_1_incr},
-			{"SwitchIngress_a.stats_ip_a.pkt_cnt_1_read",
+			{"SwitchIngress_a.stats_five_t_a.pkt_cnt_1_read",
 			 &actions.pkt_cnt_1_read},
 		});
 

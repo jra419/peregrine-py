@@ -4,61 +4,46 @@
 
 namespace peregrine {
 
-class MacIpSrcMean : public Table {
+class FiveTSs1Access : public Table {
 private:
-	static constexpr uint32_t NUM_ACTIONS = 32;
-
 	struct key_fields_t {
 		// Key fields IDs
-		bf_rt_id_t mac_ip_src_pkt_cnt;
+		bf_rt_id_t pkt_cnt_global;
 		bf_rt_id_t priority;
 	};
 
 	struct actions_t {
 		// Actions ids
-		std::vector<bf_rt_id_t> rshift_means;
-
-		actions_t() : rshift_means(NUM_ACTIONS) {}
+		bf_rt_id_t ss_1_incr;
+		bf_rt_id_t ss_1_read;
 	};
 
 	key_fields_t key_fields;
 	actions_t actions;
 
 public:
-	MacIpSrcMean(const bfrt::BfRtInfo *info,
-				 std::shared_ptr<bfrt::BfRtSession> session,
-				 const bf_rt_target_t &dev_tgt)
+	FiveTSs1Access(const bfrt::BfRtInfo *info,
+				std::shared_ptr<bfrt::BfRtSession> session,
+				const bf_rt_target_t &dev_tgt)
 		: Table(info, session, dev_tgt,
-				"SwitchIngress_b.stats_mac_ip_src_b.mean") {
+				"SwitchIngress_a.stats_five_t_a.ss_1_access") {
 		init_key({
-			{"hdr.peregrine.mac_ip_src_pkt_cnt",
-			 &key_fields.mac_ip_src_pkt_cnt},
+			{"ig_md.meta.pkt_cnt_global", &key_fields.pkt_cnt_global},
 			{"$MATCH_PRIORITY", &key_fields.priority},
 		});
 
-		auto actions_to_init = std::unordered_map<std::string, bf_rt_id_t *>();
-
-		for (auto i = 0u; i < NUM_ACTIONS; i++) {
-			std::stringstream ss;
-			ss << "SwitchIngress_b.stats_mac_ip_src_b.rshift_mean_";
-			ss << i;
-
-			auto action_name = ss.str();
-			auto *action_id = &actions.rshift_means[i];
-
-			actions_to_init[action_name] = action_id;
-		}
-
-		init_actions(actions_to_init);
+		init_actions({
+			{"SwitchIngress_a.stats_five_t_a.ss_1_incr", &actions.ss_1_incr},
+			{"SwitchIngress_a.stats_five_t_a.ss_1_read", &actions.ss_1_read},
+		});
 
 		// fill up table
-		for (auto i = 0u; i < NUM_ACTIONS; i++) {
-			uint32_t priority = NUM_ACTIONS - i;
-			uint32_t power = 1 << i;
-			uint32_t mask = 0xffffffff << i;
-			auto action_id = actions.rshift_means[i];
-			add_entry(priority, power, mask, action_id);
-		}
+		add_entry(3, 0b00000000000000000000000000000000,
+				  0b11111111111111111111111111111111, actions.ss_1_incr);
+		add_entry(2, 0b11111111111111111111110000000000,
+				  0b00000000000000000000001111111111, actions.ss_1_read);
+		add_entry(1, 0b11111111111111111111111111111111,
+				  0b00000000000000000000000000000000, actions.ss_1_incr);
 	}
 
 private:
@@ -74,7 +59,7 @@ private:
 	void key_setup(uint32_t priority, uint32_t power, uint32_t mask) {
 		table->keyReset(key.get());
 
-		auto bf_status = key->setValueandMask(key_fields.mac_ip_src_pkt_cnt,
+		auto bf_status = key->setValueandMask(key_fields.pkt_cnt_global,
 											  static_cast<uint64_t>(power),
 											  static_cast<uint64_t>(mask));
 		assert(bf_status == BF_SUCCESS);

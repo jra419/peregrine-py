@@ -43,7 +43,7 @@ public:
 			 &actions.decay_check_60_s},
 		});
 
-		// fill mac ip src decay check table
+		// fill up table
 		add_entry(0, actions.decay_check_100_ms);
 		add_entry(8192, actions.decay_check_1_s);
 		add_entry(16384, actions.decay_check_10_s);

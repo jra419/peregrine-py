@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-WORKSPACE=/home/docker/
+WORKSPACE=/home/docker
 
 sudo apt-get update
 sudo apt-get install python3 python3-pip cmake -y

@@ -4,35 +4,33 @@
 
 namespace peregrine {
 
-class MacIpSrcMean : public Table {
+class FiveTPcc : public Table {
 private:
 	static constexpr uint32_t NUM_ACTIONS = 32;
 
 	struct key_fields_t {
 		// Key fields IDs
-		bf_rt_id_t mac_ip_src_pkt_cnt;
+		bf_rt_id_t std_dev_prod;
 		bf_rt_id_t priority;
 	};
 
 	struct actions_t {
 		// Actions ids
-		std::vector<bf_rt_id_t> rshift_means;
+		std::vector<bf_rt_id_t> rshift_pccs;
 
-		actions_t() : rshift_means(NUM_ACTIONS) {}
+		actions_t() : rshift_pccs(NUM_ACTIONS) {}
 	};
 
 	key_fields_t key_fields;
 	actions_t actions;
 
 public:
-	MacIpSrcMean(const bfrt::BfRtInfo *info,
-				 std::shared_ptr<bfrt::BfRtSession> session,
-				 const bf_rt_target_t &dev_tgt)
-		: Table(info, session, dev_tgt,
-				"SwitchIngress_b.stats_mac_ip_src_b.mean") {
+	FiveTPcc(const bfrt::BfRtInfo *info,
+			  std::shared_ptr<bfrt::BfRtSession> session,
+			  const bf_rt_target_t &dev_tgt)
+		: Table(info, session, dev_tgt, "SwitchIngress_b.stats_five_t_b.pcc") {
 		init_key({
-			{"hdr.peregrine.mac_ip_src_pkt_cnt",
-			 &key_fields.mac_ip_src_pkt_cnt},
+			{"ig_md.stats_five_t.std_dev_prod", &key_fields.std_dev_prod},
 			{"$MATCH_PRIORITY", &key_fields.priority},
 		});
 
@@ -40,11 +38,11 @@ public:
 
 		for (auto i = 0u; i < NUM_ACTIONS; i++) {
 			std::stringstream ss;
-			ss << "SwitchIngress_b.stats_mac_ip_src_b.rshift_mean_";
+			ss << "SwitchIngress_b.stats_five_t_b.rshift_pcc_";
 			ss << i;
 
 			auto action_name = ss.str();
-			auto *action_id = &actions.rshift_means[i];
+			auto *action_id = &actions.rshift_pccs[i];
 
 			actions_to_init[action_name] = action_id;
 		}
@@ -56,7 +54,7 @@ public:
 			uint32_t priority = NUM_ACTIONS - i;
 			uint32_t power = 1 << i;
 			uint32_t mask = 0xffffffff << i;
-			auto action_id = actions.rshift_means[i];
+			auto action_id = actions.rshift_pccs[i];
 			add_entry(priority, power, mask, action_id);
 		}
 	}
@@ -74,7 +72,7 @@ private:
 	void key_setup(uint32_t priority, uint32_t power, uint32_t mask) {
 		table->keyReset(key.get());
 
-		auto bf_status = key->setValueandMask(key_fields.mac_ip_src_pkt_cnt,
+		auto bf_status = key->setValueandMask(key_fields.std_dev_prod,
 											  static_cast<uint64_t>(power),
 											  static_cast<uint64_t>(mask));
 		assert(bf_status == BF_SUCCESS);

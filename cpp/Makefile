@@ -28,13 +28,13 @@ LDLIBS   = -L$(SDE_INSTALL)/lib -L$(SDE_INSTALL)/lib/$(ARCH)pd/$(P4_PROG)
 LDLIBS  += -Wl,--start-group $(BF_LIBS) -Wl,--end-group
 LDLIBS  += -lm -pthread -lpcap -ldl -levent
 
+all: release
+
 debug: CFLAGS += -g -O0 -DDEBUG
 debug: $(EXE)
 
 release: CFLAGS += -O3
 release: $(EXE)
-
-all: $(EXE)
 
 $(EXE): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $(OBJECTS) $(LDLIBS) $(LDFLAGS)
@@ -49,4 +49,4 @@ $(OUT_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	$(CC) $(CFLAGS) -c $< $(LDLIBS) $(LDFLAGS) -o $@
 
 clean:
-	rm -rf $(EXE) *.log zlog-cfg-cur $(OUTDIR)
+	rm -rf $(EXE) *.log bf_drivers* zlog-cfg-cur $(OUT_DIR)
