@@ -24,7 +24,8 @@
 # Portions of this code have been adapted from Yusuke Sugomori's code on GitHub:
 # https://github.com/yusugomori/DeepLearning
 
-from .utils import numpy, sigmoid
+from .utils import numpy
+from scipy.special import expit
 
 
 class DAParams:
@@ -70,11 +71,11 @@ class DA:
 
     # Encode
     def get_hidden_values(self, input):
-        return sigmoid(numpy.dot(input, self.W) + self.hbias)
+        return expit(numpy.dot(input, self.W) + self.hbias)
 
     # Decode
     def get_reconstructed_input(self, hidden):
-        return sigmoid(numpy.dot(hidden, self.W_prime) + self.vbias)
+        return expit(numpy.dot(hidden, self.W_prime) + self.vbias)
 
     def train(self, x):
         self.n = self.n + 1

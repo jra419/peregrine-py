@@ -4,28 +4,6 @@ import numpy as np
 import pickle
 from pathlib import Path
 
-# MIT License
-#
-# Copyright (c) 2018 Yisroel mirsky
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 
 class Peregrine:
     def __init__(self, max_autoencoder_size=10, fm_grace_period=None, ad_grace_period=10000,
@@ -33,6 +11,7 @@ class Peregrine:
                  feature_map=None, ensemble_layer=None, output_layer=None, train_stats=None,
                  attack='', train_skip=False):
 
+        # Initialize KitNET.
         self.AnomDetector = KitNET(80, max_autoencoder_size, fm_grace_period,
                                    ad_grace_period, learning_rate, hidden_ratio,
                                    feature_map, ensemble_layer, output_layer, attack)
@@ -47,6 +26,7 @@ class Peregrine:
         self.attack = attack
         self.m = max_autoencoder_size
 
+        # If train_skip is true, import the previously generated models.
         if train_skip:
             with open(train_stats, 'rb') as f_stats:
                 stats = pickle.load(f_stats)
@@ -97,8 +77,7 @@ class Peregrine:
         # Convert any existing NaNs to 0.
         processed_stats[np.isnan(processed_stats)] = 0
 
-        # process KitNET.
-        # will train during the grace periods, then execute on all the rest.
+        # Run KitNET with the current statistics.
         return self.AnomDetector.process(processed_stats)
 
     def save_stats(self):
