@@ -168,7 +168,7 @@ std::string get_target_conf_file() {
 	return get_env_var_value(ENV_VAR_CONF_FILE);
 }
 
-void init_bf_switchd() {
+void init_bf_switchd(bool use_tofino_model) {
 	auto switchd_main_ctx =
 		(bf_switchd_context_t *)calloc(1, sizeof(bf_switchd_context_t));
 
@@ -186,7 +186,7 @@ void init_bf_switchd() {
 	switchd_main_ctx->conf_file = const_cast<char *>(target_conf_file.c_str());
 	switchd_main_ctx->skip_p4 = false;
 	switchd_main_ctx->skip_port_add = false;
-	switchd_main_ctx->running_in_background = true;
+	switchd_main_ctx->running_in_background = use_tofino_model;
 	switchd_main_ctx->dev_sts_thread = true;
 	switchd_main_ctx->dev_sts_port = THRIFT_PORT_NUM;
 
@@ -210,18 +210,18 @@ void configure_ports(const bfrt::BfRtInfo *info,
 	}
 }
 
-void setup_controller(const std::string &topology_file_path, bool model) {
+void setup_controller(const std::string &topology_file_path, bool use_tofino_model) {
 	auto topology = parse_topology_file(topology_file_path);
-	setup_controller(topology, model);
+	setup_controller(topology, use_tofino_model);
 }
 
-void configure_cpu_port(Ports& ports, bool model) {
-	auto cpu_port = model ? CPU_PORT_TOFINO_MODEL : CPU_PORT_2_PIPES;
-	cpu_port = model ? cpu_port : ports.get_dev_port(cpu_port, 0);
+void configure_cpu_port(Ports& ports, bool use_tofino_model) {
+	auto cpu_port = use_tofino_model ? CPU_PORT_TOFINO_MODEL : CPU_PORT_2_PIPES;
+	cpu_port = use_tofino_model ? cpu_port : ports.get_dev_port(cpu_port, 0);
 	p4_devport_mgr_set_copy_to_cpu(0, true, cpu_port);
 }
 
-void setup_controller(const topology_t &topology, bool model) {
+void setup_controller(const topology_t &topology, bool use_tofino_model) {
 	bf_rt_target_t dev_tgt;
 	dev_tgt.dev_id = 0;
 	dev_tgt.pipe_id = ALL_PIPES;
@@ -244,19 +244,19 @@ void setup_controller(const topology_t &topology, bool model) {
 
 	Ports ports(info, session, dev_tgt);
 
-	configure_cpu_port(ports, model);
+	configure_cpu_port(ports, use_tofino_model);
 
-	if (!model) {
+	if (!use_tofino_model) {
 		configure_ports(info, session, dev_tgt, ports, topology);
 	}
 
-	Controller::init(info, session, dev_tgt, ports, topology, model);
+	Controller::init(info, session, dev_tgt, ports, topology, use_tofino_model);
 }
 
-void run(bool model) {
+void run(bool use_tofino_model) {
 	std::cerr << "NF main learning thread started...\n";
 
-	if (model) {
+	if (use_tofino_model) {
 		pthread_create(&ether_if_sniff_thread, nullptr,
 					   register_ethernet_pkt_ops, nullptr);
 		ether_sniff_thread_launched = true;

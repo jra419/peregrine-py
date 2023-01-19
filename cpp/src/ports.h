@@ -115,7 +115,7 @@ public:
 
 		auto fec = speed_to_fec[speed];
 		auto dev_port =
-			port_hdl_info.get_dev_port(front_panel_port, lane, true);
+			port_hdl_info.get_dev_port(front_panel_port, lane, false);
 
 		key_setup(dev_port);
 		data_setup(speed_opts[speed], fec_opts[fec], true);
@@ -125,7 +125,7 @@ public:
 	}
 
 	uint16_t get_dev_port(uint16_t front_panel_port, uint16_t lane) {
-		return port_hdl_info.get_dev_port(front_panel_port, lane, true);
+		return port_hdl_info.get_dev_port(front_panel_port, lane, false);
 	}
 
 private:

@@ -10,12 +10,12 @@ std::shared_ptr<Controller> Controller::controller;
 void Controller::init(const bfrt::BfRtInfo *info,
 					  std::shared_ptr<bfrt::BfRtSession> session,
 					  bf_rt_target_t dev_tgt, Ports &ports,
-					  const topology_t &topology, bool model) {
+					  const topology_t &topology, bool use_tofino_model) {
 	if (controller) {
 		return;
 	}
 
-	auto instance = new Controller(info, session, dev_tgt, ports, topology, model);
+	auto instance = new Controller(info, session, dev_tgt, ports, topology, use_tofino_model);
 	controller = std::shared_ptr<Controller>(instance);
 }
 

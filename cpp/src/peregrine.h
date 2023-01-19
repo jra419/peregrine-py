@@ -52,10 +52,10 @@ extern "C" {
 
 namespace peregrine {
 
-void init_bf_switchd();
-void setup_controller(const topology_t &topology, bool model);
-void setup_controller(const std::string &topology_file_path, bool model);
-void run(bool model);
+void init_bf_switchd(bool use_tofino_model);
+void setup_controller(const topology_t &topology, bool use_tofino_model);
+void setup_controller(const std::string &topology_file_path, bool use_tofino_model);
+void run(bool use_tofino_model);
 
 struct bfrt_info_t;
 
@@ -112,7 +112,7 @@ private:
 	Controller(const bfrt::BfRtInfo *_info,
 			   std::shared_ptr<bfrt::BfRtSession> _session,
 			   bf_rt_target_t _dev_tgt, Ports &ports,
-			   const topology_t &topology, bool model)
+			   const topology_t &topology, bool use_tofino_model)
 		: info(_info),
 		  session(_session),
 		  dev_tgt(_dev_tgt),
@@ -170,7 +170,7 @@ private:
 
 			auto internal_port = (internal_pipe << 7) | ig_port;
 
-			if (!model) {
+			if (!use_tofino_model) {
 				ig_port = ports.get_dev_port(ig_port, 0);
 				eg_port = ports.get_dev_port(eg_port, 0);
 			}
@@ -193,7 +193,7 @@ public:
 	static void init(const bfrt::BfRtInfo *_info,
 					 std::shared_ptr<bfrt::BfRtSession> _session,
 					 bf_rt_target_t _dev_tgt, Ports &ports,
-					 const topology_t &topology, bool model);
+					 const topology_t &topology, bool use_tofino_model);
 };
 
 }  // namespace peregrine
