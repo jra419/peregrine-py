@@ -2,15 +2,16 @@
 
 #include <assert.h>
 
-#include <bf_rt/bf_rt_init.hpp>
-#include <bf_rt/bf_rt_table.hpp>
-#include <bf_rt/bf_rt_table_data.hpp>
-#include <bf_rt/bf_rt_table_key.hpp>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <unordered_map>
+
+#include <bf_rt/bf_rt_init.hpp>
+#include <bf_rt/bf_rt_table.hpp>
+#include <bf_rt/bf_rt_table_data.hpp>
+#include <bf_rt/bf_rt_table_key.hpp>
 
 namespace peregrine {
 
@@ -118,10 +119,10 @@ protected:
 
 public:
 	void dump_data_fields();
-	void dump_data_fields(std::ostream&);	
+	void dump_data_fields(std::ostream &);
 
 	void dump();
-	void dump(std::ostream&);
+	void dump(std::ostream &);
 
 	static void dump_table_names(const bfrt::BfRtInfo *bfrtInfo);
 };

@@ -15,10 +15,10 @@ OBJECTS  = $(foreach obj,$(patsubst %.cpp, %.o, $(SOURCES)),$(OUT_DIR)/$(shell b
 EXE      = $(OUT_DIR)/$(P4_PROG)
 
 CC       = g++
-CFLAGS   =  -std=c++11                                 	\
-        	-DSDE_INSTALL=\"$(SDE_INSTALL)\"            \
-        	-I$(SDE_INSTALL)/include                    \
-        	-I$(SDE_INSTALL)/include/$(ARCH)/pdfixed
+CFLAGS   = -std=c++11                              	\
+           -DSDE_INSTALL=\"$(SDE_INSTALL)\"         \
+           -I$(SDE_INSTALL)/include                 \
+           -I$(SDE_INSTALL)/include/$(ARCH)/pdfixed
 
 BF_LIBS  = -ldriver -lbfsys
 
