@@ -217,7 +217,6 @@ void setup_controller(const std::string &topology_file_path, bool use_tofino_mod
 
 void configure_cpu_port(Ports& ports, bool use_tofino_model) {
 	auto cpu_port = use_tofino_model ? CPU_PORT_TOFINO_MODEL : CPU_PORT_2_PIPES;
-	cpu_port = use_tofino_model ? cpu_port : ports.get_dev_port(cpu_port, 0);
 	p4_devport_mgr_set_copy_to_cpu(0, true, cpu_port);
 }
 
