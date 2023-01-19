@@ -21,7 +21,9 @@ extern "C" {
 
 #define THRIFT_PORT_NUM 7777
 #define ALL_PIPES 0xffff
-#define SDE_INSTALL_ENV_VAR "SDE_INSTALL"
+
+#define ENV_VAR_SDE_INSTALL "SDE_INSTALL"
+#define ENV_VAR_CONF_FILE "PEREGRINE_HW_CONF"
 #define PROGRAM_NAME "peregrine"
 
 #define SWITCH_STATUS_SUCCESS 0x00000000L
@@ -32,6 +34,8 @@ extern "C" {
 #define IN_VIRTUAL_IFACE "veth251"
 
 #define CPU_PORT_TOFINO_MODEL 64
+
+#define BFN_T10_032D_CONF_FILE "../../confs/BFN-T10-032D.conf"
 
 // BFN-T10-032D
 // BFN-T10-032D-024
@@ -145,25 +149,23 @@ void *register_ethernet_pkt_ops(void *args) {
 	return nullptr;
 }
 
-char *get_install_dir() {
-	auto install_dir = getenv(SDE_INSTALL_ENV_VAR);
+char* get_env_var_value(const char* env_var) {
+	auto env_var_value = getenv(env_var);
 
-	if (!install_dir) {
-		std::cerr << SDE_INSTALL_ENV_VAR << " env var not found.\n";
+	if (!env_var_value) {
+		std::cerr << env_var << " env var not found.\n";
 		exit(1);
 	}
 
-	return getenv(SDE_INSTALL_ENV_VAR);
+	return env_var_value;
+}
+
+char *get_install_dir() {
+	return get_env_var_value(ENV_VAR_SDE_INSTALL);
 }
 
 std::string get_target_conf_file() {
-	std::stringstream ss;
-
-	ss << get_install_dir();
-	ss << "/share/p4/targets/tofino/";
-	ss << PROGRAM_NAME << ".conf";
-
-	return ss.str();
+	return get_env_var_value(ENV_VAR_CONF_FILE);
 }
 
 void init_bf_switchd() {
@@ -173,7 +175,7 @@ void init_bf_switchd() {
 	/* Allocate memory to hold switchd configuration and state */
 	if (switchd_main_ctx == NULL) {
 		std::cerr << "ERROR: Failed to allocate memory for switchd context\n";
-		return;
+		exit(1);
 	}
 
 	auto target_conf_file = get_target_conf_file();

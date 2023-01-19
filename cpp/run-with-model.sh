@@ -11,10 +11,9 @@ if [ -z ${SDE_INSTALL+x} ]; then
 fi
 
 CONTROLLER_EXE="$SCRIPT_DIR/build/peregrine-controller"
-VETH_SETUP_SCRIPT="$SCRIPT_DIR/../build_tools/veth_setup.sh"
-TOFINO_MODEL_EXE_NAME="tofino-model"
 TOPOLOGY_FILE="$SCRIPT_DIR/topology-model.json"
-
+TOFINO_MODEL_EXE_NAME="tofino-model"
+BFN_T10_032D_CONF_FILE="$SCRIPT_DIR/../confs/BFN-T10-032D.conf"
 
 # If the tofino model is not running in the background, launch it
 if ! ps -e | grep -q "$TOFINO_MODEL_EXE_NAME"; then
@@ -25,8 +24,5 @@ fi
 # Compile
 make debug -j
 
-# Setup virtual ports
-sudo $VETH_SETUP_SCRIPT
-
 # Run controller with model
-sudo -E $CONTROLLER_EXE $TOPOLOGY_FILE --model
+PEREGRINE_HW_CONF=$BFN_T10_032D_CONF_FILE sudo -E $CONTROLLER_EXE $TOPOLOGY_FILE --model
