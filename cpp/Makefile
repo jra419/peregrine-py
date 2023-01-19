@@ -41,6 +41,11 @@ $(EXE): $(OBJECTS)
 
 $(OUT_DIR)/%.o: $(SRC_DIR)/%.cpp $(HEADERS)
 	@mkdir -p $(OUT_DIR)
+	
+	@if [ "$$(grep HugePages_Total /proc/meminfo | awk '{print $$2}')" = "0" ]; then \
+		sudo sysctl -w vm.nr_hugepages=512 > /dev/null; \
+	fi
+	
 	$(CC) $(CFLAGS) -c $< $(LDLIBS) $(LDFLAGS) -o $@
 
 clean:

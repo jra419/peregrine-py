@@ -14,8 +14,6 @@ const ip_proto_t IP_PROTO_UDP = 17;
 
 typedef bit<9> port_t;
 
-const port_t CPU_PORT = 255;
-
 #define REG_SIZE 32768
 #define SAMPLING 1024
 #define FORWARD_TABLE_SIZE 1024

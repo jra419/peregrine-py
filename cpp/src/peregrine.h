@@ -18,8 +18,6 @@
 #include "tables/five_t_sum_res_prod_get_carry.h"
 #include "tables/five_t_variance_0_abs.h"
 #include "tables/five_t_variance_1_abs.h"
-#include "tables/fwd_a.h"
-#include "tables/fwd_b.h"
 #include "tables/fwd_recirculation_a.h"
 #include "tables/fwd_recirculation_b.h"
 #include "tables/ip_cov.h"
@@ -107,8 +105,6 @@ private:
 	FiveTPcc five_t_pcc;
 	FwdRecirculation_a fwd_recirculation_a;
 	FwdRecirculation_b fwd_recirculation_b;
-	Fwd_a fwd_a;
-	Fwd_b fwd_b;
 
 	// statistics
 	uint64_t pkts;
@@ -155,48 +151,7 @@ private:
 		  five_t_std_dev_prod(_info, session, dev_tgt),
 		  five_t_pcc(_info, session, dev_tgt),
 		  fwd_recirculation_a(_info, session, dev_tgt),
-		  fwd_recirculation_b(_info, session, dev_tgt),
-		  fwd_a(_info, session, dev_tgt),
-		  fwd_b(_info, session, dev_tgt) {
-		// mac_ip_src_decay_check.dump();
-		// ip_src_decay_check.dump();
-		// ip_decay_check.dump();
-		// five_t_decay_check.dump();
-		// mac_ip_src_mean.dump();
-		// ip_src_mean.dump();
-		// ip_mean_0.dump();
-		// ip_res_struct_update.dump();
-		// ip_res_prod.dump();
-		// ip_sum_res_prod_get_carry.dump();
-		// ip_pkt_cnt_1_access.dump();
-		// ip_ss_1_access.dump();
-		// ip_mean_1_access.dump();
-		// ip_mean_ss_0.dump();
-		// ip_mean_ss_1.dump();
-		// ip_variance_0_abs.dump();
-		// ip_variance_1_abs.dump();
-		// ip_cov.dump();
-		// ip_std_dev_prod.dump();
-		// ip_pcc.dump();
-		// five_t_mean_0.dump();
-		// five_t_res_struct_update.dump();
-		// five_t_res_prod.dump();
-		// five_t_sum_res_prod_get_carry.dump();
-		// five_t_pkt_cnt_1_access.dump();
-		// five_t_ss_1_access.dump();
-		// five_t_mean_1_access.dump();
-		// five_t_mean_ss_0.dump();
-		// five_t_mean_ss_1.dump();
-		// five_t_variance_0_abs.dump();
-		// five_t_variance_1_abs.dump();
-		// five_t_cov.dump();
-		// five_t_std_dev_prod.dump();
-		// five_t_pcc.dump();
-		// fwd_recirculation_a.dump();
-		// fwd_recirculation_b.dump();
-		// fwd_a.dump();
-		// fwd_b.dump();
-
+		  fwd_recirculation_b(_info, session, dev_tgt) {
 		for (auto connection : topology.connections) {
 			auto ig_port = connection.in.port;
 			auto eg_port = connection.out.port;

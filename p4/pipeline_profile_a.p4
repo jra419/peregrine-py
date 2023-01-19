@@ -84,7 +84,6 @@ control SwitchIngress_a(
     action modify_eg_port(PortId_t port) {
         ig_tm_md.ucast_egress_port = port;
         ig_tm_md.copy_to_cpu = 1;
-        hdr.peregrine.forward = 1;
         hdr.peregrine.decay = (bit<32>)ig_md.meta.decay_cntr;
         hdr.peregrine.pkt_cnt_global = ig_md.meta.pkt_cnt_global;
     }
@@ -170,29 +169,5 @@ control SwitchEgress_a(
     inout egress_intrinsic_metadata_for_deparser_t eg_intr_md_for_dprs,
     inout egress_intrinsic_metadata_for_output_port_t eg_intr_md_for_oport) {
 
-    action hit() {
-        hdr.peregrine.forward = 4;
-    }
-
-    action miss() {
-        eg_intr_md_for_dprs.drop_ctl = 0x1; // Drop packet.
-    }
-
-    table fwd {
-        key = {
-            hdr.peregrine.forward : exact;
-        }
-
-        actions = {
-            hit;
-            @defaultonly miss;
-        }
-
-        const default_action = miss;
-    }
-
-    apply {
-        fwd.apply();
-    }
+    apply {}
 }
-

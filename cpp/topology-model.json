@@ -11,9 +11,9 @@
             	"comment": "veth0"
 			},
 			"out": {
-				"port": 1,
+				"port": 2,
 				"capacity": 100,
-				"comment": "veth2"
+				"comment": "veth4"
 			}	
         }
     ]

@@ -31,6 +31,18 @@ extern "C" {
 
 #define IN_VIRTUAL_IFACE "veth251"
 
+#define CPU_PORT_TOFINO_MODEL 64
+
+// BFN-T10-032D
+// BFN-T10-032D-024
+// BFN-T10-032D-020
+// BFN-T10-032D-018
+#define CPU_PORT_2_PIPES 192
+
+// BFN-T10-064Q
+// BFN-T10-032Q
+#define CPU_PORT_4_PIPES 192
+
 #define SWITCH_PKT_ERROR(fmt, arg...)                                 \
 	bf_sys_log_and_trace(BF_MOD_SWITCHAPI, BF_LOG_ERR, "%s:%d: " fmt, \
 						 __FUNCTION__, __LINE__, ##arg)
@@ -201,6 +213,12 @@ void setup_controller(const std::string &topology_file_path, bool model) {
 	setup_controller(topology, model);
 }
 
+void configure_cpu_port(Ports& ports, bool model) {
+	auto cpu_port = model ? CPU_PORT_TOFINO_MODEL : CPU_PORT_2_PIPES;
+	cpu_port = model ? cpu_port : ports.get_dev_port(cpu_port, 0);
+	p4_devport_mgr_set_copy_to_cpu(0, true, cpu_port);
+}
+
 void setup_controller(const topology_t &topology, bool model) {
 	bf_rt_target_t dev_tgt;
 	dev_tgt.dev_id = 0;
@@ -223,6 +241,8 @@ void setup_controller(const topology_t &topology, bool model) {
 	auto session = bfrt::BfRtSession::sessionCreate();
 
 	Ports ports(info, session, dev_tgt);
+
+	configure_cpu_port(ports, model);
 
 	if (!model) {
 		configure_ports(info, session, dev_tgt, ports, topology);

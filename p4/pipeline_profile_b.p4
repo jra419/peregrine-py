@@ -30,7 +30,6 @@ control SwitchIngress_b(
 
     action modify_eg_port(PortId_t port) {
         ig_tm_md.ucast_egress_port = port;
-        hdr.peregrine.forward = 3;
     }
 
     table fwd_recirculation {
@@ -90,30 +89,6 @@ control SwitchEgress_b(
     inout egress_intrinsic_metadata_for_deparser_t eg_intr_md_for_dprs,
     inout egress_intrinsic_metadata_for_output_port_t eg_intr_md_for_oport) {
 
-
-    action hit() {
-        hdr.peregrine.forward = 2;
-    }
-
-    action miss() {
-        eg_intr_md_for_dprs.drop_ctl = 0x1; // Drop packet.
-    }
-
-    table fwd {
-        key = {
-            hdr.peregrine.forward : exact;
-        }
-
-        actions = {
-            hit;
-            @defaultonly miss;
-        }
-
-        const default_action = miss;
-    }
-
-    apply {
-        fwd.apply();
-    }
+    apply {}
 
 }

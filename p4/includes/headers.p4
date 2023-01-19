@@ -50,7 +50,6 @@ header icmp_t {
 }
 
 header peregrine_t {
-    bit<32> forward;
     bit<32> decay;
     bit<32> pkt_cnt_global;
     bit<32> mac_ip_src_pkt_cnt;
