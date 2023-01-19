@@ -22,6 +22,7 @@ struct topo_pipes_t {
 };
 
 struct topology_t {
+	topo_port_t stats;
 	std::vector<topo_connection_t> connections;
 	topo_pipes_t pipes;
 };

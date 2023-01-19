@@ -3,6 +3,11 @@
 		"external": [ 0 ],
 		"internal": [ 1 ]
 	},
+	"stats": {
+		"port": 2,
+		"capacity": 100,
+		"comment": "veth4"
+	},
     "connections": [
         {
             "in": {
@@ -11,9 +16,9 @@
             	"comment": "veth0"
 			},
 			"out": {
-				"port": 2,
+				"port": 1,
 				"capacity": 100,
-				"comment": "veth4"
+				"comment": "veth2"
 			}	
         }
     ]

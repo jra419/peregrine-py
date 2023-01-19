@@ -23,6 +23,7 @@ void from_json(const nlohmann::json &j, topo_pipes_t &topo_pipes) {
 }
 
 void from_json(const nlohmann::json &j, topology_t &topo_connections) {
+	j.at("stats").get_to(topo_connections.stats);
 	j.at("connections").get_to(topo_connections.connections);
 	j.at("pipes").get_to(topo_connections.pipes);
 }
@@ -38,6 +39,11 @@ topology_t parse_topology_file(const std::string &topology_file_path) {
 
 	auto data = nlohmann::json::parse(topology_file);
 	auto topology = data.get<topology_t>();
+
+	std::cerr << "Stats:\n";
+	std::cerr << "  port     " << topology.stats.port << "\n";
+	std::cerr << "  capacity " << topology.stats.capacity << "\n";
+	std::cerr << "  comment  " << topology.stats.comment << "\n";
 
 	for (auto connection : topology.connections) {
 		std::cerr << "Connection:\n";

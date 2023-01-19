@@ -3,6 +3,11 @@
 		"external": [ 0 ],
 		"internal": [ 1 ]
 	},
+	"stats": {
+		"port": 11,
+		"capacity": 100,
+		"comment": "e291427x1300274 E810"
+	},
     "connections": [
         {
             "in": {
@@ -14,7 +19,7 @@
 				"port": 6,
 				"capacity": 100,
 				"comment": "e291427x1300275 E810"
-			}	
+			}
         }
     ]
 }

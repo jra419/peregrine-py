@@ -149,7 +149,7 @@ void *register_ethernet_pkt_ops(void *args) {
 	return nullptr;
 }
 
-char* get_env_var_value(const char* env_var) {
+char *get_env_var_value(const char *env_var) {
 	auto env_var_value = getenv(env_var);
 
 	if (!env_var_value) {
@@ -160,9 +160,7 @@ char* get_env_var_value(const char* env_var) {
 	return env_var_value;
 }
 
-char *get_install_dir() {
-	return get_env_var_value(ENV_VAR_SDE_INSTALL);
-}
+char *get_install_dir() { return get_env_var_value(ENV_VAR_SDE_INSTALL); }
 
 std::string get_target_conf_file() {
 	return get_env_var_value(ENV_VAR_CONF_FILE);
@@ -200,7 +198,11 @@ void init_bf_switchd(bool use_tofino_model) {
 
 void configure_ports(const bfrt::BfRtInfo *info,
 					 std::shared_ptr<bfrt::BfRtSession> session,
-					 bf_rt_target_t dev_tgt, Ports& ports, const topology_t &topology) {
+					 bf_rt_target_t dev_tgt, Ports &ports,
+					 const topology_t &topology) {
+	auto stats_speed = Ports::gbps_to_bf_port_speed(topology.stats.capacity);
+	ports.add_port(topology.stats.port, 0, stats_speed);
+
 	for (auto connection : topology.connections) {
 		auto in_speed = Ports::gbps_to_bf_port_speed(connection.in.capacity);
 		auto out_speed = Ports::gbps_to_bf_port_speed(connection.out.capacity);
@@ -210,14 +212,18 @@ void configure_ports(const bfrt::BfRtInfo *info,
 	}
 }
 
-void setup_controller(const std::string &topology_file_path, bool use_tofino_model) {
+void setup_controller(const std::string &topology_file_path,
+					  bool use_tofino_model) {
 	auto topology = parse_topology_file(topology_file_path);
 	setup_controller(topology, use_tofino_model);
 }
 
-void configure_cpu_port(Ports& ports, bool use_tofino_model) {
-	auto cpu_port = use_tofino_model ? CPU_PORT_TOFINO_MODEL : CPU_PORT_2_PIPES;
-	p4_devport_mgr_set_copy_to_cpu(0, true, cpu_port);
+void configure_stats_port(uint16_t stats_port, Ports &ports, bool use_tofino_model) {
+	if (!use_tofino_model) {
+		stats_port = ports.get_dev_port(stats_port, 0);
+	}
+
+	p4_devport_mgr_set_copy_to_cpu(0, true, stats_port);
 }
 
 void setup_controller(const topology_t &topology, bool use_tofino_model) {
@@ -243,11 +249,11 @@ void setup_controller(const topology_t &topology, bool use_tofino_model) {
 
 	Ports ports(info, session, dev_tgt);
 
-	configure_cpu_port(ports, use_tofino_model);
-
 	if (!use_tofino_model) {
 		configure_ports(info, session, dev_tgt, ports, topology);
 	}
+
+	configure_stats_port(topology.stats.port, ports, use_tofino_model);
 
 	Controller::init(info, session, dev_tgt, ports, topology, use_tofino_model);
 }
