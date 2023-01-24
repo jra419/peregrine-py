@@ -379,13 +379,14 @@ class StatsCalc:
             five_t_cov = 0
             five_t_pcc = 0
 
+        # Send to KitNet
         cur_stats = [self.decay_cntr,
                      int(mac_ip_src_pkt_cnt), int(mac_ip_src_mean), int(mac_ip_src_std_dev),
                      int(ip_src_pkt_cnt), int(ip_src_mean), int(ip_src_std_dev),
                      int(ip_pkt_cnt_0), int(ip_mean_0), int(ip_std_dev_0),
                      int(ip_magnitude), int(ip_radius), int(ip_cov), int(ip_pcc),
                      int(five_t_pkt_cnt_0), int(five_t_mean_0), int(five_t_std_dev_0),
-                     int(five_t_magnitude), int(five_t_radius), int(five_t_cov), int(five_t_pcc)]
+                     int(five_t_magnitude), int(five_t_radius), int(five_t_cov), int(five_t_pcc)] 
 
         self.cur_pkt = self.cur_pkt[3:]
 

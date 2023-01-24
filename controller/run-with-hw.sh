@@ -12,9 +12,10 @@ fi
 
 CONTROLLER_EXE="$SCRIPT_DIR/build/peregrine-controller"
 TOPOLOGY_FILE="$SCRIPT_DIR/topology.json"
+CONFIGURATION_DIR="$SCRIPT_DIR/../confs/"
 
 LD_LIBRARY_PATH="/usr/local/lib/:$SDE_INSTALL/lib/"
-BFN_T10_032D_CONF_FILE="$SCRIPT_DIR/../confs/BFN-T10-032D.conf"
+BFN_T10_032D_CONF_FILE="$CONFIGURATION_DIR/BFN-T10-032D.conf"
 
 # Compile
 make release -j

@@ -1,7 +1,7 @@
 {
 	"pipes": {
-		"external": [ 0 ],
-		"internal": [ 1 ]
+		"external": [ 1 ],
+		"internal": [ 0 ]
 	},
 	"stats": {
 		"port": 11,

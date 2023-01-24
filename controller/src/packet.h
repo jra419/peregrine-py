@@ -101,13 +101,9 @@ struct peregrine_hdr_t {
 struct pkt_hdr_t {
 	uint8_t buffer[MAX_PACKET_SIZE];
 
-	eth_hdr_t* get_l2() const {
-		return (eth_hdr_t*)((uint8_t*)buffer);
-	}
+	eth_hdr_t* get_l2() const { return (eth_hdr_t*)((uint8_t*)buffer); }
 
-	size_t get_l2_size() const {
-		return sizeof(eth_hdr_t);
-	}
+	size_t get_l2_size() const { return sizeof(eth_hdr_t); }
 
 	ipv4_hdr_t* get_l3() const {
 		auto l2_hdr = get_l2();
@@ -115,23 +111,24 @@ struct pkt_hdr_t {
 		return (ipv4_hdr_t*)((uint8_t*)l2_hdr + l2_hdr_size);
 	}
 
-	size_t get_l3_size() const {
-		return sizeof(ipv4_hdr_t);
-	}
+	size_t get_l3_size() const { return sizeof(ipv4_hdr_t); }
 
-	std::pair<void*,uint16_t> get_l4() const {
+	std::pair<void*, uint16_t> get_l4() const {
 		auto ip_hdr = get_l3();
 		auto ip_size = get_l3_size();
 
 		switch (ip_hdr->protocol) {
 			case IP_PROTO_TCP: {
-				return std::pair<void*,uint16_t>((uint8_t*)ip_hdr + ip_size, IP_PROTO_TCP);
+				return std::pair<void*, uint16_t>((uint8_t*)ip_hdr + ip_size,
+												  IP_PROTO_TCP);
 			} break;
 			case IP_PROTO_UDP: {
-				return std::pair<void*,uint16_t>((uint8_t*)ip_hdr + ip_size, IP_PROTO_UDP);
+				return std::pair<void*, uint16_t>((uint8_t*)ip_hdr + ip_size,
+												  IP_PROTO_UDP);
 			} break;
 			case IP_PROTO_ICMP: {
-				return std::pair<void*,uint16_t>((uint8_t*)ip_hdr + ip_size, IP_PROTO_ICMP);
+				return std::pair<void*, uint16_t>((uint8_t*)ip_hdr + ip_size,
+												  IP_PROTO_ICMP);
 			} break;
 			default: {
 				printf("\n*** Not TCP/UDP/ICMP packet! ***\n");

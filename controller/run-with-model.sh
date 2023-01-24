@@ -13,7 +13,8 @@ fi
 CONTROLLER_EXE="$SCRIPT_DIR/build/peregrine-controller"
 TOPOLOGY_FILE="$SCRIPT_DIR/topology-model.json"
 TOFINO_MODEL_EXE_NAME="tofino-model"
-BFN_T10_032D_CONF_FILE="$SCRIPT_DIR/../confs/BFN-T10-032D.conf"
+CONFIGURATION_DIR="$SCRIPT_DIR/../confs/"
+BFN_T10_032D_CONF_FILE="$CONFIGURATION_DIR/BFN-T10-032D.conf"
 
 # If the tofino model is not running in the background, launch it
 if ! ps -e | grep -q "$TOFINO_MODEL_EXE_NAME"; then

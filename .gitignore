@@ -14,3 +14,4 @@ bf-sde-*
 zlog-cfg-cur
 *.log
 bf_drivers.log*
+autogen
