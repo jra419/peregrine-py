@@ -8,18 +8,18 @@
 		"capacity": 100,
 		"comment": "veth4"
 	},
-    "connections": [
-        {
-            "in": {
+	"connections": [
+		{
+			"in": {
 				"port": 0,
-            	"capacity": 100,
-            	"comment": "veth0"
+				"capacity": 100,
+				"comment": "veth0"
 			},
 			"out": {
 				"port": 1,
 				"capacity": 100,
 				"comment": "veth2"
 			}	
-        }
-    ]
+		}
+	]
 }

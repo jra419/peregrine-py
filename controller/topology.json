@@ -8,18 +8,18 @@
 		"capacity": 100,
 		"comment": "e291427x1300274 E810"
 	},
-    "connections": [
-        {
-            "in": {
+	"connections": [
+		{
+			"in": {
 				"port": 5,
-            	"capacity": 100,
-            	"comment": "e291427x1300275 E810"
+				"capacity": 100,
+				"comment": "e291427x1300275 E810"
 			},
 			"out": {
 				"port": 6,
 				"capacity": 100,
 				"comment": "e291427x1300275 E810"
 			}
-        }
-    ]
+		}
+	]
 }

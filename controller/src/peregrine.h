@@ -164,7 +164,15 @@ private:
 
 			auto found_it = std::find(topology.pipes.external.begin(),
 									  topology.pipes.external.end(), ig_pipe);
-			assert(found_it != topology.pipes.external.end());
+
+			if (found_it == topology.pipes.external.end()) {
+				std::cerr << "Error: in port not found in external pipe\n";
+				std::cerr << "  ig_port  " << ig_port << "\n";
+				std::cerr << "  dev port " << ig_local_port << "\n";
+				std::cerr << "  pipe     " << ig_pipe << "\n";
+				exit(1);
+			}
+
 			auto index = found_it - topology.pipes.external.begin();
 			auto internal_pipe = topology.pipes.internal[index];
 
