@@ -184,7 +184,7 @@ void init_bf_switchd(bool use_tofino_model) {
 	switchd_main_ctx->conf_file = const_cast<char *>(target_conf_file.c_str());
 	switchd_main_ctx->skip_p4 = false;
 	switchd_main_ctx->skip_port_add = false;
-	switchd_main_ctx->running_in_background = use_tofino_model;
+	switchd_main_ctx->running_in_background = false;
 	switchd_main_ctx->dev_sts_thread = true;
 	switchd_main_ctx->dev_sts_port = THRIFT_PORT_NUM;
 
@@ -259,7 +259,7 @@ void setup_controller(const topology_t &topology, bool use_tofino_model) {
 }
 
 void run(bool use_tofino_model) {
-	std::cerr << "NF main learning thread started...\n";
+	std::cerr << "Controller running...\n";
 
 	if (use_tofino_model) {
 		pthread_create(&ether_if_sniff_thread, nullptr,

@@ -38,7 +38,6 @@ int main(int argc, char **argv) {
 	peregrine::run(args.use_tofino_model);
 
 	// main thread sleeps
-	std::cerr << "zzzzz...\n";
 	while (1) {
 		sleep(5);
 	}

@@ -1,32 +1,16 @@
 syntax = "proto3";
 
 service KitNet {
-	rpc SayHello (HelloRequest) returns (HelloReply) {}	
+	rpc ProcessSample(ProcessSampleRequest) returns (ProcessSampleReply) {}
 }
 
-message MacAddr {
-	uint64 value = 1;
-}
-
-message IPv4Addr {
-	uint32 value = 1;
-}
-
-message IpProto {
-	uint32 value = 1;
-}
-
-message Port {
-	uint32 value = 1;
-}
-
-message Stats {
-	MacAddr mac_src = 1;
-	IPv4Addr ip_src = 2;
-	IPv4Addr ip_dst = 3;
-	IpProto ip_proto = 4;
-	Port port_src = 5;
-	Port port_dst = 6;
+message ProcessSampleRequest {
+	uint64 mac_src = 1;
+	uint32 ip_src = 2;
+	uint32 ip_dst = 3;
+	uint32 ip_proto = 4;
+	uint32 port_src = 5;
+	uint32 port_dst = 6;
 	uint32 decay = 7;
 	uint32 mac_ip_src_pkt_cnt = 8;
 	uint32 mac_ip_src_mean = 9;
@@ -50,12 +34,6 @@ message Stats {
 	uint64 five_t_pcc = 27;
 }
 
-// The request message containing the user's name.
-message HelloRequest {
-	string name = 1;
-}
-
-// The response message containing the greetings
-message HelloReply {
-	string message = 1;
+message ProcessSampleReply {
+	float RMSE = 1;
 }

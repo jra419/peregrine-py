@@ -14,12 +14,17 @@ CONTROLLER_EXE="$SCRIPT_DIR/build/peregrine-controller"
 TOPOLOGY_FILE="$SCRIPT_DIR/topology-model.json"
 TOFINO_MODEL_EXE_NAME="tofino-model"
 CONFIGURATION_DIR="$SCRIPT_DIR/../confs/"
-BFN_T10_032D_CONF_FILE="$CONFIGURATION_DIR/BFN-T10-032D.conf"
+BFN_T10_032D_CONF_FILE="$CONFIGURATION_DIR/BFN-T10-032D-model.conf"
 
 # If the tofino model is not running in the background, launch it
 if ! ps -e | grep -q "$TOFINO_MODEL_EXE_NAME"; then
 	echo "Tofino model not running. Exiting."
 	exit 1
+fi
+
+# For some reason we need hugepages
+if [ "$(grep HugePages_Total /proc/meminfo | awk '{print $2}')" = "0" ]; then \
+	sudo sysctl -w vm.nr_hugepages=512 > /dev/null
 fi
 
 # Compile

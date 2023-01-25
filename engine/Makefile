@@ -12,14 +12,16 @@ ENGINE_OBJS = $(foreach obj,$(patsubst %.cpp, %.o, $(ENGINE_SRCS)),$(OUT_DIR)/$(
 ENGINE_EXE  = $(OUT_DIR)/engine
 
 GRPC_SERVICES  = $(shell find $(PROTOS_DIR) -name "*.proto")
+
+GRPC_AUTOGEN   = $(foreach obj,$(patsubst %.proto, %.pb.cc, $(GRPC_SERVICES)),$(AUTO_GEN)/$(shell basename -- $(obj)))
+GRPC_AUTOGEN  += $(foreach obj,$(patsubst %.proto, %.grpc.pb.cc, $(GRPC_SERVICES)),$(AUTO_GEN)/$(shell basename -- $(obj)))
+GRPC_AUTOGEN  += $(foreach obj,$(patsubst %.proto, %.pb.python, $(GRPC_SERVICES)),$(AUTO_GEN)/$(shell basename -- $(obj)))
+GRPC_AUTOGEN  += $(foreach obj,$(patsubst %.proto, %.grpc.pb.python, $(GRPC_SERVICES)),$(AUTO_GEN)/$(shell basename -- $(obj)))
+
 GRPC_OBJS      = $(foreach obj,$(patsubst %.proto, %.pb.o, $(GRPC_SERVICES)),$(OUT_DIR)/$(shell basename -- $(obj)))
 GRPC_OBJS     += $(foreach obj,$(patsubst %.proto, %.grpc.pb.o, $(GRPC_SERVICES)),$(OUT_DIR)/$(shell basename -- $(obj)))
 
-KITNET_DIR     = $(MODELS_DIR)/kitnet
-KITNET_HEADERS = $(shell find $(KITNET_DIR) -name "*.h")
-KITNET_SRCS    = $(shell find $(KITNET_DIR) -name "*.cpp")
-KITNET_OBJS    = $(foreach obj,$(patsubst %.cpp, %.o, $(KITNET_SRCS)),$(OUT_DIR)/$(shell basename -- $(obj)))
-KITNET_EXE     = $(OUT_DIR)/kitnet
+ENGINE_OBJS   += $(GRPC_OBJS)
 
 CC       = g++
 CFLAGS   = -std=c++14
@@ -31,13 +33,15 @@ LDFLAGS  = -L/usr/local/include                               \
 			-lgrpc++_reflection                               \
 			-pthread -lpcap -ldl
 
-PROTOC               = protoc
-GRPC_CPP_PLUGIN      = grpc_cpp_plugin
-GRPC_CPP_PLUGIN_PATH = `which $(GRPC_CPP_PLUGIN)`
+PROTOC                  = protoc
+GRPC_CPP_PLUGIN         = grpc_cpp_plugin
+GRPC_PYTHON_PLUGIN      = grpc_python_plugin
+GRPC_CPP_PLUGIN_PATH    = `which $(GRPC_CPP_PLUGIN)`
+GRPC_PYTHON_PLUGIN_PATH = `which $(GRPC_PYTHON_PLUGIN)`
 
 vpath %.proto $(PROTOS_DIR)
 
-all: build-dirs $(ENGINE_EXE) $(KITNET_EXE)
+all: build-dirs $(ENGINE_EXE)
 
 build-dirs:
 	@ mkdir -p $(OUT_DIR)
@@ -47,28 +51,20 @@ build-dirs:
 #         Engine          #
 ###########################
 
-$(ENGINE_EXE): $(GRPC_OBJS) $(ENGINE_OBJS)
-	$(CC) $(CFLAGS) -o $@ $(ENGINE_OBJS) $(GRPC_OBJS) $(LDFLAGS)
+$(ENGINE_EXE): $(GRPC_AUTOGEN) $(ENGINE_OBJS)
+	$(CC) $(CFLAGS) -o $@ $(ENGINE_OBJS) $(LDFLAGS)
 
 $(OUT_DIR)/%.o: $(ENGINE_DIR)/%.cpp $(ENGINE_HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
 
-###########################
-#      KitNet model       #
-###########################
+#######################################
+#   Compiling gRPC autogen sources    #
+#######################################
 
-GRPC_OBJS_KITNET = $(OUT_DIR)/kitnet.grpc.pb.o $(OUT_DIR)/kitnet.pb.o
-
-$(KITNET_EXE): $(KITNET_OBJS) $(GRPC_OBJS_KITNET)
-	$(CC) $(CFLAGS) -o $@ $(KITNET_OBJS) $(GRPC_OBJS_KITNET) $(LDFLAGS)
-
-$(OUT_DIR)/%.o: $(KITNET_DIR)/%.cpp $(KITNET_HEADERS)
+$(OUT_DIR)/%.grpc.pb.o: $(AUTO_GEN)/%.grpc.pb.cc $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
 
-$(OUT_DIR)/kitnet.grpc.pb.o: $(AUTO_GEN)/kitnet.grpc.pb.cc $(HEADERS)
-	$(CC) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
-
-$(OUT_DIR)/kitnet.pb.o: $(AUTO_GEN)/kitnet.pb.cc $(HEADERS)
+$(OUT_DIR)/%.pb.o: $(AUTO_GEN)/%.pb.cc $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
 
 ###########################
@@ -82,6 +78,14 @@ $(AUTO_GEN)/%.grpc.pb.cc: %.proto
 .PRECIOUS: %.pb.cc
 $(AUTO_GEN)/%.pb.cc: %.proto
 	$(PROTOC) -I $(PROTOS_DIR) --cpp_out=$(AUTO_GEN) $<
+
+.PRECIOUS: %.grpc.pb.python
+$(AUTO_GEN)/%.grpc.pb.python: %.proto
+	$(PROTOC) -I $(PROTOS_DIR) --grpc_out=$(AUTO_GEN) --plugin=protoc-gen-grpc=$(GRPC_PYTHON_PLUGIN_PATH) $<
+
+.PRECIOUS: %.pb.python
+$(AUTO_GEN)/%.pb.python: %.proto
+	$(PROTOC) -I $(PROTOS_DIR) --python_out=$(AUTO_GEN) $<
 
 clean:
 	rm -rf $(ENGINE_EXE) $(OUT_DIR) $(AUTO_GEN)

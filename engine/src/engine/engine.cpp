@@ -2,79 +2,117 @@
 #include <memory>
 #include <string>
 
-#include <grpcpp/grpcpp.h>
+#include "kitnet_client.h"
+#include "listener.h"
 
-#include "../../autogen/kitnet.grpc.pb.h"
+#define DEFAULT_MODEL_GRPC_TARGET "localhost:50051"
 
-class KitNetClient {
-public:
-	KitNetClient(std::shared_ptr<grpc::Channel> channel)
-		: stub_(KitNet::NewStub(channel)) {}
+void print_header() {
+	std::cerr << "\n";
+	std::cerr << "*******************************************\n";
+	std::cerr << "*                                         *\n";
+	std::cerr << "*           PEREGRINE ENGINE              *\n";
+	std::cerr << "*                                         *\n";
+	std::cerr << "*******************************************\n";
+	std::cerr << "\n";
+}
 
-	// Assembles the client's payload, sends it and presents the response back
-	// from the server.
-	std::string SayHello(const std::string& user) {
-		// Data we are sending to the server.
-		HelloRequest request;
-		request.set_name(user);
+struct args_t {
+	std::string iface;
+	std::string grpc_target;
 
-		// Container for the data we expect from the server.
-		HelloReply reply;
+	args_t(int argc, char** argv) : grpc_target(DEFAULT_MODEL_GRPC_TARGET) {
+		if (argc < 3) {
+			usage(argv);
+		}
 
-		// Context for the client. It could be used to convey extra information
-		// to the server and/or tweak certain RPC behaviors.
-		grpc::ClientContext context;
+		parse_help(argc, argv);
+		parse_iface(argc, argv);
+		parse_grpc_port(argc, argv);
+	}
 
-		// The actual RPC.
-		grpc::Status status = stub_->SayHello(&context, request, &reply);
+	void usage(char** argv) const {
+		std::cerr << "Usage: " << argv[0]
+				  << " -i iface -t target [-h|--help]\n";
+		std::cerr << "Default values:\n";
+		std::cerr << "  target=" << DEFAULT_MODEL_GRPC_TARGET << "\n";
+		exit(1);
+	}
 
-		// Act upon its status.
-		if (status.ok()) {
-			return reply.message();
-		} else {
-			std::cout << status.error_code() << ": " << status.error_message()
-					  << std::endl;
-			return "RPC failed";
+	void parse_help(int argc, char** argv) {
+		auto args_str = std::vector<std::string>{
+			std::string("-h"),
+			std::string("--help"),
+		};
+
+		for (auto argi = 1u; argi < argc - 1; argi++) {
+			auto arg = std::string(argv[argi]);
+
+			for (auto arg_str : args_str) {
+				auto cmp = arg.compare(arg_str);
+
+				if (cmp == 0) {
+					usage(argv);
+				}
+			}
 		}
 	}
 
-private:
-	std::unique_ptr<KitNet::Stub> stub_;
+	void parse_iface(int argc, char** argv) {
+		auto arg_str = std::string("-i");
+
+		for (auto argi = 1u; argi < argc - 1; argi++) {
+			auto arg = std::string(argv[argi]);
+			auto cmp = arg.compare(arg_str);
+
+			if (cmp == 0) {
+				iface = std::string(argv[argi + 1]);
+				return;
+			}
+		}
+
+		std::cerr << "Option -i not found.\n";
+		usage(argv);
+	}
+
+	void parse_grpc_port(int argc, char** argv) {
+		std::string arg_str("-t");
+
+		for (auto argi = 1u; argi < argc - 1; argi++) {
+			auto arg = std::string(argv[argi]);
+			auto cmp = arg.compare(arg_str);
+
+			if (cmp == 0) {
+				grpc_target = std::string(argv[argi + 1]);
+				return;
+			}
+		}
+	}
+
+	void dump() const {
+		std::cerr << "Configuration:\n";
+		std::cerr << "  iface:       " << iface << "\n";
+		std::cerr << "  grpc target: " << grpc_target << "\n";
+		std::cerr << "\n";
+	}
 };
 
 int main(int argc, char** argv) {
-	// Instantiate the client. It requires a channel, out of which the actual
-	// RPCs are created. This channel models a connection to an endpoint
-	// specified by the argument "--target=" which is the only expected
-	// argument. We indicate that the channel isn't authenticated (use of
-	// Insecuregrpc::ChannelCredentials()).
-	std::string target_str;
-	std::string arg_str("--target");
-	if (argc > 1) {
-		std::string arg_val = argv[1];
-		size_t start_pos = arg_val.find(arg_str);
-		if (start_pos != std::string::npos) {
-			start_pos += arg_str.size();
-			if (arg_val[start_pos] == '=') {
-				target_str = arg_val.substr(start_pos + 1);
-			} else {
-				std::cout << "The only correct argument syntax is --target="
-						  << std::endl;
-				return 0;
-			}
-		} else {
-			std::cout << "The only acceptable argument is --target="
-					  << std::endl;
-			return 0;
-		}
-	} else {
-		target_str = "localhost:50051";
+	auto args = args_t(argc, argv);
+
+	print_header();
+	args.dump();
+
+	auto kitnet = peregrine::KitNetClient(grpc::CreateChannel(
+		args.grpc_target, grpc::InsecureChannelCredentials()));
+
+	auto listener = peregrine::Listener(args.iface);
+
+	while (1) {
+		auto sample = listener.receive_sample();
+		auto reply = kitnet.ProcessSample(sample);
+		std::cerr << "reply: " << reply << "\n";
 	}
-	KitNetClient greeter(
-		grpc::CreateChannel(target_str, grpc::InsecureChannelCredentials()));
-	std::string user("world");
-	std::string reply = greeter.SayHello(user);
-	std::cout << "KitNet received: " << reply << std::endl;
 
 	return 0;
 }
