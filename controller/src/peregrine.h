@@ -156,6 +156,11 @@ private:
 			auto ig_port = connection.in.port;
 			auto eg_port = connection.out.port;
 
+			if (!use_tofino_model) {
+				ig_port = ports.get_dev_port(ig_port, 0);
+				eg_port = ports.get_dev_port(eg_port, 0);
+			}
+
 			// Use an internal port in another pipe.
 			// Method to choose which port: just use the same port but on
 			// another pipe.
@@ -177,11 +182,6 @@ private:
 			auto internal_pipe = topology.pipes.internal[index];
 
 			auto internal_port = (internal_pipe << 7) | ig_port;
-
-			if (!use_tofino_model) {
-				ig_port = ports.get_dev_port(ig_port, 0);
-				eg_port = ports.get_dev_port(eg_port, 0);
-			}
 
 			fwd_recirculation_a.add_entry(ig_port, internal_port);
 			fwd_recirculation_b.add_entry(internal_port, eg_port);
