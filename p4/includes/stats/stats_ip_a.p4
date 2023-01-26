@@ -655,7 +655,6 @@ control c_stats_ip_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 
 	table pkt_cnt_1_access {
 		key = {
-			/* ig_md.meta.pkt_cnt_global: ternary; */
 			ig_md.meta.recirc_toggle : exact;
 		}
 		actions = {
@@ -667,7 +666,6 @@ control c_stats_ip_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 
 	table ss_1_access {
 		key = {
-			/* ig_md.meta.pkt_cnt_global: ternary; */
 			ig_md.meta.recirc_toggle : exact;
 		}
 		actions = {
@@ -679,7 +677,6 @@ control c_stats_ip_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 
 	table mean_1_access {
 		key = {
-			/* ig_md.meta.pkt_cnt_global: ternary; */
 			ig_md.meta.recirc_toggle : exact;
 		}
 		actions = {

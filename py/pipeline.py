@@ -39,7 +39,7 @@ def pkt_callback(pkt):
         global cur_stats
         global pkt_header
         global pkt_cnt_global
-        pkt_cnt_global = pkt[PeregrineHdr].pkt_cnt_global
+        pkt_cnt_global += 1
         cur_stats = [[pkt[PeregrineHdr].decay,
                      pkt[PeregrineHdr].mac_ip_src_pkt_cnt,
                      pkt[PeregrineHdr].mac_ip_src_mean,

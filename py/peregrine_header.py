@@ -5,7 +5,6 @@ class PeregrineHdr(Packet):
     name = 'peregrine'
     fields_desc = [IntField('forward', 0),
                    IntField('decay', 0),
-                   IntField('pkt_cnt_global', 0),
                    IntField('mac_ip_src_pkt_cnt', 0),
                    IntField('mac_ip_src_pkt_len', 0),
                    IntField('mac_ip_src_ss', 0),
