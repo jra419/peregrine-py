@@ -17,6 +17,8 @@ from eval_metrics import eval_metrics
 logger = None
 grpc_client = None
 
+SAMPLING_RATE = 1024
+
 port_to_veth = {0: 'veth0',
                 1: 'veth2',
                 2: 'veth4',
@@ -128,15 +130,16 @@ def configure_switch(program, topology):
 
     # Setup tables
 
+    a_fwd_recirculation = FwdRecirculation_a(gc, bfrt_info)
     mac_ip_src_decay_check = MacIpSrcDecayCheck(gc, bfrt_info)
     ip_src_decay_check = IpSrcDecayCheck(gc, bfrt_info)
     ip_decay_check = IpDecayCheck(gc, bfrt_info)
     five_t_decay_check = FiveTDecayCheck(gc, bfrt_info)
 
+    sampling_rate = SamplingRate(gc, bfrt_info)
+
     a_fwd_recirculation = FwdRecirculation_a(gc, bfrt_info)
     b_fwd_recirculation = FwdRecirculation_b(gc, bfrt_info)
-    a_fwd = Fwd_a(gc, bfrt_info)
-    b_fwd = Fwd_b(gc, bfrt_info)
 
     mac_ip_src_mean = MacIpSrcMean(gc, bfrt_info)
     ip_src_mean = IpSrcMean(gc, bfrt_info)
@@ -171,6 +174,8 @@ def configure_switch(program, topology):
     five_t_std_dev_prod = FiveTStdDevProd(gc, bfrt_info)
     five_t_pcc = FiveTPcc(gc, bfrt_info)
 
+    sampling_rate.add_entry(1, SAMPLING_RATE)
+
     mac_ip_src_decay_check.add_entry(0, '100_ms')
     mac_ip_src_decay_check.add_entry(8192, '1_s')
     mac_ip_src_decay_check.add_entry(16384, '10_s')
@@ -193,8 +198,6 @@ def configure_switch(program, topology):
 
     a_fwd_recirculation.add_entry(ig_port, int_port)
     b_fwd_recirculation.add_entry(int_port, eg_port)
-    a_fwd.add_entry(3)
-    b_fwd.add_entry(1)
 
     mac_ip_src_mean.add_entry(32, 1, 0b11111111111111111111111111111111, 0)
     mac_ip_src_mean.add_entry(31, 2, 0b11111111111111111111111111111110, 1)
@@ -321,50 +324,14 @@ def configure_switch(program, topology):
     ip_sum_res_prod_get_carry.add_entry(0, '0')
     ip_sum_res_prod_get_carry.add_entry(1, '1')
 
-    ip_pkt_cnt_1_access.add_entry(3,
-                                  0b00000000000000000000000000000000,
-                                  0b11111111111111111111111111111111,
-                                  'incr')
+    ip_pkt_cnt_1_access.add_entry(0, 'incr')
+    ip_pkt_cnt_1_access.add_entry(1, 'read')
 
-    ip_pkt_cnt_1_access.add_entry(2,
-                                  0b11111111111111111111110000000000,
-                                  0b00000000000000000000001111111111,
-                                  'read')
+    ip_ss_1_access.add_entry(0, 'incr')
+    ip_ss_1_access.add_entry(1, 'read')
 
-    ip_pkt_cnt_1_access.add_entry(1,
-                                  0b11111111111111111111111111111111,
-                                  0b00000000000000000000000000000000,
-                                  'incr')
-
-    ip_ss_1_access.add_entry(3,
-                             0b00000000000000000000000000000000,
-                             0b11111111111111111111111111111111,
-                             'incr')
-
-    ip_ss_1_access.add_entry(2,
-                             0b11111111111111111111110000000000,
-                             0b00000000000000000000001111111111,
-                             'read')
-
-    ip_ss_1_access.add_entry(1,
-                             0b11111111111111111111111111111111,
-                             0b00000000000000000000000000000000,
-                             'incr')
-
-    ip_mean_1_access.add_entry(3,
-                               0b00000000000000000000000000000000,
-                               0b11111111111111111111111111111111,
-                               '0_write')
-
-    ip_mean_1_access.add_entry(2,
-                               0b11111111111111111111110000000000,
-                               0b00000000000000000000001111111111,
-                               '1_read')
-
-    ip_mean_1_access.add_entry(1,
-                               0b11111111111111111111111111111111,
-                               0b00000000000000000000000000000000,
-                               '0_write')
+    ip_mean_1_access.add_entry(0, '0_write')
+    ip_mean_1_access.add_entry(1, '1_read')
 
     ip_mean_ss_0.add_entry(32, 1, 0b11111111111111111111111111111111, 0)
     ip_mean_ss_0.add_entry(31, 2, 0b11111111111111111111111111111110, 1)
@@ -559,50 +526,14 @@ def configure_switch(program, topology):
     five_t_sum_res_prod_get_carry.add_entry(0, '0')
     five_t_sum_res_prod_get_carry.add_entry(1, '1')
 
-    five_t_pkt_cnt_1_access.add_entry(3,
-                                      0b00000000000000000000000000000000,
-                                      0b11111111111111111111111111111111,
-                                      'incr')
+    five_t_pkt_cnt_1_access.add_entry(0, 'incr')
+    five_t_pkt_cnt_1_access.add_entry(1, 'read')
 
-    five_t_pkt_cnt_1_access.add_entry(2,
-                                      0b11111111111111111111110000000000,
-                                      0b00000000000000000000001111111111,
-                                      'read')
+    five_t_ss_1_access.add_entry(0, 'incr')
+    five_t_ss_1_access.add_entry(1, 'read')
 
-    five_t_pkt_cnt_1_access.add_entry(1,
-                                      0b11111111111111111111111111111111,
-                                      0b00000000000000000000000000000000,
-                                      'incr')
-
-    five_t_ss_1_access.add_entry(3,
-                                 0b00000000000000000000000000000000,
-                                 0b11111111111111111111111111111111,
-                                 'incr')
-
-    five_t_ss_1_access.add_entry(2,
-                                 0b11111111111111111111110000000000,
-                                 0b00000000000000000000001111111111,
-                                 'read')
-
-    five_t_ss_1_access.add_entry(1,
-                                 0b11111111111111111111111111111111,
-                                 0b00000000000000000000000000000000,
-                                 'incr')
-
-    five_t_mean_1_access.add_entry(3,
-                                   0b00000000000000000000000000000000,
-                                   0b11111111111111111111111111111111,
-                                   '0_write')
-
-    five_t_mean_1_access.add_entry(2,
-                                   0b11111111111111111111110000000000,
-                                   0b00000000000000000000001111111111,
-                                   '1_read')
-
-    five_t_mean_1_access.add_entry(1,
-                                   0b11111111111111111111111111111111,
-                                   0b00000000000000000000000000000000,
-                                   '0_write')
+    five_t_mean_1_access.add_entry(0, '0_write')
+    five_t_mean_1_access.add_entry(1, '1_read')
 
     five_t_mean_ss_0.add_entry(32, 1, 0b11111111111111111111111111111111, 0)
     five_t_mean_ss_0.add_entry(31, 2, 0b11111111111111111111111111111110, 1)
@@ -781,11 +712,11 @@ if __name__ == "__main__":
         try:
             import bfrt_grpc.client as gc
         except ImportError:
-            sys.path.append(os.environ['SDE_INSTALL'] + '/lib/python3.7/site-packages/tofino')
+            sys.path.append(os.environ['SDE_INSTALL'] + '/lib/python3.8/site-packages/tofino')
             import bfrt_grpc.client as gc
         from ports import Ports
         from peregrine_tables import MacIpSrcDecayCheck, IpSrcDecayCheck, IpDecayCheck, FiveTDecayCheck
-        from peregrine_tables import FwdRecirculation_a, FwdRecirculation_b, Fwd_a, Fwd_b
+        from peregrine_tables import SamplingRate, FwdRecirculation_a, FwdRecirculation_b
         from peregrine_tables import MacIpSrcMean, IpSrcMean
         from peregrine_tables import IpMean0, IpResStructUpdate, IpResProd, IpSumResProdGetCarry
         from peregrine_tables import IpPktCnt1Access, IpSs1Access, IpMean1Access

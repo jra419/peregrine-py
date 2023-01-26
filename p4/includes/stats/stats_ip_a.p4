@@ -655,7 +655,7 @@ control c_stats_ip_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 
 	table pkt_cnt_1_access {
 		key = {
-			ig_md.meta.pkt_cnt_global: ternary;
+			ig_md.meta.recirc_toggle : exact;
 		}
 		actions = {
 			pkt_cnt_1_incr;
@@ -666,7 +666,7 @@ control c_stats_ip_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 
 	table ss_1_access {
 		key = {
-			ig_md.meta.pkt_cnt_global: ternary;
+			ig_md.meta.recirc_toggle : exact;
 		}
 		actions = {
 			ss_1_incr;
@@ -677,7 +677,7 @@ control c_stats_ip_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 
 	table mean_1_access {
 		key = {
-			ig_md.meta.pkt_cnt_global: ternary;
+			ig_md.meta.recirc_toggle : exact;
 		}
 		actions = {
 			mean_0_write;
@@ -741,7 +741,7 @@ control c_stats_ip_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
 		// Sum of residual products - [63:32].
 		sum_res_prod_hi();
 
-		if (ig_md.meta.pkt_cnt_global % SAMPLING != 0) {
+		if (ig_md.meta.recirc_toggle == 1) {
 			ig_md.hash.ip_1 = ig_md.hash.ip_0;
 		}
 

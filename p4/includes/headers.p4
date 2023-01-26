@@ -51,7 +51,6 @@ header icmp_t {
 
 header peregrine_t {
     bit<32> decay;
-    bit<32> pkt_cnt_global;
     bit<32> mac_ip_src_pkt_cnt;
     bit<32> mac_ip_src_pkt_len;
     bit<32> mac_ip_src_ss;
@@ -89,10 +88,13 @@ header peregrine_t {
 header meta_t {
     bit<16> l4_src_port;
     bit<16> l4_dst_port;
-    bit<32> pkt_cnt_global;
     bit<32> current_ts;
     bit<32> pkt_len_squared;
     bit<16> decay_cntr;
+    bit<32> sampling_rate;
+    bit<1> recirc_toggle;
+    bit<1> sampling_rate_key;
+    bit<6> padding;
 }
 
 header hash_meta_t {
@@ -169,8 +171,8 @@ struct res_current {
 }
 
 struct decay_cntr {
-    bit<16> cur_pkt;
-    bit<16> value;
+    bit<32> cur_pkt;
+    bit<32> value;
 }
 
 struct ingress_metadata_a_t {

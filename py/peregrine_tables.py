@@ -3,6 +3,36 @@ import bfrt_grpc.client as gc
 from table import Table
 
 
+class SamplingRate(Table):
+
+    def __init__(self, client, bfrt_info):
+        # set up base class
+        super(SamplingRate, self).__init__(client, bfrt_info)
+
+        self.logger = logging.getLogger('sampling_rate')
+        self.logger.info('Setting up sampling_rate table...')
+
+        # get this table
+        self.table = self.bfrt_info.table_get('SwitchIngress_a.sampling_rate')
+
+        # clear and add defaults
+        self.clear()
+
+    def add_entry(self, dummy_key, rate):
+        # target all pipes on device 0
+        target = gc.Target(device_id=0)
+
+        self.logger.info('Programming entries on sampling_rate table...')
+
+        self.table.entry_add(
+           target,
+           [self.table.make_key(
+               [gc.KeyTuple('ig_md.meta.sampling_rate_key', dummy_key)])],
+           [self.table.make_data(
+               [gc.DataTuple('sampling_rate', rate)],
+               'SwitchIngress_a.set_sampling_rate')])
+
+
 class FwdRecirculation_a(Table):
 
     def __init__(self, client, bfrt_info):
@@ -61,62 +91,6 @@ class FwdRecirculation_b(Table):
            [self.table.make_data(
                [gc.DataTuple('port', eg_port)],
                'SwitchIngress_b.modify_eg_port')])
-
-
-class Fwd_a(Table):
-
-    def __init__(self, client, bfrt_info):
-        # set up base class
-        super(Fwd_a, self).__init__(client, bfrt_info)
-
-        self.logger = logging.getLogger('a_fwd')
-        self.logger.info('Setting up a_fwd table...')
-
-        # get this table
-        self.table = self.bfrt_info.table_get('SwitchEgress_a.fwd')
-
-        # clear and add defaults
-        self.clear()
-
-    def add_entry(self, value):
-        # target all pipes on device 0
-        target = gc.Target(device_id=0)
-
-        self.logger.info('Programming entries on a_fwd table...')
-
-        self.table.entry_add(
-           target,
-           [self.table.make_key(
-               [gc.KeyTuple('hdr.peregrine.forward', value)])],
-           [self.table.make_data([], 'SwitchEgress_a.hit')])
-
-
-class Fwd_b(Table):
-
-    def __init__(self, client, bfrt_info):
-        # set up base class
-        super(Fwd_b, self).__init__(client, bfrt_info)
-
-        self.logger = logging.getLogger('b_fwd')
-        self.logger.info('Setting up b_fwd table...')
-
-        # get this table
-        self.table = self.bfrt_info.table_get('SwitchEgress_b.fwd')
-
-        # clear and add defaults
-        self.clear()
-
-    def add_entry(self, value):
-        # target all pipes on device 0
-        target = gc.Target(device_id=0)
-
-        self.logger.info('Programming entries on b_fwd table...')
-
-        self.table.entry_add(
-           target,
-           [self.table.make_key(
-               [gc.KeyTuple('hdr.peregrine.forward', value)])],
-           [self.table.make_data([], 'SwitchEgress_b.hit')])
 
 
 class MacIpSrcDecayCheck(Table):
@@ -289,34 +263,6 @@ class IpSrcMean(Table):
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_src_b.rshift_mean_' + str(div))])
 
 
-# class IpHashSubAbs(Table):
-
-#     def __init__(self, client, bfrt_info):
-#         # set up base class
-#         super(IpHashSubAbs, self).__init__(client, bfrt_info)
-
-#         self.logger = logging.getLogger('ip_hash_sub_abs')
-#         self.logger.info('Setting up hash_ip_sub_abs table...')
-
-#         # get this table
-#         self.table = self.bfrt_info.table_get('SwitchIngress_a.stats_ip_a.hash_ip_sub_abs')
-
-#         # clear and add defaults
-#         self.clear()
-
-#     def add_entry(self, priority, const, mask, div):
-#         # target all pipes on device 0
-#         target = gc.Target(device_id=0)
-
-#         self.logger.info('Programming entries on hash_ip_sub_abs table...')
-
-#         self.table.entry_add(
-#            target,
-#            [self.table.make_key(
-#                [gc.KeyTuple('ig_md.hash.ip_sub', const, mask)])],
-#            [self.table.make_data([], 'SwitchIngress_a.stats_ip_a.hash_ip_sub_' + div)])
-
-
 class IpMean0(Table):
 
     def __init__(self, client, bfrt_info):
@@ -446,7 +392,7 @@ class IpPktCnt1Access(Table):
         # clear and add defaults
         self.clear()
 
-    def add_entry(self, priority, const, mask, div):
+    def add_entry(self, const, div):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
@@ -455,8 +401,7 @@ class IpPktCnt1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
-                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
+               [gc.KeyTuple('ig_md.meta.recirc_toggle', const)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_ip_a.pkt_cnt_1_' + div)])
 
 
@@ -475,7 +420,7 @@ class IpSs1Access(Table):
         # clear and add defaults
         self.clear()
 
-    def add_entry(self, priority, const, mask, div):
+    def add_entry(self, const, div):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
@@ -484,8 +429,7 @@ class IpSs1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
-                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
+               [gc.KeyTuple('ig_md.meta.recirc_toggle', const)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_ip_a.ss_1_' + div)])
 
 
@@ -504,7 +448,7 @@ class IpMean1Access(Table):
         # clear and add defaults
         self.clear()
 
-    def add_entry(self, priority, const, mask, div):
+    def add_entry(self, const, div):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
@@ -513,8 +457,7 @@ class IpMean1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
-                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
+               [gc.KeyTuple('ig_md.meta.recirc_toggle', const)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_ip_a.mean_' + div)])
 
 
@@ -720,33 +663,6 @@ class IpPcc(Table):
                 gc.KeyTuple('$MATCH_PRIORITY', priority)])],
            [self.table.make_data([], 'SwitchIngress_b.stats_ip_b.rshift_pcc_' + str(div))])
 
-# class FiveTHashSubAbs(Table):
-
-#     def __init__(self, client, bfrt_info):
-#         # set up base class
-#         super(FiveTHashSubAbs, self).__init__(client, bfrt_info)
-
-#         self.logger = logging.getLogger('five_t_hash_sub_abs')
-#         self.logger.info('Setting up hash_five_t_sub_abs table...')
-
-#         # get this table
-#         self.table = self.bfrt_info.table_get('SwitchIngress_a.stats_five_t_a.hash_five_t_sub_abs')
-
-#         # clear and add defaults
-#         self.clear()
-
-#     def add_entry(self, priority, const, mask, div):
-#         # target all pipes on device 0
-#         target = gc.Target(device_id=0)
-
-#         self.logger.info('Programming entries on hash_five_t_sub_abs table...')
-
-#         self.table.entry_add(
-#            target,
-#            [self.table.make_key(
-#                [gc.KeyTuple('ig_md.hash.five_t_sub', const, mask)])],
-#            [self.table.make_data([], 'SwitchIngress_a.stats_five_t_a.hash_five_t_sub_' + div)])
-
 
 class FiveTMean0(Table):
 
@@ -877,7 +793,7 @@ class FiveTPktCnt1Access(Table):
         # clear and add defaults
         self.clear()
 
-    def add_entry(self, priority, const, mask, div):
+    def add_entry(self, const, div):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
@@ -886,8 +802,7 @@ class FiveTPktCnt1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
-                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
+               [gc.KeyTuple('ig_md.meta.recirc_toggle', const)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_five_t_a.pkt_cnt_1_' + div)])
 
 
@@ -906,7 +821,7 @@ class FiveTSs1Access(Table):
         # clear and add defaults
         self.clear()
 
-    def add_entry(self, priority, const, mask, div):
+    def add_entry(self, const, div):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
@@ -915,8 +830,7 @@ class FiveTSs1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
-                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
+               [gc.KeyTuple('ig_md.meta.recirc_toggle', const)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_five_t_a.ss_1_' + div)])
 
 
@@ -935,7 +849,7 @@ class FiveTMean1Access(Table):
         # clear and add defaults
         self.clear()
 
-    def add_entry(self, priority, const, mask, div):
+    def add_entry(self, const, div):
         # target all pipes on device 0
         target = gc.Target(device_id=0)
 
@@ -944,8 +858,7 @@ class FiveTMean1Access(Table):
         self.table.entry_add(
            target,
            [self.table.make_key(
-               [gc.KeyTuple('ig_md.meta.pkt_cnt_global', const, mask),
-                gc.KeyTuple('$MATCH_PRIORITY', priority)])],
+               [gc.KeyTuple('ig_md.meta.recirc_toggle', const)])],
            [self.table.make_data([], 'SwitchIngress_a.stats_five_t_a.mean_' + div)])
 
 

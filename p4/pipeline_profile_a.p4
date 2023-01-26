@@ -29,12 +29,14 @@ control SwitchIngress_a(
     c_stats_five_t_a()        stats_five_t_a;
 
     Register<decay_cntr, _>(1)  reg_decay_cntr;         // Current decay counter value.
-    Register<bit<32>, _>(1)     reg_pkt_cnt_global;     // Global packet counter.
+    Register<bit<32>, _>(1)     reg_pkt_cnt_epoch;     // Per-sampling epoch packet counter.
     Register<bit<32>, _>(1)     reg_pkt_len_squared;    // Squared packet length.
 
-    RegisterAction<decay_cntr, _, bit<16>>(reg_decay_cntr) ract_decay_cntr_check = {
-        void apply(inout decay_cntr decay, out bit<16> result) {
-            if (decay.cur_pkt < SAMPLING) {
+    bit<32> decay_tmp;
+
+    RegisterAction<decay_cntr, _, bit<32>>(reg_decay_cntr) ract_decay_cntr_check = {
+        void apply(inout decay_cntr decay, out bit<32> result) {
+            if (decay.cur_pkt < ig_md.meta.sampling_rate) {
                 if (decay.value < 24576) {
                     decay.value = decay.value + 8192;
                 } else {
@@ -48,10 +50,15 @@ control SwitchIngress_a(
         }
     };
 
-    RegisterAction<_, _, bit<32>>(reg_pkt_cnt_global) ract_pkt_cnt_global = {
-        void apply(inout bit<32> value, out bit<32> result) {
-            value = value + 1;
-            result = value;
+    RegisterAction<_, _, bit<1>>(reg_pkt_cnt_epoch) ract_pkt_cnt_epoch = {
+        void apply(inout bit<32> value, out bit<1> result) {
+            result = 0;
+            if (value < ig_md.meta.sampling_rate) {
+                value = value + 1;
+            } else {
+                value = 1;
+                result = 1;
+            }
         }
     };
 
@@ -63,18 +70,14 @@ control SwitchIngress_a(
         }
     };
 
-    action decay_cntr_check() {
-        ig_md.meta.decay_cntr = ract_decay_cntr_check.execute(0);
-    }
-
     // Timestamp bit-slicing from 48 bits to 32 bits.
     // Necessary to allow usage in reg. actions, which only support max 32 bits.
     action ts_conversion() {
         ig_md.meta.current_ts = ig_intr_md.ingress_mac_tstamp[47:16];
     }
 
-    action pkt_cnt_global_calc() {
-        ig_md.meta.pkt_cnt_global = ract_pkt_cnt_global.execute(0);
+    action pkt_cnt_epoch_calc() {
+        ig_md.meta.recirc_toggle = ract_pkt_cnt_epoch.execute(0);
     }
 
     action pkt_len_squared_calc() {
@@ -85,7 +88,13 @@ control SwitchIngress_a(
         ig_tm_md.ucast_egress_port = port;
         ig_tm_md.copy_to_cpu = 1;
         hdr.peregrine.decay = (bit<32>)ig_md.meta.decay_cntr;
-        hdr.peregrine.pkt_cnt_global = ig_md.meta.pkt_cnt_global;
+    }
+
+    // Store the sampling rate defined by the controller.
+    // Calculate the decay value for the current packet.
+    action set_sampling_rate(bit<32> sampling_rate) {
+        ig_md.meta.sampling_rate = sampling_rate;
+        ig_md.meta.decay_cntr = ract_decay_cntr_check.execute(0)[15:0];
     }
 
     action set_peregrine_mac_ip_src_a() {
@@ -118,6 +127,16 @@ control SwitchIngress_a(
         hdr.peregrine.five_t_sum_res_prod_cov = ig_md.stats_five_t.sum_res_prod;
     }
 
+    table sampling_rate {
+        key = {
+            ig_md.meta.sampling_rate_key : exact;
+        }
+        actions = {
+            set_sampling_rate;
+        }
+        size = 1;
+    }
+
     table fwd_recirculation {
         key = {
             ig_intr_md.ingress_port : exact;
@@ -129,15 +148,16 @@ control SwitchIngress_a(
         }
 
         const default_action = NoAction;
+        size = 1;
     }
 
     apply {
         if (hdr.ipv4.isValid()) {
 
-            // Global packet count calculation.
-            pkt_cnt_global_calc();
+            sampling_rate.apply();
 
-            decay_cntr_check();
+            // Per-epoch packet count calculation (for sampling purposes).
+            pkt_cnt_epoch_calc();
 
             // Timestamp bit-slicing.
             ts_conversion();
@@ -151,7 +171,7 @@ control SwitchIngress_a(
             stats_ip_a.apply(hdr, ig_md);
             stats_five_t_a.apply(hdr, ig_md);
 
-            if (ig_md.meta.pkt_cnt_global % SAMPLING == 0) {
+            if (ig_md.meta.recirc_toggle == 1) {
                 fwd_recirculation.apply();
                 set_peregrine_mac_ip_src_a();
                 set_peregrine_ip_a();
