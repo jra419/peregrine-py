@@ -2,6 +2,7 @@
 #define _CONSTANTS_
 
 #define MAX_PORTS 255
+#define SAMPLING_RATE_KEY ((bit<1>)(1))
 
 typedef bit<16> ether_type_t;
 const ether_type_t ETHERTYPE_IPV4 = 16w0x0800;
@@ -15,7 +16,6 @@ const ip_proto_t IP_PROTO_UDP = 17;
 typedef bit<9> port_t;
 
 #define REG_SIZE 32768
-#define SAMPLING 1024
 
 // The decay intervals are 100ms, 1s, 10s and 60.
 #define DECAY_100_MS 1525
