@@ -4,7 +4,7 @@
 #include <string>
 
 #include <grpcpp/grpcpp.h>
-#include "../../autogen/kitnet.grpc.pb.h"
+#include "kitnet.grpc.pb.h"
 
 #include "sample.h"
 

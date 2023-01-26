@@ -18,7 +18,7 @@ import numpy as np
 from pathlib import Path
 
 SCRIPT_DIR=os.path.dirname(os.path.realpath(__file__))
-GRPC_AUTOGEN_SOURCES_PATH=f"{SCRIPT_DIR}/../../../autogen"
+GRPC_AUTOGEN_SOURCES_PATH=f"{SCRIPT_DIR}/../../../build"
 sys.path.append(GRPC_AUTOGEN_SOURCES_PATH)
 
 import kitnet_pb2

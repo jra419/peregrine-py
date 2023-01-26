@@ -63,7 +63,6 @@ struct icmp_hdr_t {
 
 struct peregrine_hdr_t {
 	uint32_t decay;
-	uint32_t pkt_cnt_global;
 	uint32_t mac_ip_src_pkt_cnt;
 	uint32_t mac_ip_src_pkt_len;
 	uint32_t mac_ip_src_ss;
@@ -222,8 +221,6 @@ struct pkt_hdr_t {
 
 		printf("###[ Peregrine ]###\n");
 		printf("  decay                   %u\n", ntohl(peregrine_hdr->decay));
-		printf("  pkt_cnt_global          %u\n",
-			   ntohl(peregrine_hdr->pkt_cnt_global));
 		printf("  mac_ip_src_pkt_cnt      %u\n",
 			   ntohl(peregrine_hdr->mac_ip_src_pkt_cnt));
 		printf("  mac_ip_src_pkt_len      %u\n",
