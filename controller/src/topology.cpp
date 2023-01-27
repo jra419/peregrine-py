@@ -40,20 +40,21 @@ topology_t parse_topology_file(const std::string &topology_file_path) {
 	auto data = nlohmann::json::parse(topology_file);
 	auto topology = data.get<topology_t>();
 
-	std::cerr << "Stats:\n";
-	std::cerr << "  port     " << topology.stats.port << "\n";
-	std::cerr << "  capacity " << topology.stats.capacity << "\n";
-	std::cerr << "  comment  " << topology.stats.comment << "\n";
+	std::cout << "\n";
+	std::cout << "Stats:\n";
+	std::cout << "  port     " << topology.stats.port << "\n";
+	std::cout << "  capacity " << topology.stats.capacity << "\n";
+	std::cout << "  comment  " << topology.stats.comment << "\n";
 
 	for (auto connection : topology.connections) {
-		std::cerr << "Connection:\n";
-		std::cerr << "  [in]  port     " << connection.in.port << "\n";
-		std::cerr << "  [in]  capacity " << connection.in.capacity << "\n";
-		std::cerr << "  [in]  comment  " << connection.in.comment << "\n";
+		std::cout << "Connection:\n";
+		std::cout << "  [in]  port     " << connection.in.port << "\n";
+		std::cout << "  [in]  capacity " << connection.in.capacity << "\n";
+		std::cout << "  [in]  comment  " << connection.in.comment << "\n";
 
-		std::cerr << "  [out] port     " << connection.out.port << "\n";
-		std::cerr << "  [out] capacity " << connection.out.capacity << "\n";
-		std::cerr << "  [out] comment  " << connection.out.comment << "\n";
+		std::cout << "  [out] port     " << connection.out.port << "\n";
+		std::cout << "  [out] capacity " << connection.out.capacity << "\n";
+		std::cout << "  [out] comment  " << connection.out.comment << "\n";
 	}
 
 	assert(topology.pipes.external.size() == topology.pipes.internal.size());

@@ -6,7 +6,7 @@
 
 namespace peregrine {
 struct topo_port_t {
-	uint32_t port;
+	uint16_t port;
 	uint32_t capacity;
 	std::string comment;
 };

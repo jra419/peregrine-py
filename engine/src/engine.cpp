@@ -1,11 +1,18 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <vector>
+
+#include <signal.h>
 
 #include "kitnet_client.h"
 #include "listener.h"
+#include "report.h"
 
 #define DEFAULT_MODEL_GRPC_TARGET "localhost:50051"
+#define REPORT_FILE "peregrine-engine.tsv"
+
+peregrine::report_t report;
 
 void print_header() {
 	std::cerr << "\n";
@@ -97,7 +104,17 @@ struct args_t {
 	}
 };
 
+void signalHandler(int signum) {
+	report.dump(REPORT_FILE);
+	std::cout << "Report generated at \"" << REPORT_FILE << "\". Exiting.\n";
+	exit(signum);
+}
+
 int main(int argc, char** argv) {
+	signal(SIGINT, signalHandler);
+	signal(SIGQUIT, signalHandler);
+	signal(SIGTERM, signalHandler);
+
 	auto args = args_t(argc, argv);
 
 	print_header();
@@ -110,8 +127,8 @@ int main(int argc, char** argv) {
 
 	while (1) {
 		auto sample = listener.receive_sample();
-		auto reply = kitnet.ProcessSample(sample);
-		std::cerr << "reply: " << reply << "\n";
+		auto rmse = kitnet.ProcessSample(sample);
+		report.add(sample, rmse);
 	}
 
 	return 0;

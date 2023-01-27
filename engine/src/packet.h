@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include <string>
+
 #define IP_PROTO_ICMP 1
 #define IP_PROTO_TCP 6
 #define IP_PROTO_UDP 17
@@ -96,6 +98,10 @@ struct peregrine_hdr_t {
 	uint64_t five_t_sum_res_prod_cov;
 	uint64_t five_t_pcc;
 } __attribute__((packed));
+
+std::string mac_to_str(mac_t mac);
+std::string ip_to_str(ipv4_t ip);
+std::string port_to_str(port_t port);
 
 struct pkt_hdr_t {
 	uint8_t buffer[MAX_PACKET_SIZE];

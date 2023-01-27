@@ -53,7 +53,7 @@ extern "C" {
 
 namespace peregrine {
 
-void init_bf_switchd(bool use_tofino_model);
+void init_bf_switchd(bool use_tofino_model, bool bf_prompt);
 void setup_controller(const topology_t &topology, bool use_tofino_model);
 void setup_controller(const std::string &topology_file_path,
 					  bool use_tofino_model);
@@ -71,6 +71,8 @@ private:
 	bf_rt_target_t dev_tgt;
 
 	Ports ports;
+	topology_t topology;
+	bool use_tofino_model;
 
 	// Switch resources
 	MacIpSrcDecayCheck mac_ip_src_decay_check;
@@ -113,12 +115,14 @@ private:
 
 	Controller(const bfrt::BfRtInfo *_info,
 			   std::shared_ptr<bfrt::BfRtSession> _session,
-			   bf_rt_target_t _dev_tgt, const topology_t &topology,
-			   bool use_tofino_model)
+			   bf_rt_target_t _dev_tgt, const topology_t &_topology,
+			   bool _use_tofino_model)
 		: info(_info),
 		  session(_session),
 		  dev_tgt(_dev_tgt),
 		  ports(_info, _session, _dev_tgt),
+		  topology(_topology),
+		  use_tofino_model(_use_tofino_model),
 		  mac_ip_src_decay_check(_info, session, dev_tgt),
 		  ip_src_decay_check(_info, session, dev_tgt),
 		  ip_decay_check(_info, session, dev_tgt),
@@ -214,8 +218,14 @@ public:
 	bf_rt_target_t get_dev_tgt() const { return dev_tgt; }
 
 	uint64_t get_port_rx(uint16_t port) { return ports.get_port_rx(port); }
-
 	uint64_t get_port_tx(uint16_t port) { return ports.get_port_tx(port); }
+
+	uint16_t get_dev_port(uint16_t front_panel_port, uint16_t lane) {
+		return ports.get_dev_port(front_panel_port, lane);
+	}
+
+	topology_t get_topology() const { return topology; }
+	bool get_use_tofino_model() const { return use_tofino_model; }
 
 	static void init(const bfrt::BfRtInfo *_info,
 					 std::shared_ptr<bfrt::BfRtSession> _session,

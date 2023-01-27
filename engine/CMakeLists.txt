@@ -65,9 +65,10 @@ target_link_libraries(hw_grpc_proto
 )
 
 add_executable(engine
-	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/engine.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/kitnet_client.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/src/engine/listener.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/engine.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/kitnet_client.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/listener.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/src/packet.cpp
 	${PROTO_SRCS}
 	${GRPC_SRCS}
 )
