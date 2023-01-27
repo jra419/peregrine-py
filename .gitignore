@@ -15,3 +15,5 @@ zlog-cfg-cur
 *.log
 bf_drivers.log*
 autogen
+__pycache__
+env

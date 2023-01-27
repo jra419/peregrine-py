@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python
 
 from concurrent import futures
 
@@ -11,6 +11,7 @@ import socket
 import argparse
 import signal
 import pickle
+import subprocess
 
 from KitNET.KitNET import KitNET
 
@@ -18,11 +19,26 @@ import numpy as np
 from pathlib import Path
 
 SCRIPT_DIR=os.path.dirname(os.path.realpath(__file__))
-GRPC_AUTOGEN_SOURCES_PATH=f"{SCRIPT_DIR}/../../../build"
-sys.path.append(GRPC_AUTOGEN_SOURCES_PATH)
+PROTOS_DIR=f'{SCRIPT_DIR}/../../protos'
 
-import kitnet_pb2
-import kitnet_pb2_grpc
+try:
+	import kitnet_pb2
+	import kitnet_pb2_grpc
+except ImportError:
+	python_bin = sys.executable
+	protoc = 'grpc_tools.protoc'
+
+	subprocess.run([
+		python_bin,
+		'-m', protoc,
+		f'-I{PROTOS_DIR}',
+		f'--python_out={SCRIPT_DIR}',
+		f'--grpc_python_out={SCRIPT_DIR}',
+		f'{PROTOS_DIR}/kitnet.proto'
+	])
+
+	import kitnet_pb2
+	import kitnet_pb2_grpc
 
 DEFAULT_GRPC_PORT=50051
 DEFAULT_MAX_AUTOENCODER_SIZE=10

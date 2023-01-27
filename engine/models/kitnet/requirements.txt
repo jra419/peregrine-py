@@ -1,0 +1,5 @@
+grpcio==1.51.1
+grpcio-tools==1.51.1
+numpy==1.24.1
+protobuf==4.21.12
+scipy==1.10.0

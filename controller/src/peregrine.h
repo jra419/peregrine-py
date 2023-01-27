@@ -39,6 +39,7 @@
 #include "tables/ip_variance_1_abs.h"
 #include "tables/mac_ip_src_decay_check.h"
 #include "tables/mac_ip_src_mean.h"
+#include "tables/sampling_rate.h"
 #include "topology.h"
 #include "ports.h"
 
@@ -54,7 +55,8 @@ namespace peregrine {
 
 void init_bf_switchd(bool use_tofino_model);
 void setup_controller(const topology_t &topology, bool use_tofino_model);
-void setup_controller(const std::string &topology_file_path, bool use_tofino_model);
+void setup_controller(const std::string &topology_file_path,
+					  bool use_tofino_model);
 void run(bool use_tofino_model);
 
 struct bfrt_info_t;
@@ -105,6 +107,7 @@ private:
 	FiveTPcc five_t_pcc;
 	FwdRecirculation_a fwd_recirculation_a;
 	FwdRecirculation_b fwd_recirculation_b;
+	SamplingRate sampling_rate;
 
 	// statistics
 	uint64_t pkts;
@@ -151,7 +154,8 @@ private:
 		  five_t_std_dev_prod(_info, session, dev_tgt),
 		  five_t_pcc(_info, session, dev_tgt),
 		  fwd_recirculation_a(_info, session, dev_tgt),
-		  fwd_recirculation_b(_info, session, dev_tgt) {
+		  fwd_recirculation_b(_info, session, dev_tgt),
+		  sampling_rate(_info, session, dev_tgt) {
 		for (auto connection : topology.connections) {
 			auto ig_port = connection.in.port;
 			auto eg_port = connection.out.port;

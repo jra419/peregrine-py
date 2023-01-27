@@ -18,7 +18,6 @@ set(_GRPC_GRPCPP grpc++)
 # I'm not proud of this
 set(PROTOC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-build/third_party/protobuf/protoc")
 set(GRPC_CPP_PLUGIN "${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-build/grpc_cpp_plugin")
-set(GRPC_PYTHON_PLUGIN "${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-build/grpc_python_plugin")
 
 # Proto file
 set(PROTO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/protos)
@@ -33,28 +32,20 @@ set(cpp_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/kitnet.pb.cc")
 set(cpp_grpc_hdrs "${CMAKE_CURRENT_BINARY_DIR}/kitnet.grpc.pb.h")
 set(cpp_proto_hdrs "${CMAKE_CURRENT_BINARY_DIR}/kitnet.pb.h")
 
-set(python_grpc_srcs "${CMAKE_CURRENT_BINARY_DIR}/kitnet.grpc.pb.python")
-set(python_proto_srcs "${CMAKE_CURRENT_BINARY_DIR}/kitnet.pb.python")
-
 add_custom_command(
 	OUTPUT
 		"${cpp_grpc_srcs}"
 		"${cpp_proto_srcs}"
 		"${cpp_proto_hdrs}"
 		"${cpp_grpc_hdrs}"
-		"${python_grpc_srcs}"
-		"${python_proto_srcs}"
 	COMMAND ${PROTOC_EXECUTABLE}
 	ARGS --grpc_out "${CMAKE_CURRENT_BINARY_DIR}"
 		--cpp_out "${CMAKE_CURRENT_BINARY_DIR}"
-		--python_out "${CMAKE_CURRENT_BINARY_DIR}"
 		-I "${hw_proto_path}"
 		--plugin=protoc-gen-grpc="${GRPC_CPP_PLUGIN}"
-		--plugin=protoc-gen-python="${GRPC_PYTHON_PLUGIN}"
 		"${hw_proto}"
 	DEPENDS "${hw_proto}"
 )
-
 
 # Include generated *.pb.h files
 include_directories("${CMAKE_CURRENT_BINARY_DIR}")

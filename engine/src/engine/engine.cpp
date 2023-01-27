@@ -33,7 +33,7 @@ struct args_t {
 
 	void usage(char** argv) const {
 		std::cerr << "Usage: " << argv[0]
-				  << " -i iface -t target [-h|--help]\n";
+				  << " -i iface [-t target] [-h|--help]\n";
 		std::cerr << "Default values:\n";
 		std::cerr << "  target=" << DEFAULT_MODEL_GRPC_TARGET << "\n";
 		exit(1);

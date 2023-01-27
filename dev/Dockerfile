@@ -49,7 +49,8 @@ RUN sudo apt-get -y install \
     libcanberra-gtk-module \
     libcanberra-gtk3-module \
     zsh \
-    python3
+    python3 \
+    python3.8-venv
 
 RUN sudo dpkg-reconfigure --frontend noninteractive tzdata
 
@@ -99,5 +100,6 @@ RUN pip3 install pandas
 RUN pip3 install scipy
 RUN pip3 install matplotlib
 RUN pip3 install scikit-learn
+RUN pip3 install virtualenv
 
 CMD [ "/usr/bin/zsh" ]
