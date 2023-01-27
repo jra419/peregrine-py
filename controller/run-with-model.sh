@@ -31,4 +31,5 @@ fi
 make debug -j
 
 # Run controller with model
+echo "Running PEREGRINE_HW_CONF=$BFN_T10_032D_CONF_FILE sudo -E $CONTROLLER_EXE $TOPOLOGY_FILE --model"
 PEREGRINE_HW_CONF=$BFN_T10_032D_CONF_FILE sudo -E $CONTROLLER_EXE $TOPOLOGY_FILE --model

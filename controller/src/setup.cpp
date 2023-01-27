@@ -196,34 +196,10 @@ void init_bf_switchd(bool use_tofino_model) {
 	}
 }
 
-void configure_ports(const bfrt::BfRtInfo *info,
-					 std::shared_ptr<bfrt::BfRtSession> session,
-					 bf_rt_target_t dev_tgt, Ports &ports,
-					 const topology_t &topology) {
-	auto stats_speed = Ports::gbps_to_bf_port_speed(topology.stats.capacity);
-	ports.add_port(topology.stats.port, 0, stats_speed);
-
-	for (auto connection : topology.connections) {
-		auto in_speed = Ports::gbps_to_bf_port_speed(connection.in.capacity);
-		auto out_speed = Ports::gbps_to_bf_port_speed(connection.out.capacity);
-
-		ports.add_port(connection.in.port, 0, in_speed);
-		ports.add_port(connection.out.port, 0, out_speed);
-	}
-}
-
 void setup_controller(const std::string &topology_file_path,
 					  bool use_tofino_model) {
 	auto topology = parse_topology_file(topology_file_path);
 	setup_controller(topology, use_tofino_model);
-}
-
-void configure_stats_port(uint16_t stats_port, Ports &ports, bool use_tofino_model) {
-	if (!use_tofino_model) {
-		stats_port = ports.get_dev_port(stats_port, 0);
-	}
-
-	p4_devport_mgr_set_copy_to_cpu(0, true, stats_port);
 }
 
 void setup_controller(const topology_t &topology, bool use_tofino_model) {
@@ -247,15 +223,7 @@ void setup_controller(const topology_t &topology, bool use_tofino_model) {
 	// Create a session object
 	auto session = bfrt::BfRtSession::sessionCreate();
 
-	Ports ports(info, session, dev_tgt);
-
-	if (!use_tofino_model) {
-		configure_ports(info, session, dev_tgt, ports, topology);
-	}
-
-	configure_stats_port(topology.stats.port, ports, use_tofino_model);
-
-	Controller::init(info, session, dev_tgt, ports, topology, use_tofino_model);
+	Controller::init(info, session, dev_tgt, topology, use_tofino_model);
 }
 
 void run(bool use_tofino_model) {

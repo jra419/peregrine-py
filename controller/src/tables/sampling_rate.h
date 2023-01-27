@@ -30,10 +30,9 @@ private:
 
 public:
 	SamplingRate(const bfrt::BfRtInfo *info,
-				   std::shared_ptr<bfrt::BfRtSession> session,
-				   const bf_rt_target_t &dev_tgt)
-		: Table(info, session, dev_tgt,
-				"SwitchIngress_a.sampling_rate") {
+				 std::shared_ptr<bfrt::BfRtSession> session,
+				 const bf_rt_target_t &dev_tgt)
+		: Table(info, session, dev_tgt, "SwitchIngress_a.sampling_rate") {
 		init_key({
 			{"ig_md.meta.sampling_rate_key", &key_fields.sampling_rate_key},
 		});
@@ -43,7 +42,8 @@ public:
 		});
 
 		init_data_with_actions({
-			{"sampling_rate", {actions.set_sampling_rate, &data_fields.sampling_rate}},
+			{"sampling_rate",
+			 {actions.set_sampling_rate, &data_fields.sampling_rate}},
 		});
 
 		// fill up table
@@ -68,11 +68,12 @@ private:
 	}
 
 	void data_setup(uint32_t sampling_rate) {
-		auto bf_status = table->dataReset(actions.set_sampling_rate, data.get());
+		auto bf_status =
+			table->dataReset(actions.set_sampling_rate, data.get());
 		assert(bf_status == BF_SUCCESS);
 
-		bf_status =
-			data->setValue(data_fields.sampling_rate, static_cast<uint64_t>(sampling_rate));
+		bf_status = data->setValue(data_fields.sampling_rate,
+								   static_cast<uint64_t>(sampling_rate));
 		assert(bf_status == BF_SUCCESS);
 	}
 };

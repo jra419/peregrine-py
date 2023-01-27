@@ -45,9 +45,11 @@ protected:
 		// Allocate key and data once, and use reset across different uses
 		bf_status = table->keyAllocate(&key);
 		assert(bf_status == BF_SUCCESS);
+		assert(key);
 
 		bf_status = table->dataAllocate(&data);
 		assert(bf_status == BF_SUCCESS);
+		assert(data);
 	}
 
 	void init_key(std::unordered_map<std::string, bf_rt_id_t *> fields) {

@@ -70,6 +70,8 @@ private:
 	std::shared_ptr<bfrt::BfRtSession> session;
 	bf_rt_target_t dev_tgt;
 
+	Ports ports;
+
 	// Switch resources
 	MacIpSrcDecayCheck mac_ip_src_decay_check;
 	IpSrcDecayCheck ip_src_decay_check;
@@ -109,16 +111,14 @@ private:
 	FwdRecirculation_b fwd_recirculation_b;
 	SamplingRate sampling_rate;
 
-	// statistics
-	uint64_t pkts;
-
 	Controller(const bfrt::BfRtInfo *_info,
 			   std::shared_ptr<bfrt::BfRtSession> _session,
-			   bf_rt_target_t _dev_tgt, Ports &ports,
-			   const topology_t &topology, bool use_tofino_model)
+			   bf_rt_target_t _dev_tgt, const topology_t &topology,
+			   bool use_tofino_model)
 		: info(_info),
 		  session(_session),
 		  dev_tgt(_dev_tgt),
+		  ports(_info, _session, _dev_tgt),
 		  mac_ip_src_decay_check(_info, session, dev_tgt),
 		  ip_src_decay_check(_info, session, dev_tgt),
 		  ip_decay_check(_info, session, dev_tgt),
@@ -156,6 +156,14 @@ private:
 		  fwd_recirculation_a(_info, session, dev_tgt),
 		  fwd_recirculation_b(_info, session, dev_tgt),
 		  sampling_rate(_info, session, dev_tgt) {
+		Ports ports(info, session, dev_tgt);
+
+		if (!use_tofino_model) {
+			configure_ports(topology);
+		}
+
+		configure_stats_port(topology.stats.port, use_tofino_model);
+
 		for (auto connection : topology.connections) {
 			auto ig_port = connection.in.port;
 			auto eg_port = connection.out.port;
@@ -192,6 +200,9 @@ private:
 		}
 	}
 
+	void configure_stats_port(uint16_t stats_port, bool use_tofino_model);
+	void configure_ports(const topology_t &topology);
+
 public:
 	Controller(Controller &other) = delete;
 	void operator=(const Controller &) = delete;
@@ -202,10 +213,14 @@ public:
 	std::shared_ptr<bfrt::BfRtSession> get_session() { return session; }
 	bf_rt_target_t get_dev_tgt() const { return dev_tgt; }
 
+	uint64_t get_port_rx(uint16_t port) { return ports.get_port_rx(port); }
+
+	uint64_t get_port_tx(uint16_t port) { return ports.get_port_tx(port); }
+
 	static void init(const bfrt::BfRtInfo *_info,
 					 std::shared_ptr<bfrt::BfRtSession> _session,
-					 bf_rt_target_t _dev_tgt, Ports &ports,
-					 const topology_t &topology, bool use_tofino_model);
+					 bf_rt_target_t _dev_tgt, const topology_t &topology,
+					 bool use_tofino_model);
 };
 
 }  // namespace peregrine
