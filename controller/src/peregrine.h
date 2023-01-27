@@ -226,6 +226,10 @@ public:
 
 	topology_t get_topology() const { return topology; }
 	bool get_use_tofino_model() const { return use_tofino_model; }
+	
+	void set_sampling_rate(uint32_t new_sampling_rate) {
+		sampling_rate.set_sampling_rate(new_sampling_rate);
+	}
 
 	static void init(const bfrt::BfRtInfo *_info,
 					 std::shared_ptr<bfrt::BfRtSession> _session,

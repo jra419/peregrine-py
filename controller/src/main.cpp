@@ -8,23 +8,38 @@
 #include "peregrine.h"
 
 #define REPORT_FILE "peregrine-controller.tsv"
+#define DEFAULT_SAMPLING_RATE 64
 
 struct args_t {
 	std::string topology_file_path;
 	bool use_tofino_model;
 	bool bf_prompt;
+	uint32_t sampling_rate;
 
-	args_t(int argc, char **argv) : use_tofino_model(false), bf_prompt(false) {
+	args_t(int argc, char **argv)
+		: use_tofino_model(false),
+		  bf_prompt(false),
+		  sampling_rate(DEFAULT_SAMPLING_RATE) {
 		if (argc < 2) {
-			std::cerr << "Usage: " << argv[0]
-					  << " topology [--bf-prompt] [--model]\n";
-			exit(1);
+			help(argc, argv);
 		}
+
+		parse_help(argc, argv);
 
 		topology_file_path = std::string(argv[1]);
 
 		parse_model_flag(argc, argv);
 		parse_bf_prompt_flag(argc, argv);
+		parse_sampling_rate(argc, argv);
+	}
+
+	void help(int argc, char **argv) {
+		std::cerr << "Usage: " << argv[0]
+				  << " topology [--sampling-rate=<rate>] [--bf-prompt] "
+					 "[--model] [-h|--help]\n";
+		std::cerr << "Default values:\n";
+		std::cerr << "  rate: " << DEFAULT_SAMPLING_RATE << "\n";
+		exit(0);
 	}
 
 	void parse_model_flag(int argc, char **argv) {
@@ -49,6 +64,46 @@ struct args_t {
 				return;
 			}
 		}
+	}
+
+	void parse_help(int argc, char **argv) {
+		auto targets = std::vector<std::string>{"-h", "--help"};
+
+		for (auto i = 1; i < argc; i++) {
+			auto arg = std::string(argv[i]);
+			for (auto target : targets) {
+				if (arg.compare(target) == 0) {
+					help(argc, argv);
+					return;
+				}
+			}
+		}
+	}
+
+	void parse_sampling_rate(int argc, char **argv) {
+		std::string target = "--sampling-rate";
+
+		for (auto i = 1; i < argc; i++) {
+			auto arg = std::string(argv[i]);
+			auto pos = arg.find(target);
+
+			if (pos == std::string::npos || arg.size() < target.size() + 2 ||
+				arg[target.size()] != '=') {
+				continue;
+			}
+
+			auto value = arg.substr(pos + target.size() + 1);
+			sampling_rate = std::stoi(value);
+		}
+	}
+
+	void dump() const {
+		std::cout << "\n";
+		std::cout << "Configuration:\n";
+		std::cout << "  topology:      " << topology_file_path << "\n";
+		std::cout << "  model:         " << use_tofino_model << "\n";
+		std::cout << "  bf prompt:     " << bf_prompt << "\n";
+		std::cout << "  sampling rate: " << sampling_rate << "\n";
 	}
 };
 
@@ -108,6 +163,10 @@ int main(int argc, char **argv) {
 	peregrine::init_bf_switchd(args.use_tofino_model, args.bf_prompt);
 	peregrine::setup_controller(args.topology_file_path, args.use_tofino_model);
 	peregrine::run(args.use_tofino_model);
+
+	peregrine::Controller::controller->set_sampling_rate(args.sampling_rate);
+
+	args.dump();
 
 	std::cerr << "\nPeregrine controller is ready.\n";
 

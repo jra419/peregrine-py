@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <vector>
 #include <fstream>
+#include <iostream>
 
 namespace peregrine {
 

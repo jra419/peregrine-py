@@ -47,10 +47,19 @@ public:
 		});
 
 		// fill up table
-		set_sampling_rate(DEFAULT_SAMPLING_RATE);
+		init_sampling_rate(DEFAULT_SAMPLING_RATE);
 	}
 
 	void set_sampling_rate(uint32_t sampling_rate) {
+		key_setup(SAMPLING_RATE_KEY);
+		data_setup(sampling_rate);
+
+		auto bf_status = table->tableEntryMod(*session, dev_tgt, *key, *data);
+		assert(bf_status == BF_SUCCESS);
+	}
+
+private:
+	void init_sampling_rate(uint32_t sampling_rate) {
 		key_setup(SAMPLING_RATE_KEY);
 		data_setup(sampling_rate);
 
@@ -58,7 +67,6 @@ public:
 		assert(bf_status == BF_SUCCESS);
 	}
 
-private:
 	void key_setup(uint32_t value) {
 		table->keyReset(key.get());
 
