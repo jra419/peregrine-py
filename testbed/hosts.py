@@ -17,11 +17,15 @@ ENGINE_PEREGRINE_PATH  = '/home/fcp/peregrine'
 P4_PATH                = f'{TOFINO_PEREGRINE_PATH}/p4'
 CONTROLLER_PATH        = f'{TOFINO_PEREGRINE_PATH}/controller'
 ENGINE_PATH            = f'{ENGINE_PEREGRINE_PATH}/engine'
+KITNET_PATH            = f'{ENGINE_PATH}/models/kitnet'
 
-CONTROLLER_EXE_NAME   = 'peregrine-controller'
-ENGINE_EXE_NAME       = 'engine'
-CONTROLLER_EXE_PATH   = f'{CONTROLLER_PATH}/build/{CONTROLLER_EXE_NAME}'
-ENGINE_EXE_PATH       = f'{ENGINE_PATH}/build/{ENGINE_EXE_NAME}'
+CONTROLLER_EXE_NAME    = 'peregrine-controller'
+ENGINE_EXE_NAME        = 'engine'
+KITNET_EXE_NAME        = 'python' # oof
+
+CONTROLLER_EXE_PATH    = f'{CONTROLLER_PATH}/build/{CONTROLLER_EXE_NAME}'
+ENGINE_EXE_PATH        = f'{ENGINE_PATH}/build/{ENGINE_EXE_NAME}'
+KITNET_EXE_PATH        = f'{KITNET_PATH}/kitnet.py'
 
 CONTROLLER_LOG_FILE    = '/tmp/run-with-hw.log'
 CONTROLLER_READY_MSG   = 'Peregrine controller is ready.'
@@ -30,6 +34,10 @@ CONTROLLER_REPORT_FILE = 'peregrine-controller.tsv'
 ENGINE_LOG_FILE        = '/tmp/engine.log'
 ENGINE_READY_MSG       = 'Listening interface'
 ENGINE_REPORT_FILE     = 'peregrine-engine.tsv'
+ENGINE_LISTEN_IFACE    = 'enp216s0f1'
+
+KITNET_LOG_FILE        = '/tmp/kitnet.log'
+KITNET_READY_MSG       = 'Listening on'
 
 BIND_KERNEL_SCRIPT     = '/home/fcp/bind-e810-kernel.sh'
 BIND_DPDK_SCRIPT       = '/home/fcp/bind-igb_uio.sh'
@@ -40,7 +48,8 @@ class Host:
 		self.hostname = hostname
 		self.test_connection()
 
-	def exec(self, cmd, path=None, silence=False, background=False, must_succeed=True, capture_output=False):
+	def exec(self, cmd, path=None, silence=False, background=False,
+			must_succeed=True, capture_output=False, allocate_tty=False):
 		assert(type(cmd) == str)
 
 		self.log(f'exec \"{cmd}\"')
@@ -56,10 +65,13 @@ class Host:
 		remote_cmd.append(cmd)
 		remote_cmd = " && ".join(remote_cmd)
 
-		ssh_flags = [ '-o', 'PasswordAuthentication=no' ]
+		ssh_flags = [ '-o', 'PasswordAuthentication=no', '-t' ]
 
 		if background:
 			ssh_flags.append('-f')
+		
+		if allocate_tty:
+			ssh_flags.append('-t')
 		
 		cmd = [ 'ssh' ] + ssh_flags + [ self.hostname, remote_cmd ]
 
@@ -71,7 +83,9 @@ class Host:
 			proc = subprocess.run(cmd, capture_output=True, text=True)
 
 		if not background and must_succeed and proc.returncode != 0:
-			self.log(f'Command failed (ret={proc.returncode}).')
+			self.log(f'Command failed.')
+			self.log(f'  command:  \"{cmd}\"')
+			self.log(f'  ret code: {proc.returncode}')
 			exit(1)
 
 		out = proc.stdout if capture_output else None
@@ -123,8 +137,7 @@ class Tofino(Host):
 			path=CONTROLLER_PATH, background=True)
 		
 		while 1:
-			ret, out, err = self.exec(f'cat {CONTROLLER_LOG_FILE}',
-				path=CONTROLLER_PATH, capture_output=True)
+			ret, out, err = self.exec(f'cat {CONTROLLER_LOG_FILE}', capture_output=True)
 			time.sleep(1)
 
 			if CONTROLLER_READY_MSG in out:
@@ -158,7 +171,7 @@ class Engine(Host):
 		
 		# and wait for it to be ready
 		while 1:
-			ret, out, err = self.exec(f'cat {ENGINE_LOG_FILE}', path=ENGINE_PATH, capture_output=True)
+			ret, out, err = self.exec(f'cat {ENGINE_LOG_FILE}', capture_output=True)
 			time.sleep(1)
 
 			if ENGINE_READY_MSG in out:
@@ -174,6 +187,31 @@ class Engine(Host):
 class KitNet(Host):
 	def __init__(self):
 		super().__init__('kitnet', KITNET_HOSTNAME)
+	
+	def start(self, feature_map, ensemble_layer, output_layer, train_stats):
+		python_env_setup = 'source ./env/bin/activate'
+		kitnet = KITNET_EXE_PATH
+		args = [
+			'--feature_map', feature_map,
+			'--ensemble_layer', ensemble_layer,
+			'--output_layer', output_layer,
+			'--train_stats', train_stats
+		]
+
+		# cmd = f'{python_env_setup} && {kitnet} {" ".join(args)} & > {KITNET_LOG_FILE} 2>&1'
+		cmd = f'{python_env_setup} && {kitnet} {" ".join(args)} > {KITNET_LOG_FILE} 2>&1'
+		
+		# now launching kitnet model plugin
+		# self.exec(cmd, path=KITNET_PATH, background=True, allocate_tty=True)
+		self.exec(cmd, path=KITNET_PATH, allocate_tty=True)
+
+		# and wait for it to be ready
+		while 1:
+			ret, out, err = self.exec(f'cat {KITNET_LOG_FILE}', capture_output=True)
+			time.sleep(1)
+
+			if KITNET_READY_MSG in out:
+				break
 
 if __name__ == '__main__':
 	tofino = Tofino()
@@ -186,8 +224,15 @@ if __name__ == '__main__':
 	# tofino.stop()
 	# tofino.get_report()
 
-	engine.start('enp216s0f1')
-	engine.stop()
-	engine.get_report()
+	# engine.start(ENGINE_LISTEN_IFACE)
+	# engine.stop()
+	# engine.get_report()
+
+	kitnet.start(
+		'~/models/m-10/os-scan-m-10-fm.txt',
+		'~/models/m-10/os-scan-m-10-el.txt',
+		'~/models/m-10/os-scan-m-10-ol.txt',
+		'~/models/m-10/os-scan-m-10-train-stats.txt',
+	)
 
 

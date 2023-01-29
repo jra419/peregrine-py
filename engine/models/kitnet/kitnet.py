@@ -280,7 +280,8 @@ def serve(kitnet, port=DEFAULT_GRPC_PORT, verbose=False):
 	server.add_insecure_port(f'[::]:{port}')
 	server.start()
 
-	print(f"Listening on {port}...")
+	print(f"Listening on {port}...", flush=True)
+
 
 def handle_sigterm(*args):
 	global server
