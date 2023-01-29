@@ -42,6 +42,7 @@ Listener::Listener(const std::string &iface) {
 	}
 
 	printf("Listening interface %s...\n", iface.c_str());
+	fflush(stdout);
 }
 
 Listener::~Listener() {

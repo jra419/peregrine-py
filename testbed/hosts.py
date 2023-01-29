@@ -11,19 +11,28 @@ TG_HOSTNAME            = 'gsd+e291427x1300275'
 ENGINE_HOSTNAME        = 'gsd+e291427x1300274'
 KITNET_HOSTNAME        = 'gsd+e291427x1300274'
 
-PEREGRINE_PATH         = '/root/peregrine'
-P4_PATH                = f'{PEREGRINE_PATH}/p4'
-CONTROLLER_PATH        = f'{PEREGRINE_PATH}/controller'
-ENGINE_PATH            = f'{PEREGRINE_PATH}/engine'
+TOFINO_PEREGRINE_PATH  = '/root/peregrine'
+ENGINE_PEREGRINE_PATH  = '/home/fcp/peregrine'
+
+P4_PATH                = f'{TOFINO_PEREGRINE_PATH}/p4'
+CONTROLLER_PATH        = f'{TOFINO_PEREGRINE_PATH}/controller'
+ENGINE_PATH            = f'{ENGINE_PEREGRINE_PATH}/engine'
 
 CONTROLLER_EXE_NAME   = 'peregrine-controller'
 ENGINE_EXE_NAME       = 'engine'
 CONTROLLER_EXE_PATH   = f'{CONTROLLER_PATH}/build/{CONTROLLER_EXE_NAME}'
-ENGINE_EXE_PATH       = f'{PEREGRINE_PATH}/build/{ENGINE_EXE_NAME}'
+ENGINE_EXE_PATH       = f'{ENGINE_PATH}/build/{ENGINE_EXE_NAME}'
 
 CONTROLLER_LOG_FILE    = '/tmp/run-with-hw.log'
 CONTROLLER_READY_MSG   = 'Peregrine controller is ready.'
 CONTROLLER_REPORT_FILE = 'peregrine-controller.tsv'
+
+ENGINE_LOG_FILE        = '/tmp/engine.log'
+ENGINE_READY_MSG       = 'Listening interface'
+ENGINE_REPORT_FILE     = 'peregrine-engine.tsv'
+
+BIND_KERNEL_SCRIPT     = '/home/fcp/bind-e810-kernel.sh'
+BIND_DPDK_SCRIPT       = '/home/fcp/bind-igb_uio.sh'
 
 class Host:
 	def __init__(self, name, hostname):
@@ -109,8 +118,8 @@ class Tofino(Host):
 	def install(self):
 		self.exec('make install', path=P4_PATH)
 	
-	def start(self):		
-		self.exec(f'./run-with-hw.sh > {CONTROLLER_LOG_FILE} 2>&1',
+	def start(self, sampling_rate):		
+		self.exec(f'./run-with-hw.sh {sampling_rate} > {CONTROLLER_LOG_FILE} 2>&1',
 			path=CONTROLLER_PATH, background=True)
 		
 		while 1:
@@ -135,6 +144,32 @@ class TG(Host):
 class Engine(Host):
 	def __init__(self):
 		super().__init__('engine', ENGINE_HOSTNAME)
+	
+	def start(self, listen_iface):
+		# build first
+		self.exec('./build.sh', path=ENGINE_PATH, silence=True)
+
+		# next, bind to kernel drivers
+		self.exec(f'sudo {BIND_KERNEL_SCRIPT}', silence=True, must_succeed=False)
+
+		# now launching engine
+		self.exec(f'sudo {ENGINE_EXE_PATH} -i {listen_iface} > {ENGINE_LOG_FILE} 2>&1',
+			path=ENGINE_PATH, background=True)
+		
+		# and wait for it to be ready
+		while 1:
+			ret, out, err = self.exec(f'cat {ENGINE_LOG_FILE}', path=ENGINE_PATH, capture_output=True)
+			time.sleep(1)
+
+			if ENGINE_READY_MSG in out:
+				break
+
+	def stop(self):
+		self.kill(ENGINE_EXE_NAME)
+		self.exec(f'rm -f {ENGINE_LOG_FILE}', must_succeed=False)
+	
+	def get_report(self):
+		self.get_files(f'{ENGINE_PATH}/{ENGINE_REPORT_FILE}')
 
 class KitNet(Host):
 	def __init__(self):
@@ -147,6 +182,12 @@ if __name__ == '__main__':
 	kitnet = KitNet()
 
 	# tofino.install()
-	# tofino.start()
+	# tofino.start(16)
 	# tofino.stop()
-	tofino.get_report()
+	# tofino.get_report()
+
+	engine.start('enp216s0f1')
+	engine.stop()
+	engine.get_report()
+
+
