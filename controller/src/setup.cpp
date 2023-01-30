@@ -59,96 +59,6 @@ namespace peregrine {
 typedef int switch_int32_t;
 typedef uint32_t switch_status_t;
 
-pthread_t nf_main_thread;
-pthread_t ether_if_sniff_thread;
-bool ether_sniff_thread_launched;
-
-bf_pkt *tx_pkt = nullptr;
-bf_pkt_tx_ring_t tx_ring = BF_PKT_TX_RING_0;
-
-void pcap_callback_func(u_char *args, const struct pcap_pkthdr *pkthdr,
-						const u_char *packetData) {
-	auto pkt_hdr = (pkt_hdr_t *)packetData;
-	assert(pkt_hdr);
-	Controller::controller->process(pkt_hdr);
-}
-
-bf_status_t pcie_tx(bf_dev_id_t device, bf_pkt_tx_ring_t tx_ring,
-					uint64_t tx_cookie, uint32_t status) {
-	return BF_SUCCESS;
-}
-
-bf_status_t pcie_rx(bf_dev_id_t device, bf_pkt *pkt, void *data,
-					bf_pkt_rx_ring_t rx_ring) {
-	bf_pkt *orig_pkt = nullptr;
-	char in_packet[SWITCH_PACKET_MAX_BUFFER_SIZE];
-	char *pkt_buf = nullptr;
-	char *bufp = nullptr;
-	uint32_t packet_size = 0;
-	switch_int32_t pkt_len = 0;
-	switch_status_t status = SWITCH_STATUS_SUCCESS;
-
-	// save a pointer to the packet
-	orig_pkt = pkt;
-
-	// assemble the received packet
-	bufp = &in_packet[0];
-
-	do {
-		pkt_buf = (char *)bf_pkt_get_pkt_data(pkt);
-		pkt_len = bf_pkt_get_pkt_size(pkt);
-		if ((packet_size + pkt_len) > SWITCH_PACKET_MAX_BUFFER_SIZE) {
-			SWITCH_PKT_ERROR("Packet too large to Transmit - SKipping\n");
-			break;
-		}
-		SWITCH_MEMCPY(bufp, pkt_buf, pkt_len);
-		bufp += pkt_len;
-		packet_size += pkt_len;
-		pkt = bf_pkt_get_nextseg(pkt);
-	} while (pkt);
-
-	pkt_hdr_t *pkt_hdr = (pkt_hdr_t *)in_packet;
-	Controller::controller->process(pkt_hdr);
-
-	bf_pkt_free(device, orig_pkt);
-	return 0;
-}
-
-void register_pcie_pkt_ops(bf_rt_target_t dev_tgt) {
-	int tx_ring;
-	int rx_ring;
-	bf_status_t status;
-
-	// register callback for TX complete
-	for (tx_ring = BF_PKT_TX_RING_0; tx_ring < BF_PKT_TX_RING_MAX; tx_ring++) {
-		bf_pkt_tx_done_notif_register(dev_tgt.dev_id, pcie_tx,
-									  (bf_pkt_tx_ring_t)tx_ring);
-	}
-
-	// register callback for RX
-	for (rx_ring = BF_PKT_RX_RING_0; rx_ring < BF_PKT_RX_RING_MAX; rx_ring++) {
-		status = bf_pkt_rx_register(dev_tgt.dev_id, pcie_rx,
-									(bf_pkt_rx_ring_t)rx_ring, 0);
-	}
-}
-
-void *register_ethernet_pkt_ops(void *args) {
-	char errbuf[PCAP_ERRBUF_SIZE];
-	auto in_handle =
-		pcap_open_live(IN_VIRTUAL_IFACE, BUFSIZ, true, 1000, errbuf);
-
-	if (in_handle == nullptr) {
-		fprintf(stderr, "Couldn't open device %s: %s\n", IN_VIRTUAL_IFACE,
-				errbuf);
-		exit(2);
-	}
-
-	pcap_setdirection(in_handle, PCAP_D_IN);
-	pcap_loop(in_handle, -1, pcap_callback_func, nullptr);
-
-	return nullptr;
-}
-
 char *get_env_var_value(const char *env_var) {
 	auto env_var_value = getenv(env_var);
 
@@ -214,27 +124,10 @@ void setup_controller(const topology_t &topology, bool use_tofino_model) {
 	const bfrt::BfRtInfo *info = nullptr;
 	auto bf_status = devMgr.bfRtInfoGet(dev_tgt.dev_id, PROGRAM_NAME, &info);
 
-	if (bf_pkt_alloc(dev_tgt.dev_id, &tx_pkt, 1500,
-					 BF_DMA_CPU_PKT_TRANSMIT_0) != 0) {
-		std::cerr << "Failed to allocate packet buffer\n";
-		exit(1);
-	}
-
 	// Create a session object
 	auto session = bfrt::BfRtSession::sessionCreate();
 
 	Controller::init(info, session, dev_tgt, topology, use_tofino_model);
-}
-
-void run(bool use_tofino_model) {
-	if (use_tofino_model) {
-		pthread_create(&ether_if_sniff_thread, nullptr,
-					   register_ethernet_pkt_ops, nullptr);
-		ether_sniff_thread_launched = true;
-	} else {
-		auto dev_tgt = Controller::controller->get_dev_tgt();
-		register_pcie_pkt_ops(dev_tgt);
-	}
 }
 
 }  // namespace peregrine

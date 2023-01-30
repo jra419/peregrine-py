@@ -191,7 +191,6 @@ struct pkt_hdr_t {
 		auto eth_hdr = get_l2();
 		auto ip_hdr = get_l3();
 		auto l4_hdr = get_l4();
-		auto peregrine_hdr = get_peregrine_hdr();
 
 		printf("###[ Ethernet ]###\n");
 		printf("  dst  %02x:%02x:%02x:%02x:%02x:%02x\n", eth_hdr->dst_mac[0],
@@ -242,6 +241,12 @@ struct pkt_hdr_t {
 				printf("\n*** Not TCP/UDP/ICMP packet! ***\n");
 			} break;
 		}
+
+		if (!has_valid_protocol()) {
+			return;
+		}
+
+		auto peregrine_hdr = get_peregrine_hdr();
 
 		printf("###[ Peregrine ]###\n");
 		printf("  decay                   %u\n", ntohl(peregrine_hdr->decay));

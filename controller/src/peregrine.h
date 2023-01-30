@@ -57,7 +57,6 @@ void init_bf_switchd(bool use_tofino_model, bool bf_prompt);
 void setup_controller(const topology_t &topology, bool use_tofino_model);
 void setup_controller(const std::string &topology_file_path,
 					  bool use_tofino_model);
-void run(bool use_tofino_model);
 
 struct bfrt_info_t;
 
@@ -210,8 +209,6 @@ private:
 public:
 	Controller(Controller &other) = delete;
 	void operator=(const Controller &) = delete;
-
-	bool process(pkt_hdr_t *pkt_hdr);
 
 	const bfrt::BfRtInfo *get_info() const { return info; }
 	std::shared_ptr<bfrt::BfRtSession> get_session() { return session; }

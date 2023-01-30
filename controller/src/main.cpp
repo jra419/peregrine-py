@@ -162,7 +162,6 @@ int main(int argc, char **argv) {
 
 	peregrine::init_bf_switchd(args.use_tofino_model, args.bf_prompt);
 	peregrine::setup_controller(args.topology_file_path, args.use_tofino_model);
-	peregrine::run(args.use_tofino_model);
 
 	peregrine::Controller::controller->set_sampling_rate(args.sampling_rate);
 

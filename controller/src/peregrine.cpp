@@ -42,14 +42,4 @@ void Controller::init(const bfrt::BfRtInfo *info,
 	controller = std::shared_ptr<Controller>(instance);
 }
 
-bool Controller::process(pkt_hdr_t *pkt_hdr) {
-#ifdef DEBUG
-	pkt_hdr->pretty_print();
-#endif
-
-	session->sessionCompleteOperations();
-
-	return true;
-}
-
 }  // namespace peregrine
