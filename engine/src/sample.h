@@ -38,38 +38,52 @@ struct sample_t {
 	uint64_t five_t_pcc;
 
 	sample_t(pkt_hdr_t* pkt, ssize_t pkt_size) {
-		valid = pkt->has_valid_protocol() &&
-				(pkt_size >= (pkt->get_l2_size() + pkt->get_l3_size() +
-							  pkt->get_l4_size()));
+		valid = pkt->has_valid_protocol();
 
 		if (!valid) {
 #ifdef DEBUG
-			printf("Invalid packet. Ignoring.\n");
+			printf("Invalid protocol packet. Ignoring.\n");
 #endif
 			return;
 		}
 
-		for (auto byte = 0; byte < sizeof(mac_t); byte++) {
-			mac_src[byte] = pkt->get_l2()->src_mac[byte];
+		valid =
+			(pkt_size >= (pkt->get_l2_size() + pkt->get_l3_size() +
+						  pkt->get_l4_size() + pkt->get_peregrine_hdr_size()));
+
+		if (!valid) {
+#ifdef DEBUG
+			printf("Packet too small. Ignoring.\n");
+#endif
+			return;
 		}
 
-		ip_src = pkt->get_l3()->src_ip;
-		ip_dst = pkt->get_l3()->dst_ip;
-		ip_proto = pkt->get_l3()->protocol;
+		auto l2 = pkt->get_l2();
+		auto l3 = pkt->get_l3();
+		auto l4 = pkt->get_l4();
+
+		for (auto byte = 0; byte < sizeof(mac_t); byte++) {
+			mac_src[byte] = l2->src_mac[byte];
+		}
+
+
+		ip_src   = l3->src_ip;
+		ip_dst   = l3->dst_ip;
+		ip_proto = l3->protocol;
 
 		switch (ip_proto) {
 			case IP_PROTO_TCP: {
-				auto tcp_hdr = (tcp_hdr_t*)pkt->get_l4().first;
+				auto tcp_hdr = (tcp_hdr_t*)l4.first;
 				port_src = tcp_hdr->src_port;
 				port_dst = tcp_hdr->dst_port;
 			} break;
 			case IP_PROTO_UDP: {
-				auto udp_hdr = (udp_hdr_t*)pkt->get_l4().first;
+				auto udp_hdr = (udp_hdr_t*)l4.first;
 				port_src = udp_hdr->src_port;
 				port_dst = udp_hdr->dst_port;
 			} break;
 			case IP_PROTO_ICMP: {
-				auto icmp_hdr = (icmp_hdr_t*)pkt->get_l4().first;
+				auto icmp_hdr = (icmp_hdr_t*)l4.first;
 				port_src = 0;
 				port_dst = 0;
 			} break;

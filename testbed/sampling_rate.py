@@ -62,20 +62,20 @@ if __name__ == '__main__':
 		print(f"[*] attack={test['attack']} sampling-rate={test['sampling-rate']}")
 
 		tofino.start(test['sampling-rate'])
-		# engine.start(testbed['engine']['listen-iface'])
+		engine.start(testbed['engine']['listen-iface'])
 
-		# kitnet.start(
-		# 	test['models']['fm'],
-		# 	test['models']['el'],
-		# 	test['models']['ol'],
-		# 	test['models']['ts'],
-		# )
+		kitnet.start(
+			test['models']['fm'],
+			test['models']['el'],
+			test['models']['ol'],
+			test['models']['ts'],
+		)
 
 		tg.run(test['pcap'], testbed['tg']['tx-kernel-iface'], test_duration_seconds)
 
 		tofino.stop()
-		# engine.stop()
-		# kitnet.stop()
+		engine.stop()
+		kitnet.stop()
 
 		tofino.get_report()
-		# engine.get_report()
+		engine.get_report()

@@ -163,15 +163,26 @@ struct pkt_hdr_t {
 				return sizeof(icmp_hdr_t);
 			} break;
 			default: {
-				printf("\n*** Not TCP/UDP/ICMP packet! Can't extract Peregrine header. ***\n");
-				exit(1);
+				return 0;
 			} break;
 		}
+	}
+
+	size_t get_peregrine_hdr_size() const {
+		return sizeof(peregrine_hdr_t);
 	}
 
 	peregrine_hdr_t* get_peregrine_hdr() const {
 		auto l4_hdr = get_l4();
 		auto l4_hdr_size = get_l4_size();
+
+		if (l4_hdr_size == 0) {
+			printf(
+				"\n*** Not TCP/UDP/ICMP packet! Can't extract Peregrine "
+				"header. ***\n");
+			exit(1);
+		}
+
 		auto peregrine_hdr = (uint8_t*)l4_hdr.first + l4_hdr_size;
 		return static_cast<peregrine_hdr_t*>((void*)peregrine_hdr);
 	}
