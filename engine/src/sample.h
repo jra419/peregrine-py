@@ -66,7 +66,6 @@ struct sample_t {
 			mac_src[byte] = l2->src_mac[byte];
 		}
 
-
 		ip_src   = l3->src_ip;
 		ip_dst   = l3->dst_ip;
 		ip_proto = l3->protocol;

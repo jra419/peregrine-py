@@ -127,8 +127,11 @@ int main(int argc, char** argv) {
 
 	while (1) {
 		auto sample = listener.receive_sample();
-		auto rmse = kitnet.ProcessSample(sample);
-		report.add(sample, rmse);
+
+		if (sample.valid) {
+			auto rmse = kitnet.ProcessSample(sample);
+			report.add(sample, rmse);
+		}
 	}
 
 	return 0;
