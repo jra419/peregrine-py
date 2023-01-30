@@ -27,6 +27,8 @@ BIND_DPDK_SCRIPT       = '/home/fcp/bind-igb_uio.sh'
 ENGINE_LISTEN_IFACE    = 'enp216s0f1'
 TG_KERNEL_OUT_IFACE    = 'enp175s0f1'
 
+TOFINO_WAITING_PERIOD  = 10 # seconds
+
 class Host:
 	def __init__(self, name, hostname, verbose=True):
 		self.name = name
@@ -180,6 +182,9 @@ class Tofino(Host):
 
 			if CONTROLLER_READY_MSG in out:
 				break
+		
+		# Wait for Tofino to reeeally be ready
+		time.sleep(TOFINO_WAITING_PERIOD)
 	
 	def stop(self):
 		self.kill(CONTROLLER_EXE_NAME)
@@ -272,7 +277,7 @@ class KitNet(Host):
 			'--feature_map', feature_map_file,
 			'--ensemble_layer', ensemble_layer_file,
 			'--output_layer', output_layer_file,
-			'--train_stats', train_stats_file
+			'--train_stats', train_stats_file,
 		]
 
 		cmd = f'{python_env_setup} && {kitnet} {" ".join(args)} > {KITNET_LOG_FILE} 2>&1'

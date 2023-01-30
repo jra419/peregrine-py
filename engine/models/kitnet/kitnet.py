@@ -373,10 +373,10 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 
 	use_training_data = args.feature_map or args.ensemble_layer or args.output_layer or args.train_stats
-	has_all_trainig_data = args.feature_map and args.ensemble_layer and args.output_layer and args.train_stats
+	has_all_training_data = args.feature_map and args.ensemble_layer and args.output_layer and args.train_stats
 	has_all_training_output_data = args.training_out_dir and args.training_name
 
-	if use_training_data and not has_all_trainig_data:
+	if use_training_data and not has_all_training_data:
 		print('Error: incomplete training data provided. Exiting.')
 		exit(1)
 	
