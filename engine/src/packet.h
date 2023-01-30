@@ -142,6 +142,13 @@ struct pkt_hdr_t {
 		}
 	}
 
+	bool has_valid_protocol() const {
+		auto ip_hdr = get_l3();
+		return (ip_hdr->protocol == IP_PROTO_TCP ||
+				ip_hdr->protocol == IP_PROTO_UDP ||
+				ip_hdr->protocol == IP_PROTO_ICMP);
+	}
+
 	size_t get_l4_size() const {
 		auto ip_hdr = get_l3();
 
@@ -156,7 +163,7 @@ struct pkt_hdr_t {
 				return sizeof(icmp_hdr_t);
 			} break;
 			default: {
-				printf("\n*** Not TCP/UDP/ICMP packet! ***\n");
+				printf("\n*** Not TCP/UDP/ICMP packet! Can't extract Peregrine header. ***\n");
 				exit(1);
 			} break;
 		}

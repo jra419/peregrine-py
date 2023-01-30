@@ -1,0 +1,24 @@
+{
+	"tofino": {
+		"hostname": "tofino",
+		"peregrine-path": "/root/peregrine"
+	},
+	"tg": {
+		"hostname": "gsd+e291427x1300275",
+		"pcaps-path": "/home/fcp/bench/pcaps/peregrine",
+		"tx-kernel-iface": "enp175s0f1",
+		"tx-dpdk-port": "1"
+	},
+	"engine": {
+		"hostname": "gsd+e291427x1300274",
+		"peregrine-path": "/home/fcp/peregrine",
+		"listen-iface": "enp216s0f1"
+	},
+	"plugins": {
+		"kitnet": {
+			"hostname": "gsd+e291427x1300274",
+			"peregrine-path": "/home/fcp/peregrine",
+			"models-path": "/home/fcp/models"
+		}
+	}
+}

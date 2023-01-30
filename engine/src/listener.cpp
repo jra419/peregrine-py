@@ -70,7 +70,7 @@ sample_t Listener::receive_sample() {
 	pkt->pretty_print();
 #endif
 
-	return sample_t(pkt);
+	return sample_t(pkt, data_size);
 }
 
 };	// namespace peregrine

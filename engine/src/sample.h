@@ -7,6 +7,8 @@
 namespace peregrine {
 
 struct sample_t {
+	bool valid;
+
 	mac_t mac_src;
 	ipv4_t ip_src;
 	ipv4_t ip_dst;
@@ -35,11 +37,23 @@ struct sample_t {
 	uint64_t five_t_sum_res_prod_cov;
 	uint64_t five_t_pcc;
 
-	sample_t(pkt_hdr_t* pkt) {
+	sample_t(pkt_hdr_t* pkt, ssize_t pkt_size) {
+		valid = pkt->has_valid_protocol();
+
+		valid &= (pkt_size >=
+				  pkt->get_l2_size() + pkt->get_l3_size() + pkt->get_l4_size());
+
+		if (!valid) {
+#ifdef DEBUG
+			printf("Invalid packet. Ignoring.\n");
+#endif
+			return;
+		}
+
 		for (auto byte = 0; byte < sizeof(mac_t); byte++) {
 			mac_src[byte] = pkt->get_l2()->src_mac[byte];
 		}
-		
+
 		ip_src = pkt->get_l3()->src_ip;
 		ip_dst = pkt->get_l3()->dst_ip;
 		ip_proto = pkt->get_l3()->protocol;
@@ -59,10 +73,6 @@ struct sample_t {
 				auto icmp_hdr = (icmp_hdr_t*)pkt->get_l4().first;
 				port_src = 0;
 				port_dst = 0;
-			} break;
-			default: {
-				printf("\n*** Not TCP/UDP/ICMP packet! ***\n");
-				exit(1);
 			} break;
 		}
 
