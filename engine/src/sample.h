@@ -38,10 +38,9 @@ struct sample_t {
 	uint64_t five_t_pcc;
 
 	sample_t(pkt_hdr_t* pkt, ssize_t pkt_size) {
-		valid = pkt->has_valid_protocol();
-
-		valid &= (pkt_size >=
-				  pkt->get_l2_size() + pkt->get_l3_size() + pkt->get_l4_size());
+		valid = pkt->has_valid_protocol() &&
+				(pkt_size >= (pkt->get_l2_size() + pkt->get_l3_size() +
+							  pkt->get_l4_size()));
 
 		if (!valid) {
 #ifdef DEBUG
