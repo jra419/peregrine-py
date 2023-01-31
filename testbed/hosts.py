@@ -105,10 +105,13 @@ class Host:
 	def get_files(self, src, dst=SCRIPT_DIR):
 		cmd = [ 'rsync', '-avz', '--progress', f'{self.hostname}:{src}', dst ]
 		proc = subprocess.run(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+		target = f'{dst}/{src.split("/")[-1]}'
 		
 		if proc.returncode != 0:
 			self.log(f'Command failed (ret={proc.returncode}).')
 			exit(1)
+		
+		return target
 	
 	def has_directory(self, directory):
 		cmd = f'test -d {directory}'
@@ -186,12 +189,17 @@ class Tofino(Host):
 		# Wait for Tofino to reeeally be ready
 		time.sleep(TOFINO_WAITING_PERIOD)
 	
+	def modify_sampling_rate(self, sampling_rate):
+		sed_cmd = f'sed -E -i \'s/#define SAMPLING [0-9]+/#define SAMPLING {sampling_rate}/g\''
+		target = f'{self.p4_path}/includes/constants.p4'
+		self.exec(f'{sed_cmd} {target}')
+	
 	def stop(self):
 		self.kill(CONTROLLER_EXE_NAME)
 		self.exec(f'rm -f {CONTROLLER_LOG_FILE} || true', must_succeed=False)
 
 	def get_report(self):
-		self.get_files(f'{self.controller_path}/{CONTROLLER_REPORT_FILE}')
+		return self.get_files(f'{self.controller_path}/{CONTROLLER_REPORT_FILE}')
 
 class TG_kernel(Host):
 	def __init__(self, hostname, verbose=True):
@@ -251,7 +259,7 @@ class Engine(Host):
 		self.exec(f'rm -f {ENGINE_LOG_FILE}', must_succeed=False)
 	
 	def get_report(self):
-		self.get_files(f'{self.engine_path}/{ENGINE_REPORT_FILE}')
+		return self.get_files(f'{self.engine_path}/{ENGINE_REPORT_FILE}')
 
 class KitNet(Host):
 	def __init__(self, hostname, peregrine_path, verbose=True):
