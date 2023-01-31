@@ -110,7 +110,6 @@ private:
 	FiveTPcc five_t_pcc;
 	FwdRecirculation_a fwd_recirculation_a;
 	FwdRecirculation_b fwd_recirculation_b;
-	SamplingRate sampling_rate;
 
 	Controller(const bfrt::BfRtInfo *_info,
 			   std::shared_ptr<bfrt::BfRtSession> _session,
@@ -157,10 +156,7 @@ private:
 		  five_t_std_dev_prod(_info, session, dev_tgt),
 		  five_t_pcc(_info, session, dev_tgt),
 		  fwd_recirculation_a(_info, session, dev_tgt),
-		  fwd_recirculation_b(_info, session, dev_tgt),
-		  sampling_rate(_info, session, dev_tgt) {
-		Ports ports(info, session, dev_tgt);
-
+		  fwd_recirculation_b(_info, session, dev_tgt) {
 		if (!use_tofino_model) {
 			configure_ports(topology);
 		}
@@ -223,10 +219,6 @@ public:
 
 	topology_t get_topology() const { return topology; }
 	bool get_use_tofino_model() const { return use_tofino_model; }
-	
-	void set_sampling_rate(uint32_t new_sampling_rate) {
-		sampling_rate.set_sampling_rate(new_sampling_rate);
-	}
 
 	static void init(const bfrt::BfRtInfo *_info,
 					 std::shared_ptr<bfrt::BfRtSession> _session,

@@ -17,7 +17,7 @@ def run(tofino, engine, kitnet, tg, testbed, test, duration_seconds):
 	# TODO: retry if not sent/received
 	print(f"[*] attack={test['attack']} sampling-rate={test['sampling-rate']}")
 
-	tofino.start(test['sampling-rate'])
+	tofino.start()
 	engine.start(testbed['engine']['listen-iface'])
 
 	kitnet.start(

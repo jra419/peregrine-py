@@ -10,13 +10,6 @@ if [ -z ${SDE_INSTALL+x} ]; then
 	exit 1
 fi
 
-if [[ $# -ne 1 ]]; then
-    echo "Usage: $0 <sampling rate>"
-    exit 1
-fi
-
-sampling_rate=$1
-
 CONTROLLER_EXE="$SCRIPT_DIR/build/peregrine-controller"
 TOPOLOGY_FILE="$SCRIPT_DIR/topology-model.json"
 TOFINO_MODEL_EXE_NAME="tofino-model"
@@ -38,9 +31,8 @@ fi
 make debug -j
 
 # Run controller with model
-echo "Running PEREGRINE_HW_CONF=$BFN_T10_032D_CONF_FILE sudo -E $CONTROLLER_EXE $TOPOLOGY_FILE --model --sampling-rate $sampling_rate"
+echo "Running PEREGRINE_HW_CONF=$BFN_T10_032D_CONF_FILE sudo -E $CONTROLLER_EXE $TOPOLOGY_FILE --model"
 PEREGRINE_HW_CONF=$BFN_T10_032D_CONF_FILE \
 	sudo -E $CONTROLLER_EXE \
 	$TOPOLOGY_FILE \
-	--model \
-	--sampling-rate=$sampling_rate
+	--model

@@ -162,11 +162,11 @@ class Tofino(Host):
 	def install(self):
 		self.exec('make install', path=self.p4_path, silence=True)
 	
-	def start(self, sampling_rate):
+	def start(self):
 		# Compiling first
 		self.exec('make release -j', path=self.controller_path, silence=True)
 
-		self.exec(f'./run-with-hw.sh {sampling_rate} > {CONTROLLER_LOG_FILE} 2>&1',
+		self.exec(f'./run-with-hw.sh > {CONTROLLER_LOG_FILE} 2>&1',
 			path=self.controller_path, background=True)
 		
 		while 1:
