@@ -2,7 +2,7 @@
 #define _CONSTANTS_
 
 #define MAX_PORTS 255
-#define SAMPLING_RATE_KEY ((bit<1>)(1))
+#define SAMPLING 1024
 
 typedef bit<16> ether_type_t;
 const ether_type_t ETHERTYPE_IPV4 = 16w0x0800;

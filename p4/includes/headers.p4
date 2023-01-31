@@ -171,8 +171,8 @@ struct res_current {
 }
 
 struct decay_cntr {
-    bit<32> cur_pkt;
-    bit<32> value;
+    bit<16> cur_pkt;
+    bit<16> value;
 }
 
 struct ingress_metadata_a_t {

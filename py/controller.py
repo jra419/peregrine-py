@@ -136,8 +136,6 @@ def configure_switch(program, topology):
     ip_decay_check = IpDecayCheck(gc, bfrt_info)
     five_t_decay_check = FiveTDecayCheck(gc, bfrt_info)
 
-    sampling_rate = SamplingRate(gc, bfrt_info)
-
     a_fwd_recirculation = FwdRecirculation_a(gc, bfrt_info)
     b_fwd_recirculation = FwdRecirculation_b(gc, bfrt_info)
 
@@ -173,8 +171,6 @@ def configure_switch(program, topology):
     five_t_cov = FiveTCov(gc, bfrt_info)
     five_t_std_dev_prod = FiveTStdDevProd(gc, bfrt_info)
     five_t_pcc = FiveTPcc(gc, bfrt_info)
-
-    sampling_rate.add_entry(1, SAMPLING_RATE)
 
     mac_ip_src_decay_check.add_entry(0, '100_ms')
     mac_ip_src_decay_check.add_entry(8192, '1_s')
@@ -716,7 +712,7 @@ if __name__ == "__main__":
             import bfrt_grpc.client as gc
         from ports import Ports
         from peregrine_tables import MacIpSrcDecayCheck, IpSrcDecayCheck, IpDecayCheck, FiveTDecayCheck
-        from peregrine_tables import SamplingRate, FwdRecirculation_a, FwdRecirculation_b
+        from peregrine_tables import FwdRecirculation_a, FwdRecirculation_b
         from peregrine_tables import MacIpSrcMean, IpSrcMean
         from peregrine_tables import IpMean0, IpResStructUpdate, IpResProd, IpSumResProdGetCarry
         from peregrine_tables import IpPktCnt1Access, IpSs1Access, IpMean1Access

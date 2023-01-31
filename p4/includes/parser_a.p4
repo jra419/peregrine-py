@@ -29,7 +29,6 @@ parser SwitchIngressParser_a(packet_in pkt, out header_t hdr, out ingress_metada
         pkt.extract(hdr.ipv4);
         // Constant value used as a key in the sampling rate table.
         // Defined here due to stage limitations.
-        ig_md.meta.sampling_rate_key = SAMPLING_RATE_KEY;
         transition select(hdr.ipv4.protocol) {
             IP_PROTO_UDP : parse_udp;
             IP_PROTO_TCP : parse_tcp;

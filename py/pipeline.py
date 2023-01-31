@@ -36,6 +36,7 @@ threshold = 0
 
 def pkt_callback(pkt):
     if PeregrineHdr in pkt:
+        print("YAY")
         global cur_stats
         global pkt_header
         global pkt_cnt_global
@@ -136,7 +137,7 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
             # Execution:  data plane
             if exec_phase == 'dp':
                 # Callback function to retrieve the packet's custom header.
-                sniff(iface=cur_eg_veth, count=1, prn=pkt_callback, timeout=120)
+                sniff(iface=cur_eg_veth, count=1, prn=pkt_callback, timeout=9999999)
 
             # Execution:  control plane
             else:
