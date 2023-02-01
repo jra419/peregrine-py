@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
-import hosts
+from hosts.Tofino import Tofino
+from hosts.Engine import Engine
+from hosts.KitNet import KitNet
+from hosts.TG_DPDK import TG_DPDK
+
 import json
 import os
 import shutil
@@ -9,9 +13,9 @@ SCRIPT_DIR   = os.path.dirname(os.path.realpath(__file__))
 TESTBED_JSON = f'{SCRIPT_DIR}/testbed.json'
 VERBOSE      = False
 
-PCAP_TX_DURATION_SECONDS = 300
+PCAP_TX_DURATION_SECONDS = 10
 SAMPLING_RATE            = 1024
-TEST_RESULTS_DIR         = f'{SCRIPT_DIR}/original-rate-{SAMPLING_RATE}-sampling-rate'
+TEST_RESULTS_DIR         = f'{SCRIPT_DIR}/results/original-rate-{SAMPLING_RATE}-sampling-rate'
 
 def get_testbed_cfg():
 	with open(TESTBED_JSON, 'r') as f:
@@ -39,7 +43,7 @@ def check_success_from_controller_report(controller_report_file):
 				return samples_sent == tx and samples_sent > 0
 		return True
 
-def run(tofino, engine, kitnet, tg, testbed, test):
+def run(tofino, engine, kitnet, tg_kernel, testbed, test):
 	print(f"[*] attack={test['attack']}")
 
 	controller_report_file = None
@@ -56,7 +60,7 @@ def run(tofino, engine, kitnet, tg, testbed, test):
 			test['models']['ts'],
 		)
 
-		tg.run(test['pcap'], testbed['tg']['tx-kernel-iface'], PCAP_TX_DURATION_SECONDS)
+		tg_kernel.run(test['pcap'], testbed['tg']['tx-kernel-iface'], PCAP_TX_DURATION_SECONDS)
 
 		tofino.stop()
 		engine.stop()
@@ -79,25 +83,25 @@ def run(tofino, engine, kitnet, tg, testbed, test):
 if __name__ == '__main__':
 	testbed = get_testbed_cfg()
 
-	tofino = hosts.Tofino(
+	tofino = Tofino(
 		hostname=testbed['tofino']['hostname'],
 		peregrine_path=testbed['tofino']['peregrine-path'],
 		verbose=VERBOSE
 	)
 	
-	engine = hosts.Engine(
+	engine = Engine(
 		hostname=testbed['engine']['hostname'],
 		peregrine_path=testbed['engine']['peregrine-path'],
 		verbose=VERBOSE
 	)
 
-	kitnet = hosts.KitNet(
+	kitnet = KitNet(
 		hostname=testbed['plugins']['kitnet']['hostname'],
 		peregrine_path=testbed['plugins']['kitnet']['peregrine-path'],
 		verbose=VERBOSE
 	)
 
-	tg = hosts.TG_kernel(
+	tg_kernel = TG_kernel(
 		hostname=testbed['tg']['hostname'],
 		verbose=VERBOSE
 	)
@@ -115,9 +119,9 @@ if __name__ == '__main__':
 		}
 	]
 
-	# print('[*] Installing')
-	# tofino.modify_sampling_rate(SAMPLING_RATE)
-	# tofino.install()
+	print('[*] Installing')
+	tofino.modify_sampling_rate(SAMPLING_RATE)
+	tofino.install()
 
 	for test in tests:
-		run(tofino, engine, kitnet, tg, testbed, test)
+		run(tofino, engine, kitnet, tg_kernel, testbed, test)
