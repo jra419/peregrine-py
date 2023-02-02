@@ -376,6 +376,7 @@ private:
 	bf_rt_id_t FEC;
 	bf_rt_id_t PORT_ENABLE;
 	bf_rt_id_t LOOPBACK_MODE;
+	bf_rt_id_t PORT_UP;
 
 	Port_HDL_Info port_hdl_info;
 	Port_Stat port_stat;
@@ -400,6 +401,9 @@ public:
 		assert(bf_status == BF_SUCCESS);
 
 		bf_status = table->dataFieldIdGet("$LOOPBACK_MODE", &LOOPBACK_MODE);
+		assert(bf_status == BF_SUCCESS);
+
+		bf_status = table->dataFieldIdGet("$PORT_UP", &PORT_UP);
 		assert(bf_status == BF_SUCCESS);
 	}
 
@@ -451,6 +455,23 @@ public:
 		auto dev_port =
 			port_hdl_info.get_dev_port(front_panel_port, lane, false);
 		add_dev_port(dev_port, speed);
+	}
+
+	bool is_port_up(uint16_t dev_port, bool from_hw = false) {
+		auto hwflag = from_hw ? bfrt::BfRtTable::BfRtTableGetFlag::GET_FROM_HW
+							  : bfrt::BfRtTable::BfRtTableGetFlag::GET_FROM_SW;
+
+		key_setup(dev_port);
+
+		auto bf_status =
+			table->tableEntryGet(*session, dev_tgt, *key, hwflag, data.get());
+		assert(bf_status == BF_SUCCESS);
+
+		uint64_t value;
+		bf_status = data->getValue(PORT_UP, &value);
+		assert(bf_status == BF_SUCCESS);
+
+		return value;
 	}
 
 	uint16_t get_dev_port(uint16_t front_panel_port, uint16_t lane) {

@@ -198,6 +198,13 @@ private:
 				ports.add_dev_port(
 					internal_port, BF_SPEED_100G,
 					bf_loopback_mode_e::BF_LPBK_MAC_NEAR);	// hack
+
+				std::cerr << "Waiting for internal port " << internal_port
+						  << " to be up...\n";
+
+				while (!ports.is_port_up(internal_port)) {
+					sleep(1);
+				}
 			}
 
 			std::cerr << "(input) dev " << ig_port << " => (internal) dev "

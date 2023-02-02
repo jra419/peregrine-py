@@ -15,8 +15,19 @@ void Controller::configure_ports(const topology_t &topology) {
 		auto in_speed = Ports::gbps_to_bf_port_speed(connection.in.capacity);
 		auto out_speed = Ports::gbps_to_bf_port_speed(connection.out.capacity);
 
-		ports.add_port(connection.in.port, 0, in_speed);
-		ports.add_port(connection.out.port, 0, out_speed);
+		auto in_dev_port = ports.get_dev_port(connection.in.port, 0);
+		auto out_dev_port = ports.get_dev_port(connection.out.port, 0);
+
+		ports.add_dev_port(in_dev_port, in_speed);
+		ports.add_dev_port(out_dev_port, out_speed);
+
+		std::cerr << "Waiting for ports " << connection.in.port << " and "
+				  << connection.out.port << " to be up...\n";
+
+		while (!ports.is_port_up(in_dev_port) ||
+			   !ports.is_port_up(out_dev_port)) {
+			sleep(1);
+		}
 	}
 }
 
