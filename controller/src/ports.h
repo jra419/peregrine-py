@@ -467,7 +467,7 @@ public:
 			table->tableEntryGet(*session, dev_tgt, *key, hwflag, data.get());
 		assert(bf_status == BF_SUCCESS);
 
-		uint64_t value;
+		bool value;
 		bf_status = data->getValue(PORT_UP, &value);
 		assert(bf_status == BF_SUCCESS);
 
