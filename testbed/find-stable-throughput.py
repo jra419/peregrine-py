@@ -9,12 +9,29 @@ import json
 import os
 import shutil
 
-SCRIPT_DIR   = os.path.dirname(os.path.realpath(__file__))
-TESTBED_JSON = f'{SCRIPT_DIR}/testbed.json'
-VERBOSE      = False
-PCAP_TX_DURATION_SECONDS = 10
-SAMPLING_RATE            = 1024
-MAX_RETRIES              = 5
+SCRIPT_DIR           = os.path.dirname(os.path.realpath(__file__))
+TESTBED_JSON         = f'{SCRIPT_DIR}/testbed.json'
+VERBOSE              = False
+DURATION_SECONDS     = 10
+SAMPLING_RATE        = 1024
+MAX_RETRIES          = 5
+SEARCH_ITERATIONS    = 10
+RATE_LOWER_THRESHOLD = 0.1
+LOSS_THRESHOLD       = 0.001
+
+def compact(n):
+	orders = [
+		(1e9, 1e9, 'G'),
+		(1e6, 1e6, 'M'),
+		(1e3, 1e3, 'K'),
+		(0, 1, ''),
+	]
+
+	for o in orders:
+		if n >= o[0]:
+			return f'{n/o[1]:.1f}{o[2]}'
+	
+	return n
 
 def get_testbed_cfg():
 	with open(TESTBED_JSON, 'r') as f:
@@ -29,8 +46,8 @@ def get_data_from_controller(controller_report_file):
 		ports_info = lines[1:]
 		stats_port = int(ports_info[-1].split('\t')[0])
 
-		total_rx = 0
-		total_tx = 0
+		rx_pkts    = -1
+		tx_samples = -1
 
 		for port_info in ports_info:
 			port_info = port_info.split('\t')
@@ -39,30 +56,29 @@ def get_data_from_controller(controller_report_file):
 			tx        = int(port_info[2])
 
 			if port != stats_port:
-				total_rx += rx
-				total_tx += tx
+				rx_pkts += rx
 			else:
-				tx_stats_port = tx
-				return total_rx,total_tx if total_tx == tx_stats_port and total_tx > 0 else -1
-		return total_rx,total_tx
+				tx_samples = tx
+				if rx_pkts > 0 and tx_samples > 0:
+					return rx_pkts,tx_samples
+				else:
+					return -1,-1
+		return rx_pkts,tx_samples
 
 def get_processed_samples_from_engine(engine_report_file):
-	with open(controller_report_file, 'r') as f:
+	with open(engine_report_file, 'r') as f:
 		lines = f.readlines()
-		assert(len(lines) > 1)
-
 		samples = lines[1:]
 		return len(samples)
 
-def run(tofino, engine, kitnet, tg_dpdk, testbed, test):
-	print(f"[*] attack={test['attack']}")
-
+def run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate):
 	controller_report_file = None
 	engine_report_file     = None
 
-	controller_rx     = -1
-	controller_tx     = -1
-	processed_samples = -1
+	rx_pkts    = -1
+	tx_samples = -1
+	processed  = -1
+	loss       = -1
 
 	success = False
 	try_run = 0
@@ -82,7 +98,7 @@ def run(tofino, engine, kitnet, tg_dpdk, testbed, test):
 			test['models']['ts'],
 		)
 
-		tg_dpdk.run(test['pcap'], testbed['tg']['tx-dpdk-port'], PCAP_TX_DURATION_SECONDS)
+		tg_dpdk.run(test['pcap'], testbed['tg']['tx-dpdk-port'], rate, DURATION_SECONDS)
 
 		tofino.stop()
 		engine.stop()
@@ -91,21 +107,92 @@ def run(tofino, engine, kitnet, tg_dpdk, testbed, test):
 		controller_report_file = tofino.get_report()
 		engine_report_file     = engine.get_report()
 
-		controller_rx,controller_tx = get_data_from_controller(controller_report_file)
-		processed_samples           = get_processed_samples_from_engine(engine_report_file)
+		rx_pkts,tx_samples = get_data_from_controller(controller_report_file)
+		processed          = get_processed_samples_from_engine(engine_report_file)
+		loss               = (tx_samples - processed) / tx_samples
 
-		if controller_rx == -1 or controller_tx == -1:
+		success = rx_pkts > -1 and tx_samples > -1
+
+		if not success:
 			print(f"  - Packets not flowing through Tofino. Repeating experiment.")
-	
-	assert controller_rx > 0
-	assert controller_tx > 0
-
-	print(f'Controller RX     {controller_rx}')
-	print(f'Controller TX     {controller_tx}')
-	print(f'Processed samples {processed_samples} ({processed_samples * 100.0 / controller_tx:.2f} %)')
+		
+	assert rx_pkts > 0
+	assert tx_samples > 0
 
 	os.remove(controller_report_file)
 	os.remove(engine_report_file)
+
+	rx_rate_pps = rx_pkts / DURATION_SECONDS
+	tx_rate_pps = tx_samples / DURATION_SECONDS
+
+	return rx_rate_pps, tx_rate_pps, loss
+
+def find_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test):
+	upper_bound = 100.0
+	lower_bound = 0
+	i           = 0
+
+	max_rate = upper_bound
+	mid_rate = upper_bound
+	min_rate = lower_bound
+
+	best_rate        = -1
+	best_rx_rate_pps = -1
+	best_tx_rate_pps = -1
+	best_loss        = -1
+
+	while True:
+		rate = mid_rate
+
+		if rate < RATE_LOWER_THRESHOLD or i >= SEARCH_ITERATIONS:
+			break
+		
+		rx_rate_pps, tx_rate_pps, loss = run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate)
+
+		print(f'  [{i+1:2d}/{SEARCH_ITERATIONS}] rate {rate:3.2f}% rx {compact(rx_rate_pps)}pps tx {compact(tx_rate_pps)}pps loss {100 * loss:.2f}%')
+
+		if loss < LOSS_THRESHOLD:
+			if tx_rate_pps > best_tx_rate_pps:
+				best_rate        = rate
+				best_rx_rate_pps = rx_rate_pps
+				best_tx_rate_pps = tx_rate_pps
+				best_loss        = loss
+
+			if mid_rate == upper_bound or i + 1 >= SEARCH_ITERATIONS:
+				break
+
+			min_rate = mid_rate
+			mid_rate = mid_rate + (max_rate - mid_rate) / 2
+		else:
+			max_rate = mid_rate
+			mid_rate = min_rate + (mid_rate - min_rate) / 2
+		
+		i += 1
+	
+	print(f'  Best rate {best_rate:3.2f}% rx {compact(best_rx_rate_pps)}pps tx {compact(best_tx_rate_pps)}pps loss {100 * best_loss:.2f}%')
+
+	if loss >= LOSS_THRESHOLD:
+		return best_rx_rate_pps, best_tx_rate_pps
+	return -1, -1
+
+def find_sampling_rate(tofino, engine, kitnet, tg_dpdk, testbed, test):
+	print(f"[*] attack={test['attack']}")
+
+	sampling_rate_max = 16384
+	sampling_rate     = 2048
+
+	while sampling_rate <= sampling_rate_max:
+		print(f'  sampling rate={sampling_rate}')
+		
+		print(f'  installing...')
+		tofino.modify_sampling_rate(sampling_rate)
+		tofino.install()
+		print(f'  done')
+
+		find_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test)
+
+		sampling_rate *= 2
+		print()
 
 if __name__ == '__main__':
 	testbed = get_testbed_cfg()
@@ -146,9 +233,10 @@ if __name__ == '__main__':
 		}
 	]
 
-	# print('[*] Installing')
-	# tofino.modify_sampling_rate(SAMPLING_RATE)
-	# tofino.install()
 
 	for test in tests:
-		run(tofino, engine, kitnet, tg_dpdk, testbed, test)
+		# print('[*] Installing')
+		# tofino.modify_sampling_rate(SAMPLING_RATE)
+		# tofino.install()
+
+		find_sampling_rate(tofino, engine, kitnet, tg_dpdk, testbed, test)

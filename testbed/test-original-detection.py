@@ -18,6 +18,7 @@ VERBOSE      = False
 PCAP_TX_DURATION_SECONDS = 10
 SAMPLING_RATE            = 1
 TEST_RESULTS_DIR         = f'{SCRIPT_DIR}/results/original-rate-{SAMPLING_RATE}-sampling-rate'
+MAX_RETRIES              = 5
 
 def get_testbed_cfg():
 	with open(TESTBED_JSON, 'r') as f:
@@ -32,7 +33,9 @@ def check_success_from_controller_report(controller_report_file):
 		ports_info = lines[1:]
 		stats_port = int(ports_info[-1].split('\t')[0])
 
-		samples_sent = 0
+		rx_pkts    = 0
+		tx_samples = 0
+
 		for port_info in ports_info:
 			port_info = port_info.split('\t')
 			port      = int(port_info[0])
@@ -40,10 +43,11 @@ def check_success_from_controller_report(controller_report_file):
 			tx        = int(port_info[2])
 
 			if port != stats_port:
-				samples_sent += tx
+				rx_pkts += rx
 			else:
-				return samples_sent == tx and samples_sent > 0
-		return True
+				tx_samples = tx
+				return rx_pkts > 0 and tx_samples > 0
+		return False
 
 def run(tofino, engine, kitnet, tg_kernel, testbed, test):
 	print(f"[*] attack={test['attack']}")
@@ -52,7 +56,14 @@ def run(tofino, engine, kitnet, tg_kernel, testbed, test):
 	engine_report_file     = None
 
 	success = False
+	try_run = 0
 	while not success:
+		try_run += 1
+
+		if try_run > MAX_RETRIES:
+			print('Maximum number of allowed retries reached. Exiting.')
+			exit(1)
+
 		tofino.start()
 		engine.start(testbed['engine']['listen-iface'])
 		kitnet.start(
@@ -121,9 +132,9 @@ if __name__ == '__main__':
 		}
 	]
 
-	print('[*] Installing')
-	tofino.modify_sampling_rate(SAMPLING_RATE)
-	tofino.install()
+	# print('[*] Installing')
+	# tofino.modify_sampling_rate(SAMPLING_RATE)
+	# tofino.install()
 
 	for test in tests:
 		run(tofino, engine, kitnet, tg_kernel, testbed, test)
