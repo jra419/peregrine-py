@@ -397,8 +397,7 @@ public:
 		assert(bf_status == BF_SUCCESS);
 	}
 
-	void add_port(uint16_t front_panel_port, uint16_t lane,
-				  bf_port_speed_t speed) {
+	void add_dev_port(uint16_t dev_port, bf_port_speed_t speed) {
 		std::map<bf_port_speed_t, std::string> speed_opts{
 			{BF_SPEED_NONE, "BF_SPEED_10G"},
 			{BF_SPEED_25G, "BF_SPEED_25G"},
@@ -421,14 +420,19 @@ public:
 		};
 
 		auto fec = speed_to_fec[speed];
-		auto dev_port =
-			port_hdl_info.get_dev_port(front_panel_port, lane, false);
 
 		key_setup(dev_port);
 		data_setup(speed_opts[speed], fec_opts[fec], true);
 
 		auto bf_status = table->tableEntryAdd(*session, dev_tgt, *key, *data);
 		assert(bf_status == BF_SUCCESS);
+	}
+
+	void add_port(uint16_t front_panel_port, uint16_t lane,
+				  bf_port_speed_t speed) {
+		auto dev_port =
+			port_hdl_info.get_dev_port(front_panel_port, lane, false);
+		add_dev_port(dev_port, speed);
 	}
 
 	uint16_t get_dev_port(uint16_t front_panel_port, uint16_t lane) {

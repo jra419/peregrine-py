@@ -64,7 +64,7 @@ class TG_DPDK(Host):
 		script = script.replace('{{port}}', str(tx_port))
 		script = script.replace('{{rate}}', str(rate))
 
-		self.exec(f'cat <<EOT >> {script_file}\n{script}EOT', silence=True)
+		self.exec(f'cat <<EOT > {script_file}\n{script}EOT', silence=True)
 
 		tx_cores = "16" if NUM_TX_CORES == 1 else f"16-{16 + (NUM_TX_CORES - 1)}"
 
@@ -74,7 +74,7 @@ class TG_DPDK(Host):
 			"-l", "0,16-31", "-n", "4", "--proc-type", "auto",
 			"--",
 			"-N", "-T", "-P",
-			"-m", f"[31:{tx_cores}].0,[1:2].1",
+			"-m", f"[31:{tx_cores}].{tx_port}",
 			"-s", f"{tx_port}:{pcap}",
 			"-f", f"{script_file}",
 		]
