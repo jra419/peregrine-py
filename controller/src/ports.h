@@ -4,6 +4,8 @@
 
 #include "table.h"
 
+#include <port_mgr/bf_port_if.h>
+
 namespace peregrine {
 
 class Port_HDL_Info : Table {
@@ -373,6 +375,7 @@ private:
 	bf_rt_id_t SPEED;
 	bf_rt_id_t FEC;
 	bf_rt_id_t PORT_ENABLE;
+	bf_rt_id_t LOOPBACK_MODE;
 
 	Port_HDL_Info port_hdl_info;
 	Port_Stat port_stat;
@@ -395,20 +398,24 @@ public:
 
 		bf_status = table->dataFieldIdGet("$PORT_ENABLE", &PORT_ENABLE);
 		assert(bf_status == BF_SUCCESS);
+
+		bf_status = table->dataFieldIdGet("$LOOPBACK_MODE", &LOOPBACK_MODE);
+		assert(bf_status == BF_SUCCESS);
 	}
 
-	void add_dev_port(uint16_t dev_port, bf_port_speed_t speed) {
+	void add_dev_port(uint16_t dev_port, bf_port_speed_t speed,
+					  bf_loopback_mode_e loopback_mode = BF_LPBK_NONE) {
 		std::map<bf_port_speed_t, std::string> speed_opts{
-			{BF_SPEED_NONE, "BF_SPEED_10G"},
-			{BF_SPEED_25G, "BF_SPEED_25G"},
-			{BF_SPEED_40G, "BF_SPEED_40G"},
-			{BF_SPEED_50G, "BF_SPEED_50G"},
-			{BF_SPEED_100G, "BF_SPEED_100G"}};
+			{BF_SPEED_NONE, "BF_SPEED_10G"},  {BF_SPEED_25G, "BF_SPEED_25G"},
+			{BF_SPEED_40G, "BF_SPEED_40G"},	  {BF_SPEED_50G, "BF_SPEED_50G"},
+			{BF_SPEED_100G, "BF_SPEED_100G"},
+		};
 
 		std::map<bf_fec_type_t, std::string> fec_opts{
 			{BF_FEC_TYP_NONE, "BF_FEC_TYP_NONE"},
 			{BF_FEC_TYP_FIRECODE, "BF_FEC_TYP_FIRECODE"},
-			{BF_FEC_TYP_REED_SOLOMON, "BF_FEC_TYP_REED_SOLOMON"}};
+			{BF_FEC_TYP_REED_SOLOMON, "BF_FEC_TYP_REED_SOLOMON"},
+		};
 
 		std::map<bf_port_speed_t, bf_fec_type_t> speed_to_fec{
 			{BF_SPEED_NONE, BF_FEC_TYP_NONE},
@@ -419,10 +426,21 @@ public:
 			{BF_SPEED_100G, BF_FEC_TYP_REED_SOLOMON},
 		};
 
+		std::map<bf_loopback_mode_e, std::string> loopback_mode_opts{
+			{BF_LPBK_NONE, "BF_LPBK_NONE"},
+			{BF_LPBK_MAC_NEAR, "BF_LPBK_MAC_NEAR"},
+			{BF_LPBK_MAC_FAR, "BF_LPBK_MAC_FAR"},
+			{BF_LPBK_PCS_NEAR, "BF_LPBK_PCS_NEAR"},
+			{BF_LPBK_SERDES_NEAR, "BF_LPBK_SERDES_NEAR"},
+			{BF_LPBK_SERDES_FAR, "BF_LPBK_SERDES_FAR"},
+			{BF_LPBK_PIPE, "BF_LPBK_PIPE"},
+		};
+
 		auto fec = speed_to_fec[speed];
 
 		key_setup(dev_port);
-		data_setup(speed_opts[speed], fec_opts[fec], true);
+		data_setup(speed_opts[speed], fec_opts[fec], true,
+				   loopback_mode_opts[loopback_mode]);
 
 		auto bf_status = table->tableEntryAdd(*session, dev_tgt, *key, *data);
 		assert(bf_status == BF_SUCCESS);
@@ -452,7 +470,8 @@ private:
 		assert(bf_status == BF_SUCCESS);
 	}
 
-	void data_setup(std::string speed, std::string fec, bool port_enable) {
+	void data_setup(std::string speed, std::string fec, bool port_enable,
+					std::string loopback_mode) {
 		table->dataReset(data.get());
 
 		auto bf_status = data->setValue(SPEED, speed);
@@ -462,6 +481,9 @@ private:
 		assert(bf_status == BF_SUCCESS);
 
 		bf_status = data->setValue(PORT_ENABLE, port_enable);
+		assert(bf_status == BF_SUCCESS);
+
+		bf_status = data->setValue(LOOPBACK_MODE, loopback_mode);
 		assert(bf_status == BF_SUCCESS);
 	}
 

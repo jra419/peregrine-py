@@ -47,6 +47,7 @@
 extern "C" {
 #endif
 #include <bf_rt/bf_rt_common.h>
+#include <port_mgr/bf_port_if.h>
 #ifdef __cplusplus
 }
 #endif
@@ -193,7 +194,14 @@ private:
 			auto internal_pipe = topology.pipes.internal[index];
 			auto internal_port = (internal_pipe << 7) | ig_local_port;
 
-			std::cerr << "(input) dev " << ig_port << " => (internal) dev " << internal_port << "\n";
+			if (!use_tofino_model) {
+				ports.add_dev_port(
+					internal_port, BF_SPEED_100G,
+					bf_loopback_mode_e::BF_LPBK_MAC_NEAR);	// hack
+			}
+
+			std::cerr << "(input) dev " << ig_port << " => (internal) dev "
+					  << internal_port << "\n";
 
 			fwd_recirculation_a.add_entry(ig_port, internal_port);
 			fwd_recirculation_b.add_entry(internal_port, eg_port);
