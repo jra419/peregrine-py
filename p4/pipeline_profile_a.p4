@@ -88,7 +88,6 @@ control SwitchIngress_a(
 
     action modify_eg_port(PortId_t port) {
         ig_tm_md.ucast_egress_port = port;
-        ig_tm_md.copy_to_cpu = 1;
         hdr.peregrine.setValid();
         hdr.peregrine.decay = (bit<32>)ig_md.meta.decay_cntr;
     }

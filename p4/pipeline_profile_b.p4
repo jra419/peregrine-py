@@ -30,6 +30,7 @@ control SwitchIngress_b(
 
     action modify_eg_port(PortId_t port) {
         ig_tm_md.ucast_egress_port = port;
+        ig_tm_md.copy_to_cpu = 1;
     }
 
     table fwd_recirculation {
