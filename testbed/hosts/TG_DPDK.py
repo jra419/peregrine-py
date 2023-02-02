@@ -61,7 +61,7 @@ class TG_DPDK(Host):
 
 		script = PKTGEN_SCRIPT_TEMPLATE
 		script = script.replace('{{duration_ms}}', str(duration_seconds * 1000))
-        script = script.replace('{{port}}', str(tx_port))
+		script = script.replace('{{port}}', str(tx_port))
 		script = script.replace('{{rate}}', str(rate))
 
 		self.exec(f'cat <<EOT >> {script_file}\n{script}EOT', silence=True)
@@ -83,6 +83,3 @@ class TG_DPDK(Host):
 	
 	def stop(self):
 		self.kill(PKTGEN_EXE_NAME)
-
-if __name__ == '__main__':
-    main()
