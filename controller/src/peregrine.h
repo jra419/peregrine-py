@@ -191,7 +191,7 @@ private:
 
 			auto index = found_it - topology.pipes.external.begin();
 			auto internal_pipe = topology.pipes.internal[index];
-			auto internal_port = (internal_pipe << 7) | ig_port;
+			auto internal_port = (internal_pipe << 7) | ig_local_port;
 
 			std::cerr << "(input) dev " << ig_port << " => (internal) dev " << internal_port << "\n";
 
