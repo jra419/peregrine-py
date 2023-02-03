@@ -1,19 +1,9 @@
 #!/usr/bin/env python3
 
-from hosts.Tofino import Tofino
-from hosts.Engine import Engine
-from hosts.KitNet import KitNet
-from hosts.TG_DPDK import TG_DPDK
-
-import json
 import os
 import shutil
 
-SCRIPT_DIR           = os.path.dirname(os.path.realpath(__file__))
-TESTBED_JSON         = f'{SCRIPT_DIR}/testbed.json'
-VERBOSE              = False
 DURATION_SECONDS     = 10
-SAMPLING_RATE        = 1024
 MAX_RETRIES          = 5
 SEARCH_ITERATIONS    = 10
 RATE_LOWER_THRESHOLD = 0.1
@@ -32,12 +22,7 @@ def compact(n):
 			return f'{n/o[1]:.1f}{o[2]}'
 	
 	return n
-
-def get_testbed_cfg():
-	with open(TESTBED_JSON, 'r') as f:
-		testbed = json.load(f)
-		return testbed
-
+	
 def get_data_from_controller(controller_report_file):
 	with open(controller_report_file, 'r') as f:
 		lines = f.readlines()
@@ -127,7 +112,7 @@ def run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate):
 
 	return rx_rate_pps, tx_rate_pps, loss
 
-def find_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test):
+def find_stable_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test, verbose=True):
 	upper_bound = 100.0
 	lower_bound = 0
 	i           = 0
@@ -149,7 +134,8 @@ def find_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test):
 		
 		rx_rate_pps, tx_rate_pps, loss = run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate)
 
-		print(f'  [{i+1:2d}/{SEARCH_ITERATIONS}] rate {rate:3.2f}% rx {compact(rx_rate_pps)}pps tx {compact(tx_rate_pps)}pps loss {100 * loss:.2f}%')
+		if verbose:
+			print(f'  [{i+1:2d}/{SEARCH_ITERATIONS}] rate {rate:3.2f}% rx {compact(rx_rate_pps)}pps tx {compact(tx_rate_pps)}pps loss {100 * loss:.2f}%')
 
 		if loss < LOSS_THRESHOLD:
 			if tx_rate_pps > best_tx_rate_pps:
@@ -169,74 +155,9 @@ def find_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test):
 		
 		i += 1
 	
-	print(f'  Best rate {best_rate:3.2f}% rx {compact(best_rx_rate_pps)}pps tx {compact(best_tx_rate_pps)}pps loss {100 * best_loss:.2f}%')
+	if verbose:
+		print(f'  Best rate {best_rate:3.2f}% rx {compact(best_rx_rate_pps)}pps tx {compact(best_tx_rate_pps)}pps loss {100 * best_loss:.2f}%')
 
 	if loss >= LOSS_THRESHOLD:
-		return best_rx_rate_pps, best_tx_rate_pps
-	return -1, -1
-
-def find_sampling_rate(tofino, engine, kitnet, tg_dpdk, testbed, test):
-	print(f"[*] attack={test['attack']}")
-
-	sampling_rate_max = 16384
-	sampling_rate     = 2048
-
-	while sampling_rate <= sampling_rate_max:
-		print(f'  sampling rate={sampling_rate}')
-		
-		print(f'  installing...')
-		tofino.modify_sampling_rate(sampling_rate)
-		tofino.install()
-		print(f'  done')
-
-		find_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test)
-
-		sampling_rate *= 2
-		print()
-
-if __name__ == '__main__':
-	testbed = get_testbed_cfg()
-
-	tofino = Tofino(
-		hostname=testbed['tofino']['hostname'],
-		peregrine_path=testbed['tofino']['peregrine-path'],
-		verbose=VERBOSE
-	)
-	
-	engine = Engine(
-		hostname=testbed['engine']['hostname'],
-		peregrine_path=testbed['engine']['peregrine-path'],
-		verbose=VERBOSE
-	)
-
-	kitnet = KitNet(
-		hostname=testbed['plugins']['kitnet']['hostname'],
-		peregrine_path=testbed['plugins']['kitnet']['peregrine-path'],
-		verbose=VERBOSE
-	)
-
-	tg_dpdk = TG_DPDK(
-		hostname=testbed['tg']['hostname'],
-		verbose=VERBOSE
-	)
-
-	tests = [
-		{
-			"attack": "os-scan",
-			"pcap": f"{testbed['tg']['pcaps-path']}/os-scan-exec.pcap",
-			"models": {
-				"fm": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-fm.txt",
-				"el": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-el.txt",
-				"ol": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-ol.txt",
-				"ts": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-train-stats.txt",
-			}
-		}
-	]
-
-
-	for test in tests:
-		# print('[*] Installing')
-		# tofino.modify_sampling_rate(SAMPLING_RATE)
-		# tofino.install()
-
-		find_sampling_rate(tofino, engine, kitnet, tg_dpdk, testbed, test)
+		return best_rate, best_rx_rate_pps, best_tx_rate_pps
+	return -1, -1, -1

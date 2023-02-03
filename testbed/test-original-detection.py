@@ -13,10 +13,10 @@ SCRIPT_DIR   = os.path.dirname(os.path.realpath(__file__))
 TESTBED_JSON = f'{SCRIPT_DIR}/testbed.json'
 VERBOSE      = False
 
-# PCAP_TX_DURATION_SECONDS = 300
-# SAMPLING_RATE            = 1024
-PCAP_TX_DURATION_SECONDS = 10
-SAMPLING_RATE            = 1
+PCAP_TX_DURATION_SECONDS = 300
+SAMPLING_RATE            = 1024
+# PCAP_TX_DURATION_SECONDS = 10
+# SAMPLING_RATE            = 1
 TEST_RESULTS_DIR         = f'{SCRIPT_DIR}/results/original-rate-{SAMPLING_RATE}-sampling-rate'
 MAX_RETRIES              = 5
 

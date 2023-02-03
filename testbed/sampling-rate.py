@@ -1,123 +1,102 @@
 #!/usr/bin/env python3
 
+from hosts.Tofino import Tofino
+from hosts.Engine import Engine
+from hosts.KitNet import KitNet
+from hosts.TG_DPDK import TG_DPDK
+
+import util
+
 import hosts
 import json
 import os
 
-SCRIPT_DIR   = os.path.dirname(os.path.realpath(__file__))
-TESTBED_JSON = f'{SCRIPT_DIR}/testbed.json'
-VERBOSE      = False
+SCRIPT_DIR        = os.path.dirname(os.path.realpath(__file__))
+TESTBED_JSON      = f'{SCRIPT_DIR}/testbed.json'
+TEST_RESULTS_DIR  = f'{SCRIPT_DIR}/results/sampling-rate'
+VERBOSE           = False
+MIN_SAMPLING_RATE = 1024
+# MAX_SAMPLING_RATE = 16384
+MAX_SAMPLING_RATE = MIN_SAMPLING_RATE
 
 def get_testbed_cfg():
 	with open(TESTBED_JSON, 'r') as f:
 		testbed = json.load(f)
 		return testbed
 
-def check_success_from_controller_report(controller_report_file):
-	with open(controller_report_file, 'r') as f:
-		lines = f.readlines()
-		assert(len(lines) > 1)
-
-		ports_info = lines[1:]
-		stats_port = int(ports_info[-1].split('\t')[0])
-
-		samples_sent = 0
-		for port_info in ports_info:
-			port_info = port_info.split('\t')
-			port = int(port_info[0])
-			rx = int(port_info[1])
-			tx = int(port_info[2])
-
-			if port != stats_port:
-				samples_sent += tx
-			else:
-				return samples_sent == tx and samples_sent > 0
-		return True
-
-def run(tofino, engine, kitnet, tg, testbed, test, duration_seconds):
-	print(f"[*] attack={test['attack']} sampling-rate={test['sampling-rate']}")
-
-	print(f"  - Setting sampling rate")
-	tofino.modify_sampling_rate(test['sampling-rate'])
-	
-	print(f"  - Installing")
-	tofino.install()
-
-	success = False
-	while not success:
-		print(f"  - Starting Tofino")
-		tofino.start()
-
-		print(f"  - Starting Engine")
-		engine.start(testbed['engine']['listen-iface'])
-
-		print(f"  - Starting KitNet module")
-		kitnet.start(
-			test['models']['fm'],
-			test['models']['el'],
-			test['models']['ol'],
-			test['models']['ts'],
-		)
-
-		print(f"  - Transmitting pcap")
-		tg.run(test['pcap'], testbed['tg']['tx-kernel-iface'], duration_seconds)
-
-		tofino.stop()
-		engine.stop()
-		kitnet.stop()
-
-		controller_report_file = tofino.get_report()
-		engine_report_file     = engine.get_report()
-
-		success = check_success_from_controller_report(controller_report_file)
-
-		if not success:
-			print(f"  - Packets not flowing through Tofino. Repeating experiment.")
-
 if __name__ == '__main__':
 	testbed = get_testbed_cfg()
 
-	tofino = hosts.Tofino(
+	tofino = Tofino(
 		hostname=testbed['tofino']['hostname'],
 		peregrine_path=testbed['tofino']['peregrine-path'],
 		verbose=VERBOSE
 	)
 	
-	engine = hosts.Engine(
+	engine = Engine(
 		hostname=testbed['engine']['hostname'],
 		peregrine_path=testbed['engine']['peregrine-path'],
 		verbose=VERBOSE
 	)
 
-	kitnet = hosts.KitNet(
+	kitnet = KitNet(
 		hostname=testbed['plugins']['kitnet']['hostname'],
 		peregrine_path=testbed['plugins']['kitnet']['peregrine-path'],
 		verbose=VERBOSE
 	)
 
-	tg = hosts.TG_kernel(
+	tg_dpdk = TG_DPDK(
 		hostname=testbed['tg']['hostname'],
 		verbose=VERBOSE
 	)
 
-	duration_seconds = 10 # seconds
-
 	tests = [
 		{
 			"attack": "os-scan",
-			"sampling-rate": 1024,
 			"pcap": f"{testbed['tg']['pcaps-path']}/os-scan-exec.pcap",
-			# "pcap": f"/home/fcp/bench/pcaps/uniform_64B_1000_flows.pcap",
 			"models": {
 				"fm": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-fm.txt",
 				"el": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-el.txt",
 				"ol": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-ol.txt",
 				"ts": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-train-stats.txt",
 			}
-		}
+		},
+		{
+			"attack": "active-wiretap",
+			"pcap": f"{testbed['tg']['pcaps-path']}/active-wiretap-exec.pcap",
+			"models": {
+				"fm": f"{testbed['plugins']['kitnet']['models-path']}/m-10/active-wiretap-m-10-fm.txt",
+				"el": f"{testbed['plugins']['kitnet']['models-path']}/m-10/active-wiretap-m-10-el.txt",
+				"ol": f"{testbed['plugins']['kitnet']['models-path']}/m-10/active-wiretap-m-10-ol.txt",
+				"ts": f"{testbed['plugins']['kitnet']['models-path']}/m-10/active-wiretap-m-10-train-stats.txt",
+			}
+		},
 	]
 
-	# tofino.install()
+	sampling_rate = MIN_SAMPLING_RATE
+	results = {}
 
-	for test in tests:
-		run(tofino, engine, kitnet, tg, testbed, test, duration_seconds)
+	while sampling_rate <= MAX_SAMPLING_RATE:
+		# print(f'[*] Installing...')
+		# tofino.modify_sampling_rate(sampling_rate)
+		# tofino.install()
+
+		for test in tests:
+			attack = test['attack']
+			print(f"[*] attack={attack} sampling_rate={sampling_rate}")
+			rate, rx_rate_pps, tx_rate_pps = util.find_stable_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test)
+			
+			if attack not in results:
+				results[attack] = []
+			
+			results[attack].append((sampling_rate, rate, rx_rate_pps, tx_rate_pps))
+
+		sampling_rate *= 2
+	
+	for attack in results.keys():
+		report_file = f'{TEST_RESULTS_DIR}/{attack}.tsv'
+		with open(report_file, 'w') as f:
+			f.write(f'# sampling rate\ttg rate (%)\trx rate (pps)\ttx rate (pps)\n')
+
+			for sampling_rate, rate, rx_rate_pps, tx_rate_pps in results[attack]:
+				f.write(f'{sampling_rate}\t{rate}\t{rx_rate_pps}\t{tx_rate_pps}\n')

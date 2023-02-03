@@ -10,8 +10,7 @@ CONTROLLER_EXE_NAME    = 'peregrine-controller'
 CONTROLLER_LOG_FILE    = '/tmp/run-with-hw.log'
 CONTROLLER_READY_MSG   = 'Peregrine controller is ready.'
 CONTROLLER_REPORT_FILE = 'peregrine-controller.tsv'
-
-TOFINO_WAITING_PERIOD  = 10 # seconds
+CONTROLLER_TIMEOUT     = 10 # seconds
 
 class Tofino(Host):
 	def __init__(self, hostname, peregrine_path, verbose=True):
@@ -44,12 +43,15 @@ class Tofino(Host):
 		self.exec(f'./run-with-hw.sh > {CONTROLLER_LOG_FILE} 2>&1',
 			path=self.controller_path, background=True)
 		
+		start = time.time()
+
 		while 1:
 			time.sleep(1)
 
 			ret, out, err = self.exec(f'cat {CONTROLLER_LOG_FILE}', capture_output=True)
+			elapsed = (time.time() - start)
 
-			if not self.is_program_running(self.controller_exe_path):
+			if not self.is_program_running(self.controller_exe_path) and elapsed > CONTROLLER_TIMEOUT:
 				self.log('ERROR: Controller not running.')
 				self.log('Dumping of log file:')
 				print(out)
@@ -57,9 +59,6 @@ class Tofino(Host):
 
 			if CONTROLLER_READY_MSG in out:
 				break
-		
-		# Wait for Tofino to reeeally be ready
-		time.sleep(TOFINO_WAITING_PERIOD)
 	
 	def modify_sampling_rate(self, sampling_rate):
 		sed_cmd = f'sed -E -i \'s/#define SAMPLING [0-9]+/#define SAMPLING {sampling_rate}/g\''

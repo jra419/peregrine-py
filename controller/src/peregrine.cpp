@@ -33,11 +33,22 @@ void Controller::configure_ports(const topology_t &topology) {
 
 void Controller::configure_stats_port(uint16_t stats_port,
 									  bool use_tofino_model) {
+	auto front_panel = stats_port;
+
 	if (!use_tofino_model) {
 		stats_port = ports.get_dev_port(stats_port, 0);
 	}
 
 	p4_devport_mgr_set_copy_to_cpu(0, true, stats_port);
+
+	if (!use_tofino_model) {
+		std::cerr << "Waiting for stats port " << front_panel
+				  << " to be up...\n";
+
+		while (!ports.is_port_up(stats_port)) {
+			sleep(1);
+		}
+	}
 }
 
 void Controller::init(const bfrt::BfRtInfo *info,
