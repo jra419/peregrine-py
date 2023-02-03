@@ -93,6 +93,9 @@ if __name__ == '__main__':
 
 		sampling_rate *= 2
 	
+	if not os.path.exists(TEST_RESULTS_DIR):
+		os.makedirs(TEST_RESULTS_DIR)
+	
 	for attack in results.keys():
 		report_file = f'{TEST_RESULTS_DIR}/{attack}.tsv'
 		with open(report_file, 'w') as f:

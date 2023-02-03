@@ -19,7 +19,7 @@ class Engine(Host):
 
 		self.peregrine_path = peregrine_path
 		self.engine_path = f'{peregrine_path}/engine'
-		self.engine_exe_path = f'{self.engine_path}/build/{ENGINE_EXE_NAME}'
+		self.engine_exe_path = f'{self.engine_path}/build/Release/{ENGINE_EXE_NAME}'
 
 		if not self.has_directory(self.peregrine_path):
 			self.err(f'Directory not found: {self.peregrine_path}')
