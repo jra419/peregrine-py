@@ -15,8 +15,7 @@ TEST_RESULTS_DIR  = f'{SCRIPT_DIR}/results/sampling-rate'
 VERBOSE           = False
 
 MIN_SAMPLING_RATE = 1024
-# MAX_SAMPLING_RATE = 16384
-MAX_SAMPLING_RATE = 2048
+MAX_SAMPLING_RATE = 65536
 
 if __name__ == '__main__':
 	testbed = util.get_testbed_cfg()
