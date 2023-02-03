@@ -2,12 +2,27 @@
 
 import os
 import shutil
+import json
+
+SCRIPT_DIR   = os.path.dirname(os.path.realpath(__file__))
+TESTBED_JSON = f'{SCRIPT_DIR}/testbed.json'
+TESTS_JSON   = f'{SCRIPT_DIR}/tests.json'
 
 DURATION_SECONDS     = 10
 MAX_RETRIES          = 5
 SEARCH_ITERATIONS    = 10
 RATE_LOWER_THRESHOLD = 0.1
 LOSS_THRESHOLD       = 0.001
+
+def get_testbed_cfg():
+	with open(TESTBED_JSON, 'r') as f:
+		testbed = json.load(f)
+		return testbed
+
+def get_tests():
+	with open(TESTS_JSON, 'r') as f:
+		tests = json.load(f)
+		return tests
 
 def compact(n):
 	orders = [
@@ -94,7 +109,7 @@ def run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate):
 
 		rx_pkts,tx_samples = get_data_from_controller(controller_report_file)
 		processed          = get_processed_samples_from_engine(engine_report_file)
-		loss               = (tx_samples - processed) / tx_samples
+		loss               = abs(tx_samples - processed) / tx_samples
 
 		success = rx_pkts > -1 and tx_samples > -1
 
@@ -107,8 +122,8 @@ def run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate):
 	os.remove(controller_report_file)
 	os.remove(engine_report_file)
 
-	rx_rate_pps = rx_pkts / DURATION_SECONDS
-	tx_rate_pps = tx_samples / DURATION_SECONDS
+	rx_rate_pps = int(rx_pkts / DURATION_SECONDS)
+	tx_rate_pps = int(tx_samples / DURATION_SECONDS)
 
 	return rx_rate_pps, tx_rate_pps, loss
 
@@ -158,6 +173,6 @@ def find_stable_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test, verbo
 	if verbose:
 		print(f'  Best rate {best_rate:3.2f}% rx {compact(best_rx_rate_pps)}pps tx {compact(best_tx_rate_pps)}pps loss {100 * best_loss:.2f}%')
 
-	if loss >= LOSS_THRESHOLD:
+	if loss <= LOSS_THRESHOLD:
 		return best_rate, best_rx_rate_pps, best_tx_rate_pps
 	return -1, -1, -1

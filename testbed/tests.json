@@ -1,0 +1,184 @@
+{
+	"tests": [
+		{
+			"attack": "active-wiretap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/active-wiretap-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/active-wiretap-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/active-wiretap-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/active-wiretap-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/active-wiretap-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "arp-mitm",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/arp-mitm-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/arp-mitm-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/arp-mitm-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/arp-mitm-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/arp-mitm-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "botnet",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/botnet-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/botnet-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/botnet-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/botnet-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/botnet-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "ddos-hoic",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/ddos-hoic-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/ddos-hoic-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/ddos-hoic-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/ddos-hoic-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/ddos-hoic-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "ddos-loit",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/ddos-loit-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/ddos-loit-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/ddos-loit-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/ddos-loit-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/ddos-loit-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "dos-goldeneye",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-goldeneye-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/dos-goldeneye-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/dos-goldeneye-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/dos-goldeneye-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/dos-goldeneye-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "dos-hulk",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-hulk-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/dos-hulk-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/dos-hulk-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/dos-hulk-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/dos-hulk-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "dos-slowhttptest",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-slowhttptest-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/dos-slowhttptest-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/dos-slowhttptest-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/dos-slowhttptest-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/dos-slowhttptest-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "dos-slowloris",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-slowloris-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/dos-slowloris-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/dos-slowloris-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/dos-slowloris-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/dos-slowloris-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "dos-syn",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-syn-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/dos-syn-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/dos-syn-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/dos-syn-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/dos-syn-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "fuzzing",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/fuzzing-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/fuzzing-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/fuzzing-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/fuzzing-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/fuzzing-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "fuzzing",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/fuzzing-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/fuzzing-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/fuzzing-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/fuzzing-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/fuzzing-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "os-scan",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/os-scan-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/os-scan-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/os-scan-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/os-scan-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/os-scan-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "port-scan",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/port-scan-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/port-scan-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/port-scan-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/port-scan-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/port-scan-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "ssdp-flood",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/ssdp-flood-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/ssdp-flood-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/ssdp-flood-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/ssdp-flood-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/ssdp-flood-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "ssh-bruteforce",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/ssh-bruteforce-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/ssh-bruteforce-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/ssh-bruteforce-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/ssh-bruteforce-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/ssh-bruteforce-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "ssl-renegotiation",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/ssl-renegotiation-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/ssl-renegotiation-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/ssl-renegotiation-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/ssl-renegotiation-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/ssl-renegotiation-m-10-train-stats.txt"
+			}
+		},
+		{
+			"attack": "video-injection",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/video-injection-exec.pcap",
+			"models": {
+				"fm": "/home/fcp/models/m-10/video-injection-m-10-fm.txt",
+				"el": "/home/fcp/models/m-10/video-injection-m-10-el.txt",
+				"ol": "/home/fcp/models/m-10/video-injection-m-10-ol.txt",
+				"ts": "/home/fcp/models/m-10/video-injection-m-10-train-stats.txt"
+			}
+		}
+	]
+}

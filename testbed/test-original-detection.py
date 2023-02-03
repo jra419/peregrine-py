@@ -5,25 +5,21 @@ from hosts.Engine import Engine
 from hosts.KitNet import KitNet
 from hosts.TG_kernel import TG_kernel
 
+import util
 import json
 import os
 import shutil
 
-SCRIPT_DIR   = os.path.dirname(os.path.realpath(__file__))
-TESTBED_JSON = f'{SCRIPT_DIR}/testbed.json'
-VERBOSE      = False
+SCRIPT_DIR       = os.path.dirname(os.path.realpath(__file__))
+TEST_RESULTS_DIR = f'{SCRIPT_DIR}/results/original-rate-{SAMPLING_RATE}-sampling-rate'
+VERBOSE          = False
 
-PCAP_TX_DURATION_SECONDS = 300
-SAMPLING_RATE            = 1024
-# PCAP_TX_DURATION_SECONDS = 10
-# SAMPLING_RATE            = 1
-TEST_RESULTS_DIR         = f'{SCRIPT_DIR}/results/original-rate-{SAMPLING_RATE}-sampling-rate'
-MAX_RETRIES              = 5
+DURATION_SECONDS = 300
+SAMPLING_RATE    = 1024
+# DURATION_SECONDS = 10
+# SAMPLING_RATE    = 1
 
-def get_testbed_cfg():
-	with open(TESTBED_JSON, 'r') as f:
-		testbed = json.load(f)
-		return testbed
+MAX_RETRIES      = 5
 
 def check_success_from_controller_report(controller_report_file):
 	with open(controller_report_file, 'r') as f:
@@ -73,7 +69,7 @@ def run(tofino, engine, kitnet, tg_kernel, testbed, test):
 			test['models']['ts'],
 		)
 
-		tg_kernel.run(test['pcap'], testbed['tg']['tx-kernel-iface'], PCAP_TX_DURATION_SECONDS)
+		tg_kernel.run(test['pcap'], testbed['tg']['tx-kernel-iface'], DURATION_SECONDS)
 
 		tofino.stop()
 		engine.stop()
@@ -94,7 +90,8 @@ def run(tofino, engine, kitnet, tg_kernel, testbed, test):
 	shutil.move(engine_report_file, f"{TEST_RESULTS_DIR}/{test['attack']}-engine.tsv")
 
 if __name__ == '__main__':
-	testbed = get_testbed_cfg()
+	testbed = util.get_testbed_cfg()
+	tests   = util.get_tests()
 
 	tofino = Tofino(
 		hostname=testbed['tofino']['hostname'],
@@ -119,22 +116,16 @@ if __name__ == '__main__':
 		verbose=VERBOSE
 	)
 
-	tests = [
-		{
-			"attack": "os-scan",
-			"pcap": f"{testbed['tg']['pcaps-path']}/os-scan-exec.pcap",
-			"models": {
-				"fm": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-fm.txt",
-				"el": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-el.txt",
-				"ol": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-ol.txt",
-				"ts": f"{testbed['plugins']['kitnet']['models-path']}/m-10/os-scan-m-10-train-stats.txt",
-			}
-		}
-	]
+	target_test = None
 
-	# print('[*] Installing')
-	# tofino.modify_sampling_rate(SAMPLING_RATE)
-	# tofino.install()
+	for test in tests['tests']:
+		if test['attack'] == 'os-scan':
+			target_test = test
 
-	for test in tests:
-		run(tofino, engine, kitnet, tg_kernel, testbed, test)
+	assert target_test
+
+	print('[*] Installing')
+	tofino.modify_sampling_rate(SAMPLING_RATE)
+	tofino.install()
+
+	run(tofino, engine, kitnet, tg_kernel, testbed, target_test)
