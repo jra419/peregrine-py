@@ -96,6 +96,9 @@ control SwitchIngress_a(
         hdr.peregrine.mac_ip_src_pkt_cnt = ig_md.stats_mac_ip_src.pkt_cnt_0;
         hdr.peregrine.mac_ip_src_pkt_len = ig_md.stats_mac_ip_src.pkt_len;
         hdr.peregrine.mac_ip_src_ss = ig_md.stats_mac_ip_src.ss;
+    }
+
+    action set_peregrine_ip_src_a() {
         hdr.peregrine.ip_src_pkt_cnt = ig_md.stats_ip_src.pkt_cnt_0;
         hdr.peregrine.ip_src_pkt_len = ig_md.stats_ip_src.pkt_len;
         hdr.peregrine.ip_src_ss = ig_md.stats_ip_src.ss;
@@ -158,6 +161,7 @@ control SwitchIngress_a(
             if (ig_md.meta.recirc_toggle == 1) {
                 fwd_recirculation.apply();
                 set_peregrine_mac_ip_src_a();
+                set_peregrine_ip_src_a();
                 set_peregrine_ip_a();
                 set_peregrine_five_t_a();
             }
