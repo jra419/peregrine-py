@@ -173,6 +173,4 @@ def find_stable_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test, verbo
 	if verbose:
 		print(f'  Best rate {best_rate:3.2f}% rx {compact(best_rx_rate_pps)}pps tx {compact(best_tx_rate_pps)}pps loss {100 * best_loss:.2f}%')
 
-	if loss <= LOSS_THRESHOLD:
-		return best_rate, best_rx_rate_pps, best_tx_rate_pps
-	return -1, -1, -1
+	return best_rate, best_rx_rate_pps, best_tx_rate_pps

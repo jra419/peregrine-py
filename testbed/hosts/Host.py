@@ -35,11 +35,13 @@ class Host:
 		cmd = [ 'ssh' ] + ssh_flags + [ self.hostname, remote_cmd ]
 
 		if silence or capture_output:
-			proc = subprocess.run(cmd, capture_output=True, text=True)
+			stdout = subprocess.PIPE
+			stderr = subprocess.PIPE
 		else:
 			stdout = subprocess.DEVNULL if background else None
 			stderr = subprocess.DEVNULL if background else None
-			proc = subprocess.run(cmd, stdout=stdout, stderr=stderr)
+
+		proc = subprocess.run(cmd, stdout=stdout, stderr=stderr)
 
 		if not background and must_succeed and proc.returncode != 0:
 			self.log(f'Command failed.')
@@ -55,8 +57,8 @@ class Host:
 
 			exit(1)
 
-		out = proc.stdout if capture_output else None
-		err = proc.stderr if capture_output else None
+		out = proc.stdout.decode('utf-8') if capture_output else None
+		err = proc.stderr.decode('utf-8') if capture_output else None
 
 		return proc.returncode, out, err
 	

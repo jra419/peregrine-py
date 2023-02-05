@@ -52,12 +52,7 @@ if __name__ == '__main__':
 		tofino.modify_sampling_rate(sampling_rate)
 		tofino.install()
 
-		n_tests = 0
 		for test in tests['tests']:
-			if n_tests >= 2:
-				break
-			n_tests += 1
-
 			attack = test['attack']
 			print(f"[*] attack={attack} sampling_rate={sampling_rate}")
 			rate, rx_rate_pps, tx_rate_pps = util.find_stable_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test)

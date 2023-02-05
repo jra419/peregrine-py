@@ -66,7 +66,7 @@ def plot(data):
 	min_rate = 0
 	max_rate = 100
 	
-	attacks        = list(data.keys())
+	attacks        = sorted(list(data.keys()))
 	sampling_rates = []
 	matrix         = [ [] for _ in range(len(attacks)) ]
 
@@ -80,9 +80,8 @@ def plot(data):
 
 	print('Sampling rates', sampling_rates)
 	print('Attacks', attacks)
-
-	width  = len(sampling_rates)
-	height = len(attacks)
+	for row in matrix:
+		print(row)
 
 	# colormap = plt.cm.jet
 	colormap = mpl.colormaps['RdYlGn']
@@ -92,20 +91,23 @@ def plot(data):
 	cmap = mpl.colors.LinearSegmentedColormap.from_list("mycmap", list(zip(nodes, colors)))
 	cmap.set_under('black')
 
-	res = ax.imshow(matrix, cmap=cmap, vmin=min_rate, vmax=max_rate, interpolation='nearest')
+	res = ax.imshow(matrix, cmap=cmap, vmin=min_rate, vmax=max_rate, interpolation='nearest', aspect='auto')
 
-	for x in range(width):
-		for y in range(height):
+	for x in range(len(matrix)):
+		for y in range(len(matrix[x])):
 			gbps = matrix[x][y]
 			ax.annotate(f'{gbps:.2f}G', xy=(y,x), va='center', ha='center')
 
 	cbar = fig.colorbar(res, ticks=[ 0, 25, 50, 75, 100 ])
 	cbar.ax.set_yticklabels([ '0G', '25G', '50G', '75G', '100G' ])
 
+	width  = len(sampling_rates)
+	height = len(attacks)
+
 	plt.xticks(range(width), sampling_rates)
 	plt.yticks(range(height), attacks)
 
-	plt.savefig(PLOT)
+	plt.savefig(PLOT, bbox_inches='tight')
 	plt.show()
 
 if __name__ == '__main__':
