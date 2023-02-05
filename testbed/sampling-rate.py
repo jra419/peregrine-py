@@ -6,7 +6,6 @@ from hosts.KitNet import KitNet
 from hosts.TG_DPDK import TG_DPDK
 
 import util
-
 import hosts
 import os
 

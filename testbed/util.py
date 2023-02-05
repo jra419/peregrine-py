@@ -24,6 +24,21 @@ def get_tests():
 		tests = json.load(f)
 		return tests
 
+def get_test(attack):
+	data  = None
+	tests = get_tests()
+
+	for test in tests['tests']:
+		if attack == test['attack']:
+			data = test
+			break
+
+	if not data:
+		print(f'Error: attack {attack} not found in {TESTS_JSON}')
+		exit(1)
+	
+	return data
+
 def compact(n):
 	orders = [
 		(1e9, 1e9, 'G'),

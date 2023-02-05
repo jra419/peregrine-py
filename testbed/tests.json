@@ -111,16 +111,6 @@
 			}
 		},
 		{
-			"attack": "fuzzing",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/fuzzing-exec.pcap",
-			"models": {
-				"fm": "/home/fcp/models/m-10/fuzzing-m-10-fm.txt",
-				"el": "/home/fcp/models/m-10/fuzzing-m-10-el.txt",
-				"ol": "/home/fcp/models/m-10/fuzzing-m-10-ol.txt",
-				"ts": "/home/fcp/models/m-10/fuzzing-m-10-train-stats.txt"
-			}
-		},
-		{
 			"attack": "os-scan",
 			"pcap": "/home/fcp/bench/pcaps/peregrine/os-scan-exec.pcap",
 			"models": {
