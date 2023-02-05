@@ -26,7 +26,7 @@ control c_stats_ip_src_a(inout header_t hdr, inout ingress_metadata_a_t ig_md) {
     RegisterAction<_, _, bit<32>>(reg_ip_src_ts) ract_decay_check_100_ms = {
         void apply(inout bit<32> value, out bit<32> result) {
             result = 0;
-            if (DECAY_100_MS < ig_md.meta.current_ts - value) {
+            if (DECAY_100_MS < ig_md.meta.current_ts - value && value != 0) {
                 value = value + DECAY_100_MS;
                 result = 1;
             } else {
