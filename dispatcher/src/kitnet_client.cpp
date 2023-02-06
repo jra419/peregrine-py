@@ -48,6 +48,7 @@ float KitNetClient::ProcessSample(const sample_t& sample) {
 
 	ProcessSampleReply reply;
 	grpc::ClientContext context;
+	grpc::Status status = stub_->ProcessSample(&context, request, &reply);
 
 	if (status.ok()) {
 #ifndef NDEBUG
