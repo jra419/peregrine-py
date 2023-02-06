@@ -125,13 +125,13 @@ def run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate):
 		rx_pkts,tx_samples = get_data_from_controller(controller_report_file)
 		processed          = get_processed_samples_from_dispatcher(dispatcher_report_file)
 		loss               = abs(tx_samples - processed) / tx_samples
-
-		if processed > tx_samples:
-			print(f"  WARNING: too many samples received (tx {tx_samples} | samples {processed}")
-		success = rx_pkts > -1 and tx_samples > -1
+		success            = rx_pkts > -1 and tx_samples > -1
 
 		if not success:
 			print(f"  - Packets not flowing through Tofino. Repeating experiment.")
+
+		elif processed > tx_samples:
+			print(f"  WARNING: too many samples received (tx {tx_samples} | samples {processed}")
 		
 	assert rx_pkts > 0
 	assert tx_samples > 0

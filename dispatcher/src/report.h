@@ -81,7 +81,7 @@ struct report_t {
 			ofs << port_to_str(entry.port_dst);
 			ofs << "\t";
 			ofs << entry.rmse;
-			ofs << "\n";
+			ofs << "\t";
 			ofs << entry.time_ms;
 			ofs << "\n";
 		}
