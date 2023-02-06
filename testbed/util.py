@@ -80,15 +80,15 @@ def get_data_from_controller(controller_report_file):
 					return -1,-1
 		return rx_pkts,tx_samples
 
-def get_processed_samples_from_engine(engine_report_file):
-	with open(engine_report_file, 'r') as f:
+def get_processed_samples_from_dispatcher(dispatcher_report_file):
+	with open(dispatcher_report_file, 'r') as f:
 		lines = f.readlines()
 		samples = lines[1:]
 		return len(samples)
 
-def run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate):
+def run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate):
 	controller_report_file = None
-	engine_report_file     = None
+	dispatcher_report_file     = None
 
 	rx_pkts    = -1
 	tx_samples = -1
@@ -105,7 +105,7 @@ def run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate):
 			exit(1)
 
 		tofino.start()
-		engine.start(testbed['engine']['listen-iface'])
+		dispatcher.start(testbed['dispatcher']['listen-iface'])
 		kitnet.start(
 			test['models']['fm'],
 			test['models']['el'],
@@ -116,14 +116,14 @@ def run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate):
 		tg_dpdk.run(test['pcap'], testbed['tg']['tx-dpdk-port'], rate, DURATION_SECONDS)
 
 		tofino.stop()
-		engine.stop()
+		dispatcher.stop()
 		kitnet.stop()
 
 		controller_report_file = tofino.get_report()
-		engine_report_file     = engine.get_report()
+		dispatcher_report_file     = dispatcher.get_report()
 
 		rx_pkts,tx_samples = get_data_from_controller(controller_report_file)
-		processed          = get_processed_samples_from_engine(engine_report_file)
+		processed          = get_processed_samples_from_dispatcher(dispatcher_report_file)
 		loss               = abs(tx_samples - processed) / tx_samples
 
 		success = rx_pkts > -1 and tx_samples > -1
@@ -135,14 +135,14 @@ def run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate):
 	assert tx_samples > 0
 
 	os.remove(controller_report_file)
-	os.remove(engine_report_file)
+	os.remove(dispatcher_report_file)
 
 	rx_rate_pps = int(rx_pkts / DURATION_SECONDS)
 	tx_rate_pps = int(tx_samples / DURATION_SECONDS)
 
 	return rx_rate_pps, tx_rate_pps, loss
 
-def find_stable_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test, verbose=True):
+def find_stable_throughput(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, verbose=True):
 	upper_bound = 100.0
 	lower_bound = 0
 	i           = 0
@@ -162,7 +162,7 @@ def find_stable_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test, verbo
 		if rate < RATE_LOWER_THRESHOLD or i >= SEARCH_ITERATIONS:
 			break
 		
-		rx_rate_pps, tx_rate_pps, loss = run(tofino, engine, kitnet, tg_dpdk, testbed, test, rate)
+		rx_rate_pps, tx_rate_pps, loss = run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate)
 
 		if verbose:
 			print(f'  [{i+1:2d}/{SEARCH_ITERATIONS}] rate {rate:3.2f}% rx {compact(rx_rate_pps)}pps tx {compact(tx_rate_pps)}pps loss {100 * loss:.2f}%')

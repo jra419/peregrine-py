@@ -5,27 +5,27 @@ from .Host import Host
 import time
 import os
 
-ENGINE_EXE_NAME        = 'engine'
+ENGINE_EXE_NAME        = 'dispatcher'
 
-ENGINE_LOG_FILE        = '/tmp/engine.log'
+ENGINE_LOG_FILE        = '/tmp/dispatcher.log'
 ENGINE_READY_MSG       = 'Listening interface'
-ENGINE_REPORT_FILE     = 'peregrine-engine.tsv'
+ENGINE_REPORT_FILE     = 'peregrine-dispatcher.tsv'
 
 BIND_KERNEL_SCRIPT     = '/home/fcp/bind-e810-kernel.sh'
 
-class Engine(Host):
+class Dispatcher(Host):
 	def __init__(self, hostname, peregrine_path, verbose=True):
-		super().__init__('engine', hostname, verbose)
+		super().__init__('dispatcher', hostname, verbose)
 
 		self.peregrine_path = peregrine_path
-		self.engine_path = f'{peregrine_path}/engine'
-		self.engine_exe_path = f'{self.engine_path}/build/Release/{ENGINE_EXE_NAME}'
+		self.dispatcher_path = f'{peregrine_path}/dispatcher'
+		self.dispatcher_exe_path = f'{self.dispatcher_path}/build/Release/{ENGINE_EXE_NAME}'
 
 		if not self.has_directory(self.peregrine_path):
 			self.err(f'Directory not found: {self.peregrine_path}')
 
-		if not self.has_directory(self.engine_path):
-			self.err(f'Directory not found: {self.engine_path}')
+		if not self.has_directory(self.dispatcher_path):
+			self.err(f'Directory not found: {self.dispatcher_path}')
 
 		# Stop any instances running before running our own
 		self.stop()
@@ -35,11 +35,11 @@ class Engine(Host):
 
 	def start(self, listen_iface):
 		# build first
-		self.exec('./build.sh', path=self.engine_path, silence=True)
+		self.exec('./build.sh', path=self.dispatcher_path, silence=True)
 
-		# now launching engine
-		self.exec(f'sudo {self.engine_exe_path} -i {listen_iface} > {ENGINE_LOG_FILE} 2>&1',
-			path=self.engine_path, background=True)
+		# now launching dispatcher
+		self.exec(f'sudo {self.dispatcher_exe_path} -i {listen_iface} > {ENGINE_LOG_FILE} 2>&1',
+			path=self.dispatcher_path, background=True)
 		
 		# and wait for it to be ready
 		while 1:
@@ -47,8 +47,8 @@ class Engine(Host):
 
 			ret, out, err = self.exec(f'cat {ENGINE_LOG_FILE}', capture_output=True)
 
-			if not self.is_program_running(self.engine_exe_path):
-				self.log('ERROR: Engine not running.')
+			if not self.is_program_running(self.dispatcher_exe_path):
+				self.log('ERROR: Dispatcher not running.')
 				self.log('Dumping of log file:')
 				print(out)
 				exit(1)
@@ -61,4 +61,4 @@ class Engine(Host):
 		self.exec(f'rm -f {ENGINE_LOG_FILE}', must_succeed=False)
 	
 	def get_report(self):
-		return self.get_files(f'{self.engine_path}/{ENGINE_REPORT_FILE}')
+		return self.get_files(f'{self.dispatcher_path}/{ENGINE_REPORT_FILE}')

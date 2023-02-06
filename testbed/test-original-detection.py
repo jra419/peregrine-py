@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from hosts.Tofino import Tofino
-from hosts.Engine import Engine
+from hosts.Dispatcher import Dispatcher
 from hosts.KitNet import KitNet
 from hosts.TG_kernel import TG_kernel
 
@@ -45,11 +45,11 @@ def check_success_from_controller_report(controller_report_file):
 				return rx_pkts > 0 and tx_samples > 0
 		return False
 
-def run(tofino, engine, kitnet, tg_kernel, testbed, test):
+def run(tofino, dispatcher, kitnet, tg_kernel, testbed, test):
 	print(f"[*] attack={test['attack']}")
 
 	controller_report_file = None
-	engine_report_file     = None
+	dispatcher_report_file     = None
 
 	success = False
 	try_run = 0
@@ -61,7 +61,7 @@ def run(tofino, engine, kitnet, tg_kernel, testbed, test):
 			exit(1)
 
 		tofino.start()
-		engine.start(testbed['engine']['listen-iface'])
+		dispatcher.start(testbed['dispatcher']['listen-iface'])
 		kitnet.start(
 			test['models']['fm'],
 			test['models']['el'],
@@ -72,11 +72,11 @@ def run(tofino, engine, kitnet, tg_kernel, testbed, test):
 		tg_kernel.run(test['pcap'], testbed['tg']['tx-kernel-iface'], DURATION_SECONDS)
 
 		tofino.stop()
-		engine.stop()
+		dispatcher.stop()
 		kitnet.stop()
 
 		controller_report_file = tofino.get_report()
-		engine_report_file     = engine.get_report()
+		dispatcher_report_file     = dispatcher.get_report()
 
 		success = check_success_from_controller_report(controller_report_file)
 
@@ -87,7 +87,7 @@ def run(tofino, engine, kitnet, tg_kernel, testbed, test):
 		os.makedirs(TEST_RESULTS_DIR)
 	
 	shutil.move(controller_report_file, f"{TEST_RESULTS_DIR}/{test['attack']}-controller.tsv")
-	shutil.move(engine_report_file, f"{TEST_RESULTS_DIR}/{test['attack']}-engine.tsv")
+	shutil.move(dispatcher_report_file, f"{TEST_RESULTS_DIR}/{test['attack']}-dispatcher.tsv")
 
 if __name__ == '__main__':
 	testbed = util.get_testbed_cfg()
@@ -99,9 +99,9 @@ if __name__ == '__main__':
 		verbose=VERBOSE
 	)
 	
-	engine = Engine(
-		hostname=testbed['engine']['hostname'],
-		peregrine_path=testbed['engine']['peregrine-path'],
+	dispatcher = Dispatcher(
+		hostname=testbed['dispatcher']['hostname'],
+		peregrine_path=testbed['dispatcher']['peregrine-path'],
 		verbose=VERBOSE
 	)
 
@@ -128,4 +128,4 @@ if __name__ == '__main__':
 	tofino.modify_sampling_rate(SAMPLING_RATE)
 	tofino.install()
 
-	run(tofino, engine, kitnet, tg_kernel, testbed, target_test)
+	run(tofino, dispatcher, kitnet, tg_kernel, testbed, target_test)

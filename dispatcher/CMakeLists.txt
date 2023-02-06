@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(peregrine-engine)
+project(peregrine-dispatcher)
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE Release)
@@ -71,8 +71,8 @@ target_link_libraries(hw_grpc_proto
 	${_PROTOBUF_LIBPROTOBUF}
 )
 
-add_executable(engine
-	${CMAKE_CURRENT_SOURCE_DIR}/src/engine.cpp
+add_executable(dispatcher
+	${CMAKE_CURRENT_SOURCE_DIR}/src/dispatcher.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/kitnet_client.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/listener.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/src/packet.cpp
@@ -80,7 +80,7 @@ add_executable(engine
 	${GRPC_SRCS}
 )
 
-target_link_libraries(engine
+target_link_libraries(dispatcher
 	hw_grpc_proto
     ${_REFLECTION}
     ${_GRPC_GRPCPP}

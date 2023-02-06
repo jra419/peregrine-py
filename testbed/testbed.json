@@ -8,7 +8,7 @@
 		"tx-kernel-iface": "enp175s0f1",
 		"tx-dpdk-port": "1"
 	},
-	"engine": {
+	"dispatcher": {
 		"hostname": "gsd+e291427x1300274",
 		"peregrine-path": "/home/fcp/peregrine",
 		"listen-iface": "enp216s0f1"

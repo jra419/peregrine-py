@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from hosts.Tofino import Tofino
-from hosts.Engine import Engine
+from hosts.Dispatcher import Dispatcher
 from hosts.KitNet import KitNet
 from hosts.TG_DPDK import TG_DPDK
 
@@ -26,9 +26,9 @@ if __name__ == '__main__':
 		verbose=VERBOSE
 	)
 	
-	engine = Engine(
-		hostname=testbed['engine']['hostname'],
-		peregrine_path=testbed['engine']['peregrine-path'],
+	dispatcher = Dispatcher(
+		hostname=testbed['dispatcher']['hostname'],
+		peregrine_path=testbed['dispatcher']['peregrine-path'],
 		verbose=VERBOSE
 	)
 
@@ -54,7 +54,7 @@ if __name__ == '__main__':
 		for test in tests['tests']:
 			attack = test['attack']
 			print(f"[*] attack={attack} sampling_rate={sampling_rate}")
-			rate, rx_rate_pps, tx_rate_pps = util.find_stable_throughput(tofino, engine, kitnet, tg_dpdk, testbed, test)
+			rate, rx_rate_pps, tx_rate_pps = util.find_stable_throughput(tofino, dispatcher, kitnet, tg_dpdk, testbed, test)
 			
 			if attack not in results:
 				results[attack] = []

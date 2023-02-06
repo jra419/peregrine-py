@@ -74,6 +74,6 @@ class Tofino(Host):
 
 if __name__ == '__main__':
 	tofino = Tofino('tofino', '/root/peregrine')
-	engine = Engine('gsd+e291427x1300274', '/home/fcp/peregrine')
+	dispatcher = Dispatcher('gsd+e291427x1300274', '/home/fcp/peregrine')
 	kitnet = KitNet('gsd+e291427x1300274', '/home/fcp/peregrine')
 	tg = TG_kernel('gsd+e291427x1300275')

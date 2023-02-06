@@ -10,7 +10,7 @@
 #include "report.h"
 
 #define DEFAULT_MODEL_GRPC_TARGET "localhost:50051"
-#define REPORT_FILE "peregrine-engine.tsv"
+#define REPORT_FILE "peregrine-dispatcher.tsv"
 
 peregrine::report_t report;
 

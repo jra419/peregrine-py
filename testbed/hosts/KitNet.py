@@ -15,7 +15,7 @@ class KitNet(Host):
 		super().__init__('kitnet', hostname, verbose)
 
 		self.peregrine_path = peregrine_path
-		self.kitnet_path = f'{peregrine_path}/engine/models/kitnet'
+		self.kitnet_path = f'{peregrine_path}/dispatcher/models/kitnet'
 		self.kitnet_exe_path = f'{self.kitnet_path}/kitnet.py'
 
 		if not self.has_directory(self.peregrine_path):
