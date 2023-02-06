@@ -67,7 +67,9 @@ sample_t Listener::receive_sample() {
 	auto pkt = (pkt_hdr_t *)(buffer);
 
 #ifndef NDEBUG
-	pkt->pretty_print();
+	if (pkt->has_valid_protocol()) {
+		pkt->pretty_print();
+	}
 #endif
 
 	return sample_t(pkt, data_size);

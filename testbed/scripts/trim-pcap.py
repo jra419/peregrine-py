@@ -6,6 +6,8 @@ import subprocess
 from scapy.all import *
 from scapy.utils import PcapWriter
 
+PEREGRINE_HDR_SIZE = 148
+ETHERNET_SIZE = 14
 MTU = 1500
 
 def get_packets_in_pcap(pcap):
@@ -46,26 +48,23 @@ if __name__ == '__main__':
 		processed += 1
 		print(f'Progress: {int(100.0 * processed / n_pkts)}%', end='\r')
 
-		length = len(pkt)
+		if Ether not in pkt:
+			continue
 		
-		if Ether not in pkt and length > MTU:
-			print("Not ethernet but bigger than MTU:")
-			print(pkt)
-			exit(1)
+		length = len(pkt) - ETHERNET_SIZE
 
-		if length <= MTU:
-			out_pkt = pkt
-		else:
-			l2 = pkt[Ether]
-			l3 = l2.payload
-			l4 = l3.payload
+		if length > MTU:
+			payload = pkt.lastlayer()
+			base    = length - len(payload)
+			payload.load = (MTU - (base + PEREGRINE_HDR_SIZE)) * 'A'
+			
+			if   TCP  in pkt: pkt[TCP].chksum  = 0
+			elif UDP  in pkt: pkt[UDP].chksum  = 0
+			elif ICMP in pkt: pkt[ICMP].chksum = 0
+			else: continue
+		else: continue # FIXME: remove
 
-			l2.remove_payload()
-			l3.remove_payload()
-			l4.remove_payload()
-
-			payload = (MTU - (len(l2) + len(l3) + len(l4))) * 'A'
-			out_pkt = l2 / l3 / l4 / payload
-
+		out_pkt = pkt
 		pktdump.write(out_pkt)
+
 	print()
