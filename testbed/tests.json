@@ -2,7 +2,7 @@
 	"tests": [
 		{
 			"attack": "active-wiretap",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/active-wiretap-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/active-wiretap-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/active-wiretap-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/active-wiretap-m-10-el.txt",
@@ -12,7 +12,7 @@
 		},
 		{
 			"attack": "arp-mitm",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/arp-mitm-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/arp-mitm-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/arp-mitm-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/arp-mitm-m-10-el.txt",
@@ -22,7 +22,7 @@
 		},
 		{
 			"attack": "botnet",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/botnet-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/botnet-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/botnet-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/botnet-m-10-el.txt",
@@ -32,7 +32,7 @@
 		},
 		{
 			"attack": "ddos-hoic",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/ddos-hoic-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/ddos-hoic-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/ddos-hoic-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/ddos-hoic-m-10-el.txt",
@@ -42,7 +42,7 @@
 		},
 		{
 			"attack": "ddos-loit",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/ddos-loit-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/ddos-loit-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/ddos-loit-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/ddos-loit-m-10-el.txt",
@@ -52,7 +52,7 @@
 		},
 		{
 			"attack": "dos-goldeneye",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-goldeneye-exec-trimmed.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/dos-goldeneye-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/dos-goldeneye-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/dos-goldeneye-m-10-el.txt",
@@ -62,7 +62,7 @@
 		},
 		{
 			"attack": "dos-hulk",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-hulk-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/dos-hulk-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/dos-hulk-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/dos-hulk-m-10-el.txt",
@@ -72,7 +72,7 @@
 		},
 		{
 			"attack": "dos-slowhttptest",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-slowhttptest-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/dos-slowhttptest-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/dos-slowhttptest-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/dos-slowhttptest-m-10-el.txt",
@@ -82,7 +82,7 @@
 		},
 		{
 			"attack": "dos-slowloris",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-slowloris-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/dos-slowloris-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/dos-slowloris-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/dos-slowloris-m-10-el.txt",
@@ -92,7 +92,7 @@
 		},
 		{
 			"attack": "dos-syn",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-syn-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/dos-syn-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/dos-syn-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/dos-syn-m-10-el.txt",
@@ -102,7 +102,7 @@
 		},
 		{
 			"attack": "fuzzing",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/fuzzing-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/fuzzing-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/fuzzing-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/fuzzing-m-10-el.txt",
@@ -112,7 +112,7 @@
 		},
 		{
 			"attack": "os-scan",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/os-scan-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/os-scan-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/os-scan-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/os-scan-m-10-el.txt",
@@ -122,7 +122,7 @@
 		},
 		{
 			"attack": "port-scan",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/port-scan-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/port-scan-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/port-scan-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/port-scan-m-10-el.txt",
@@ -132,7 +132,7 @@
 		},
 		{
 			"attack": "ssdp-flood",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/ssdp-flood-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/ssdp-flood-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/ssdp-flood-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/ssdp-flood-m-10-el.txt",
@@ -142,7 +142,7 @@
 		},
 		{
 			"attack": "ssh-bruteforce",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/ssh-bruteforce-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/ssh-bruteforce-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/ssh-bruteforce-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/ssh-bruteforce-m-10-el.txt",
@@ -152,7 +152,7 @@
 		},
 		{
 			"attack": "ssl-renegotiation",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/ssl-renegotiation-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/ssl-renegotiation-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/ssl-renegotiation-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/ssl-renegotiation-m-10-el.txt",
@@ -162,7 +162,7 @@
 		},
 		{
 			"attack": "video-injection",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/video-injection-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/video-injection-exec.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/video-injection-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/video-injection-m-10-el.txt",

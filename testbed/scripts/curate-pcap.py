@@ -24,11 +24,16 @@ def get_packets_in_pcap(pcap):
 	lines = out.split('\n')
 	assert len(lines) >= 2
 
-	nr_pkts = lines[1]
-	nr_pkts = nr_pkts.split(' ')[-1]
-	nr_pkts = int(nr_pkts)
+	for line in lines:
+		if 'Number of packets' not in line:
+			continue
+		
+		nr_pkts = line.split(' ')[-1]
+		nr_pkts = int(nr_pkts)
+		
+		return nr_pkts
 	
-	return nr_pkts
+	assert False and "Line with number of packets not found."
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(
@@ -62,7 +67,6 @@ if __name__ == '__main__':
 			elif UDP  in pkt: pkt[UDP].chksum  = 0
 			elif ICMP in pkt: pkt[ICMP].chksum = 0
 			else: continue
-		else: continue # FIXME: remove
 
 		out_pkt = pkt
 		pktdump.write(out_pkt)
