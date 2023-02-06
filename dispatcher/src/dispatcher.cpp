@@ -136,6 +136,10 @@ int main(int argc, char** argv) {
 			auto elapsed_ms =
 				std::chrono::duration<double, std::milli>(end - start).count();
 			report.add(sample, rmse, elapsed_ms);
+
+#ifndef NDEBUG
+			std::cout << "time: " << elapsed_ms << " ms\n";
+#endif
 		}
 	}
 
