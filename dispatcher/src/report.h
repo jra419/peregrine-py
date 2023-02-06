@@ -18,6 +18,7 @@ struct report_entry_t {
 	port_t port_src;
 	port_t port_dst;
 	float rmse;
+	double time_ms;
 
 	report_entry_t(const report_entry_t& _report)
 		: ip_src(_report.ip_src),
@@ -25,20 +26,22 @@ struct report_entry_t {
 		  ip_proto(_report.ip_proto),
 		  port_src(_report.port_src),
 		  port_dst(_report.port_dst),
-		  rmse(_report.rmse) {
+		  rmse(_report.rmse),
+		  time_ms(_report.time_ms) {
 		assert(sizeof(mac_src) == sizeof(_report.mac_src));
 		for (auto byte = 0u; byte < sizeof(mac_src); byte++) {
 			mac_src[byte] = _report.mac_src[byte];
 		}
 	}
 
-	report_entry_t(const sample_t& _sample, float _rmse)
+	report_entry_t(const sample_t& _sample, float _rmse, double _time_ms)
 		: ip_src(_sample.ip_src),
 		  ip_dst(_sample.ip_dst),
 		  ip_proto(_sample.ip_proto),
 		  port_src(_sample.port_src),
 		  port_dst(_sample.port_dst),
-		  rmse(_rmse) {
+		  rmse(_rmse),
+		  time_ms(_time_ms) {
 		assert(sizeof(mac_src) == sizeof(_sample.mac_src));
 		for (auto byte = 0u; byte < sizeof(mac_src); byte++) {
 			mac_src[byte] = _sample.mac_src[byte];
@@ -49,14 +52,14 @@ struct report_entry_t {
 struct report_t {
 	std::vector<report_entry_t> entries;
 
-	void add(const sample_t& sample, float rmse) {
-		entries.emplace_back(sample, rmse);
+	void add(const sample_t& sample, float rmse, double time_ms) {
+		entries.emplace_back(sample, rmse, time_ms);
 	}
 
 	void dump(const std::string& report_filename) const {
 		auto ofs = std::ofstream(report_filename);
 
-		ofs << "#src mac\tsrc ip\tdst ip\tproto\tsrc port\tdst port\trmse\n";
+		ofs << "#src mac\tsrc ip\tdst ip\tproto\tsrc port\tdst port\trmse\ttime(ms)\n";
 
 		if (!ofs.is_open()) {
 			std::cerr << "ERROR: couldn't write to \"" << report_filename
@@ -78,6 +81,8 @@ struct report_t {
 			ofs << port_to_str(entry.port_dst);
 			ofs << "\t";
 			ofs << entry.rmse;
+			ofs << "\n";
+			ofs << entry.time_ms;
 			ofs << "\n";
 		}
 

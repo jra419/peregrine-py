@@ -10,16 +10,14 @@ import json
 import os
 import shutil
 
-SCRIPT_DIR       = os.path.dirname(os.path.realpath(__file__))
-TEST_RESULTS_DIR = f'{SCRIPT_DIR}/results/original-rate-{SAMPLING_RATE}-sampling-rate'
-VERBOSE          = False
-
 DURATION_SECONDS = 300
 SAMPLING_RATE    = 1024
 # DURATION_SECONDS = 10
 # SAMPLING_RATE    = 1
 
-MAX_RETRIES      = 5
+SCRIPT_DIR       = os.path.dirname(os.path.realpath(__file__))
+TEST_RESULTS_DIR = f'{SCRIPT_DIR}/results/original-rate-{SAMPLING_RATE}-sampling-rate'
+VERBOSE          = False
 
 def check_success_from_controller_report(controller_report_file):
 	with open(controller_report_file, 'r') as f:
@@ -49,17 +47,10 @@ def run(tofino, dispatcher, kitnet, tg_kernel, testbed, test):
 	print(f"[*] attack={test['attack']}")
 
 	controller_report_file = None
-	dispatcher_report_file     = None
+	dispatcher_report_file = None
 
 	success = False
-	try_run = 0
 	while not success:
-		try_run += 1
-
-		if try_run > MAX_RETRIES:
-			print('Maximum number of allowed retries reached. Exiting.')
-			exit(1)
-
 		tofino.start()
 		dispatcher.start(testbed['dispatcher']['listen-iface'])
 		kitnet.start(
@@ -76,7 +67,7 @@ def run(tofino, dispatcher, kitnet, tg_kernel, testbed, test):
 		kitnet.stop()
 
 		controller_report_file = tofino.get_report()
-		dispatcher_report_file     = dispatcher.get_report()
+		dispatcher_report_file = dispatcher.get_report()
 
 		success = check_success_from_controller_report(controller_report_file)
 

@@ -52,7 +52,7 @@
 		},
 		{
 			"attack": "dos-goldeneye",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-goldeneye-exec.pcap",
+			"pcap": "/home/fcp/bench/pcaps/peregrine/dos-goldeneye-exec-trimmed.pcap",
 			"models": {
 				"fm": "/home/fcp/models/m-10/dos-goldeneye-m-10-fm.txt",
 				"el": "/home/fcp/models/m-10/dos-goldeneye-m-10-el.txt",

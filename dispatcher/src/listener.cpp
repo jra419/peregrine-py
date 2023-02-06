@@ -66,7 +66,7 @@ sample_t Listener::receive_sample() {
 
 	auto pkt = (pkt_hdr_t *)(buffer);
 
-#ifdef DEBUG
+#ifndef NDEBUG
 	pkt->pretty_print();
 #endif
 

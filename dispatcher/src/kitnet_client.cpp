@@ -6,7 +6,7 @@ namespace peregrine {
 
 uint64_t mac_to_uint64(const mac_t& mac) {
 	uint64_t value = 0;
-	
+
 	for (auto byte = 0u; byte < 6; byte++) {
 		value <<= 8;
 		value |= mac[byte];
@@ -17,7 +17,7 @@ uint64_t mac_to_uint64(const mac_t& mac) {
 
 float KitNetClient::ProcessSample(const sample_t& sample) {
 	ProcessSampleRequest request;
-	
+
 	request.set_mac_src(mac_to_uint64(sample.mac_src));
 	request.set_ip_src(sample.ip_src);
 	request.set_ip_dst(sample.ip_dst);
@@ -48,9 +48,11 @@ float KitNetClient::ProcessSample(const sample_t& sample) {
 
 	ProcessSampleReply reply;
 	grpc::ClientContext context;
-	grpc::Status status = stub_->ProcessSample(&context, request, &reply);
 
 	if (status.ok()) {
+#ifndef NDEBUG
+		std::cout << "rmse " << reply.rmse() << "\n";
+#endif
 		return reply.rmse();
 	} else {
 		std::cerr << status.error_code() << ": " << status.error_message()

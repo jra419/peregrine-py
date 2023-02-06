@@ -120,7 +120,7 @@ def run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate):
 		kitnet.stop()
 
 		controller_report_file = tofino.get_report()
-		dispatcher_report_file     = dispatcher.get_report()
+		dispatcher_report_file = dispatcher.get_report()
 
 		rx_pkts,tx_samples = get_data_from_controller(controller_report_file)
 		processed          = get_processed_samples_from_dispatcher(dispatcher_report_file)

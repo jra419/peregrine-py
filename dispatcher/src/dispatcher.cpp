@@ -1,4 +1,5 @@
 #include <iostream>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
@@ -129,8 +130,12 @@ int main(int argc, char** argv) {
 		auto sample = listener.receive_sample();
 
 		if (sample.valid) {
+			auto start = std::chrono::high_resolution_clock::now();
 			auto rmse = kitnet.ProcessSample(sample);
-			report.add(sample, rmse);
+			auto end = std::chrono::high_resolution_clock::now();
+			auto elapsed_ms =
+				std::chrono::duration<double, std::milli>(end - start).count();
+			report.add(sample, rmse, elapsed_ms);
 		}
 	}
 
