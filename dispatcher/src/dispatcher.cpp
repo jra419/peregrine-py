@@ -19,7 +19,7 @@ void print_header() {
 	std::cerr << "\n";
 	std::cerr << "*******************************************\n";
 	std::cerr << "*                                         *\n";
-	std::cerr << "*           PEREGRINE ENGINE              *\n";
+	std::cerr << "*           PEREGRINE DISPATCHER          *\n";
 	std::cerr << "*                                         *\n";
 	std::cerr << "*******************************************\n";
 	std::cerr << "\n";

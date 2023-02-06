@@ -126,6 +126,8 @@ def run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate):
 		processed          = get_processed_samples_from_dispatcher(dispatcher_report_file)
 		loss               = abs(tx_samples - processed) / tx_samples
 
+		if processed > tx_samples:
+			print(f"  WARNING: too many samples received (tx {tx_samples} | samples {processed}")
 		success = rx_pkts > -1 and tx_samples > -1
 
 		if not success:
