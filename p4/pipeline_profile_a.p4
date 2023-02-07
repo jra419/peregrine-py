@@ -187,9 +187,5 @@ control SwitchEgress_a(
     inout egress_intrinsic_metadata_for_deparser_t eg_intr_md_for_dprs,
     inout egress_intrinsic_metadata_for_output_port_t eg_intr_md_for_oport) {
 
-    Counter<bit<64>, PortId_t>(256, CounterType_t.PACKETS_AND_BYTES) out_counter;
-
-    apply {
-        out_counter.count(eg_intr_md.egress_port);
-    }
+    apply {}
 }

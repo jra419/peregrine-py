@@ -10,10 +10,10 @@ import json
 import os
 import shutil
 
-DURATION_SECONDS = 300
-SAMPLING_RATE    = 1024
-# DURATION_SECONDS = 10
-# SAMPLING_RATE    = 1
+# DURATION_SECONDS = 300
+# SAMPLING_RATE    = 1024
+DURATION_SECONDS = 10
+SAMPLING_RATE    = 1
 
 SCRIPT_DIR       = os.path.dirname(os.path.realpath(__file__))
 TEST_RESULTS_DIR = f'{SCRIPT_DIR}/results/original-rate-{SAMPLING_RATE}-sampling-rate'
@@ -119,8 +119,8 @@ if __name__ == '__main__':
 
 	assert target_test
 
-	print('[*] Installing')
-	tofino.modify_sampling_rate(SAMPLING_RATE)
-	tofino.install()
+	# print('[*] Installing')
+	# tofino.modify_sampling_rate(SAMPLING_RATE)
+	# tofino.install()
 
 	run(tofino, dispatcher, kitnet, tg_kernel, testbed, target_test)
