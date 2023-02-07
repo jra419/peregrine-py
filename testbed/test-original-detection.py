@@ -27,20 +27,24 @@ def check_success_from_controller_report(controller_report_file):
 		ports_info = lines[1:]
 		stats_port = int(ports_info[-1].split('\t')[0])
 
-		rx_pkts    = 0
-		tx_samples = 0
+		total_rx_bytes   = 0
+		total_rx_pkts    = 0
+		total_tx_samples = 0
 
 		for port_info in ports_info:
 			port_info = port_info.split('\t')
 			port      = int(port_info[0])
-			rx        = int(port_info[1])
-			tx        = int(port_info[2])
+			rx_bytes  = int(port_info[1])
+			rx_pkts   = int(port_info[2])
+			tx_bytes  = int(port_info[3])
+			tx_pkts   = int(port_info[4])
 
 			if port != stats_port:
-				rx_pkts += rx
+				total_rx_bytes += rx_bytes
+				total_rx_pkts  += rx_pkts
 			else:
-				tx_samples = tx
-				return rx_pkts > 0 and tx_samples > 0
+				total_tx_samples = tx_pkts
+				return total_rx_pkts > 0 and total_tx_samples > 0
 		return False
 
 def run(tofino, dispatcher, kitnet, tg_kernel, testbed, test):

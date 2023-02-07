@@ -116,8 +116,11 @@ void dump_entry(std::ostream &os, const bfrt::BfRtTable *table,
 				bf_status = table->keyFieldSizeGet(key_field_id, &size);
 				assert(bf_status == BF_SUCCESS);
 
-				assert(size % 8 == 0);
-				size /= 8;
+				if (size % 8 == 0) {
+					size /= 8;
+				} else {
+					size = (size / 8) + 1;
+				}
 				value.resize(size);
 
 				switch (key_field_type) {
@@ -218,10 +221,6 @@ void dump_entry(std::ostream &os, const bfrt::BfRtTable *table,
 		}
 		assert(bf_status == BF_SUCCESS);
 
-		if (data_field_name.size() && data_field_name[0] == '$') {
-			continue;
-		}
-
 		os << "  (data)   " << data_field_name << " = ";
 
 		switch (data_field_data_type) {
@@ -286,8 +285,12 @@ void dump_entry(std::ostream &os, const bfrt::BfRtTable *table,
 					assert(bf_status == BF_SUCCESS);
 				}
 
-				assert(size % 8 == 0);
-				size /= 8;
+				if (size % 8 == 0) {
+					size /= 8;
+				} else {
+					size = (size / 8) + 1;
+				}
+
 				value.resize(size);
 
 				bf_status = data->getValue(data_field_id, size, value.data());

@@ -144,18 +144,7 @@ int main(int argc, char **argv) {
 
 	// main thread sleeps
 	while (1) {
-		// auto topology = peregrine::Controller::controller->get_topology();
-		// for (auto connection : topology.connections) {
-		// 	auto in_port = connection.in.port;
-
-		// 	auto rx = peregrine::Controller::controller->get_port_rx(in_port);
-		// 	auto tx = peregrine::Controller::controller->get_port_tx(in_port);
-
-		// 	std::cout << in_port << "\t" << rx.bytes << "\t" << rx.packets
-		// 			  << "\t" << tx.bytes << "\t" << tx.packets << "\n";
-		// }
-
-		sleep(1);
+		sleep(5);
 	}
 
 	return 0;

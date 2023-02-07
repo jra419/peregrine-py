@@ -39,6 +39,7 @@
 #include "tables/ip_variance_1_abs.h"
 #include "tables/mac_ip_src_decay_check.h"
 #include "tables/mac_ip_src_mean.h"
+#include "tables/out_counter.h"
 #include "topology.h"
 #include "ports.h"
 
@@ -110,6 +111,7 @@ private:
 	FiveTPcc five_t_pcc;
 	FwdRecirculation_a fwd_recirculation_a;
 	FwdRecirculation_b fwd_recirculation_b;
+	OutCounter out_counter;
 
 	Controller(const bfrt::BfRtInfo *_info,
 			   std::shared_ptr<bfrt::BfRtSession> _session,
@@ -156,7 +158,8 @@ private:
 		  five_t_std_dev_prod(_info, session, dev_tgt),
 		  five_t_pcc(_info, session, dev_tgt),
 		  fwd_recirculation_a(_info, session, dev_tgt),
-		  fwd_recirculation_b(_info, session, dev_tgt) {
+		  fwd_recirculation_b(_info, session, dev_tgt),
+		  out_counter(_info, session, dev_tgt) {
 		if (!use_tofino_model) {
 			configure_ports(topology);
 		}
@@ -240,9 +243,8 @@ public:
 	}
 
 	stats_t get_port_tx(uint16_t port) {
-		// FIXME: update this
-		// auto data = fwd_recirculation_a.get_bytes_and_packets(port);
-		return stats_t(0, 0);
+		auto data = out_counter.get_bytes_and_packets(port, true);
+		return stats_t(data.first, data.second);
 	}
 
 	uint16_t get_dev_port(uint16_t front_panel_port, uint16_t lane) {

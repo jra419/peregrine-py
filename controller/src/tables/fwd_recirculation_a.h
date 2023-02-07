@@ -75,7 +75,7 @@ public:
 	}
 
 	std::pair<uint64_t, uint64_t> get_bytes_and_packets(uint32_t port,
-														bool from_hw = false) {
+														bool from_hw) {
 		uint64_t bytes;
 		uint64_t packets;
 
@@ -97,10 +97,13 @@ private:
 
 		key_setup(port, recirc_toggle);
 
-		auto bf_status =
+		auto bf_status = table->dataReset(data.get());
+		assert(bf_status == BF_SUCCESS);
+
+		bf_status =
 			table->tableEntryGet(*session, dev_tgt, *key, hwflag, data.get());
+
 		if (bf_status != BF_SUCCESS) {
-			// assert(bf_status == BF_SUCCESS);
 			return std::pair<uint64_t, uint64_t>(0, 0);
 		}
 
