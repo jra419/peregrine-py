@@ -87,7 +87,7 @@ void signalHandler(int signum) {
 
 	auto ofs = std::ofstream(REPORT_FILE);
 
-	ofs << "#port\trx\ttx\n";
+	ofs << "#port\trx bytes\trx packets\ttx bytes\ttx packets\n";
 
 	if (!ofs.is_open()) {
 		std::cerr << "ERROR: couldn't write to \"" << REPORT_FILE << "\n";
@@ -105,7 +105,8 @@ void signalHandler(int signum) {
 		auto rx = peregrine::Controller::controller->get_port_rx(in_port);
 		auto tx = peregrine::Controller::controller->get_port_tx(in_port);
 
-		ofs << in_port << "\t" << rx << "\t" << tx << "\n";
+		ofs << in_port << "\t" << rx.bytes << "\t" << rx.packets << "\t"
+			<< tx.bytes << "\t" << tx.packets << "\n";
 	}
 
 	auto stats_port = topology.stats.port;
@@ -118,7 +119,8 @@ void signalHandler(int signum) {
 	auto rx = peregrine::Controller::controller->get_port_rx(stats_port);
 	auto tx = peregrine::Controller::controller->get_port_tx(stats_port);
 
-	ofs << stats_port << "\t" << rx << "\t" << tx << "\n";
+	ofs << stats_port << "\t" << rx.bytes << "\t" << rx.packets << "\t"
+		<< tx.bytes << "\t" << tx.packets << "\n";
 	ofs.close();
 
 	std::cout << "Report generated at \"" << REPORT_FILE << "\". Exiting.\n";
@@ -142,7 +144,18 @@ int main(int argc, char **argv) {
 
 	// main thread sleeps
 	while (1) {
-		sleep(5);
+		// auto topology = peregrine::Controller::controller->get_topology();
+		// for (auto connection : topology.connections) {
+		// 	auto in_port = connection.in.port;
+
+		// 	auto rx = peregrine::Controller::controller->get_port_rx(in_port);
+		// 	auto tx = peregrine::Controller::controller->get_port_tx(in_port);
+
+		// 	std::cout << in_port << "\t" << rx.bytes << "\t" << rx.packets
+		// 			  << "\t" << tx.bytes << "\t" << tx.packets << "\n";
+		// }
+
+		sleep(1);
 	}
 
 	return 0;

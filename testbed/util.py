@@ -39,7 +39,7 @@ def get_test(attack):
 	
 	return data
 
-def compact(n):
+def compact(n, no_decimal=False):
 	orders = [
 		(1e9, 1e9, 'G'),
 		(1e6, 1e6, 'M'),
@@ -49,7 +49,10 @@ def compact(n):
 
 	for o in orders:
 		if n >= o[0]:
-			return f'{n/o[1]:.1f}{o[2]}'
+			if no_decimal:
+				return f'{int(n/o[1])}{o[2]}'
+			else:
+				return f'{n/o[1]:.1f}{o[2]}'
 	
 	return n
 	

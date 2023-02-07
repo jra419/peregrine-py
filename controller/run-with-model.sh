@@ -35,4 +35,5 @@ echo "Running PEREGRINE_HW_CONF=$BFN_T10_032D_CONF_FILE sudo -E $CONTROLLER_EXE 
 PEREGRINE_HW_CONF=$BFN_T10_032D_CONF_FILE \
 	sudo -E $CONTROLLER_EXE \
 	$TOPOLOGY_FILE \
-	--model
+	--model \
+	--bf-prompt

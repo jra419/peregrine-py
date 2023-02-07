@@ -39,7 +39,6 @@
 #include "tables/ip_variance_1_abs.h"
 #include "tables/mac_ip_src_decay_check.h"
 #include "tables/mac_ip_src_mean.h"
-#include "tables/sampling_rate.h"
 #include "topology.h"
 #include "ports.h"
 
@@ -210,7 +209,8 @@ private:
 			std::cerr << "(input) dev " << ig_port << " => (internal) dev "
 					  << internal_port << "\n";
 
-			fwd_recirculation_a.add_entry(ig_port, internal_port);
+			fwd_recirculation_a.add_entry(ig_port, false, eg_port);
+			fwd_recirculation_a.add_entry(ig_port, true, internal_port);
 			fwd_recirculation_b.add_entry(internal_port, eg_port);
 		}
 	}
@@ -226,8 +226,24 @@ public:
 	std::shared_ptr<bfrt::BfRtSession> get_session() { return session; }
 	bf_rt_target_t get_dev_tgt() const { return dev_tgt; }
 
-	uint64_t get_port_rx(uint16_t port) { return ports.get_port_rx(port); }
-	uint64_t get_port_tx(uint16_t port) { return ports.get_port_tx(port); }
+	struct stats_t {
+		uint64_t bytes;
+		uint64_t packets;
+
+		stats_t(uint64_t _bytes, uint64_t _packets)
+			: bytes(_bytes), packets(_packets) {}
+	};
+
+	stats_t get_port_rx(uint16_t port) {
+		auto data = fwd_recirculation_a.get_bytes_and_packets(port, true);
+		return stats_t(data.first, data.second);
+	}
+
+	stats_t get_port_tx(uint16_t port) {
+		// FIXME: update this
+		// auto data = fwd_recirculation_a.get_bytes_and_packets(port);
+		return stats_t(0, 0);
+	}
 
 	uint16_t get_dev_port(uint16_t front_panel_port, uint16_t lane) {
 		return ports.get_dev_port(front_panel_port, lane);

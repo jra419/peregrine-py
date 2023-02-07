@@ -44,7 +44,7 @@ control SwitchIngress_b(
         }
 
         const default_action = NoAction;
-        size = 1;
+        size = 24;
     }
 
     action set_peregrine_ip_b() {

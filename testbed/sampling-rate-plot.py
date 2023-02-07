@@ -7,9 +7,12 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
+from util import compact
+
 SCRIPT_DIR        = os.path.dirname(os.path.realpath(__file__))
 TEST_RESULTS_DIR  = f'{SCRIPT_DIR}/results/sampling-rate'
-PLOT              = f'{SCRIPT_DIR}/results/sampling-rate/sampling-rate.png'
+PLOT_PPS          = f'{SCRIPT_DIR}/results/sampling-rate/sampling-rate-pps.png'
+PLOT_BPS          = f'{SCRIPT_DIR}/results/sampling-rate/sampling-rate-bps.png'
 
 def get_data():
 	data_files_pattern = f'{TEST_RESULTS_DIR}/*.csv'
@@ -53,7 +56,9 @@ def get_sampling_rate_range(data):
 	
 	return min_sampling_rate, max_sampling_rate
 
-def plot(data):
+def plot(data, plot_file, pps=False, bps=False):
+	assert pps or bps
+
 	fig = plt.figure()
 	
 	plt.clf()
@@ -63,8 +68,15 @@ def plot(data):
 
 	min_sampling_rate, max_sampling_rate = get_sampling_rate_range(data)
 
-	min_rate = 0
-	max_rate = 100
+	if bps:
+		vmin = 0
+		vmax = 100
+		# units = 'Gbps'
+		units = '%'
+	else:
+		vmin = 0
+		vmax = int(50e6)
+		units = 'pps'
 	
 	attacks        = sorted(list(data.keys()))
 	sampling_rates = []
@@ -75,7 +87,9 @@ def plot(data):
 		attack_vector.sort(key=lambda v: v[0])
 
 		for sampling_rate,tg_rate,rx_rate_pps,tx_rate_pps in attack_vector:
-			matrix[i].append(tg_rate)
+			if pps: matrix[i].append(rx_rate_pps)
+			else:   matrix[i].append(tg_rate)
+
 			sampling_rates = list(set(sampling_rates + [ sampling_rate ]))
 
 	print('Sampling rates', sampling_rates)
@@ -86,20 +100,31 @@ def plot(data):
 	# colormap = plt.cm.jet
 	colormap = mpl.colormaps['RdYlGn']
 	
-	nodes = [ 0.0, 0.5, 1.0 ]
-	colors = [ 'red', 'yellow', 'green' ]
-	cmap = mpl.colors.LinearSegmentedColormap.from_list("mycmap", list(zip(nodes, colors)))
+	nodes  = [ 0.0, 0.5, 1.0 ]
+	colors = [ 'crimson', 'yellow', 'mediumseagreen' ]
+	cmap   = mpl.colors.LinearSegmentedColormap.from_list("mycmap", list(zip(nodes, colors)))
 	cmap.set_under('black')
 
-	res = ax.imshow(matrix, cmap=cmap, vmin=min_rate, vmax=max_rate, interpolation='nearest', aspect='auto')
+	res = ax.imshow(matrix, cmap=cmap, vmin=vmin, vmax=vmax, interpolation='nearest', aspect='auto')
 
 	for x in range(len(matrix)):
 		for y in range(len(matrix[x])):
-			gbps = matrix[x][y]
-			ax.annotate(f'{gbps:.2f}G', xy=(y,x), va='center', ha='center')
+			pps = matrix[x][y]
+			ax.annotate(f'{compact(pps, no_decimal=True)}{units}', xy=(y,x), va='center', ha='center')
 
-	cbar = fig.colorbar(res, ticks=[ 0, 25, 50, 75, 100 ])
-	cbar.ax.set_yticklabels([ '0G', '25G', '50G', '75G', '100G' ])
+	n_ticks = 6
+	ticks = []
+	labels = []
+	for i in range(n_ticks):
+		tick = int(vmax*i/(n_ticks-1))
+		ticks.append(tick)
+		labels.append(f'{compact(tick, no_decimal=pps)}{units}')
+
+	print('ticks', ticks)
+	print('labels', labels)
+
+	cbar = fig.colorbar(res, ticks=ticks)
+	cbar.ax.set_yticklabels(labels)
 
 	width  = len(sampling_rates)
 	height = len(attacks)
@@ -107,9 +132,11 @@ def plot(data):
 	plt.xticks(range(width), sampling_rates)
 	plt.yticks(range(height), attacks)
 
-	plt.savefig(PLOT, bbox_inches='tight')
-	plt.show()
+	plt.savefig(plot_file, bbox_inches='tight')
+	# plt.show()
 
 if __name__ == '__main__':
 	data = get_data()
-	plot(data)
+
+	plot(data, PLOT_PPS, pps=True)
+	plot(data, PLOT_BPS, bps=True)

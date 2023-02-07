@@ -23,6 +23,8 @@ control SwitchIngress_a(
 
     // Control block instantiations.
 
+    DirectCounter<bit<64>>(CounterType_t.PACKETS_AND_BYTES) in_counter;
+
     c_stats_mac_ip_src_a()    stats_mac_ip_src_a;
     c_stats_ip_src_a()        stats_ip_src_a;
     c_stats_ip_a()            stats_ip_a;
@@ -86,8 +88,14 @@ control SwitchIngress_a(
         ig_md.meta.pkt_len_squared = ract_pkt_len_squared_calc.execute(0);
     }
 
+    action fwd(PortId_t port) {
+        ig_tm_md.ucast_egress_port = port;
+        in_counter.count();
+    }
+
     action modify_eg_port(PortId_t port) {
         ig_tm_md.ucast_egress_port = port;
+        in_counter.count();
         hdr.peregrine.setValid();
         hdr.peregrine.decay = (bit<32>)ig_md.meta.decay_cntr;
     }
@@ -127,15 +135,16 @@ control SwitchIngress_a(
     table fwd_recirculation {
         key = {
             ig_intr_md.ingress_port : exact;
+            ig_md.meta.recirc_toggle : exact;
         }
 
         actions = {
-            NoAction;
+            fwd;
             modify_eg_port;
         }
 
-        const default_action = NoAction;
-        size = 1;
+        counters = in_counter;
+        size = 24;
     }
 
     apply {
@@ -158,8 +167,9 @@ control SwitchIngress_a(
             stats_ip_a.apply(hdr, ig_md);
             stats_five_t_a.apply(hdr, ig_md);
 
+            fwd_recirculation.apply();
+
             if (ig_md.meta.recirc_toggle == 1) {
-                fwd_recirculation.apply();
                 set_peregrine_mac_ip_src_a();
                 set_peregrine_ip_src_a();
                 set_peregrine_ip_a();
@@ -177,5 +187,9 @@ control SwitchEgress_a(
     inout egress_intrinsic_metadata_for_deparser_t eg_intr_md_for_dprs,
     inout egress_intrinsic_metadata_for_output_port_t eg_intr_md_for_oport) {
 
-    apply {}
+    Counter<bit<64>, PortId_t>(256, CounterType_t.PACKETS_AND_BYTES) out_counter;
+
+    apply {
+        out_counter.count(eg_intr_md.egress_port);
+    }
 }
