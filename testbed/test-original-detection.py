@@ -36,8 +36,7 @@ def check_success_from_controller_report(controller_report_file):
 			port      = int(port_info[0])
 			rx_bytes  = int(port_info[1])
 			rx_pkts   = int(port_info[2])
-			tx_bytes  = int(port_info[3])
-			tx_pkts   = int(port_info[4])
+			tx_pkts   = int(port_info[3])
 
 			if port != stats_port:
 				total_rx_bytes += rx_bytes
@@ -53,30 +52,29 @@ def run(tofino, dispatcher, kitnet, tg_kernel, testbed, test):
 	controller_report_file = None
 	dispatcher_report_file = None
 
-	success = False
-	while not success:
-		tofino.start()
-		dispatcher.start(testbed['dispatcher']['listen-iface'])
-		kitnet.start(
-			test['models']['fm'],
-			test['models']['el'],
-			test['models']['ol'],
-			test['models']['ts'],
-		)
+	tofino.start()
+	dispatcher.start(testbed['dispatcher']['listen-iface'])
+	kitnet.start(
+		test['models']['fm'],
+		test['models']['el'],
+		test['models']['ol'],
+		test['models']['ts'],
+	)
 
-		tg_kernel.run(test['pcap'], testbed['tg']['tx-kernel-iface'], DURATION_SECONDS)
+	tg_kernel.run(test['pcap'], testbed['tg']['tx-kernel-iface'], DURATION_SECONDS)
 
-		tofino.stop()
-		dispatcher.stop()
-		kitnet.stop()
+	tofino.stop()
+	dispatcher.stop()
+	kitnet.stop()
 
-		controller_report_file = tofino.get_report()
-		dispatcher_report_file = dispatcher.get_report()
+	controller_report_file = tofino.get_report()
+	dispatcher_report_file = dispatcher.get_report()
 
-		success = check_success_from_controller_report(controller_report_file)
+	success = check_success_from_controller_report(controller_report_file)
 
-		if not success:
-			print(f"  - Packets not flowing through Tofino. Repeating experiment.")
+	if not success:
+		print(f"ERROR: Packets not flowing through Tofino.")
+		exit(1)
 	
 	if not os.path.exists(TEST_RESULTS_DIR):
 		os.makedirs(TEST_RESULTS_DIR)
@@ -119,8 +117,8 @@ if __name__ == '__main__':
 
 	assert target_test
 
-	# print('[*] Installing')
-	# tofino.modify_sampling_rate(SAMPLING_RATE)
-	# tofino.install()
+	print('[*] Installing')
+	tofino.modify_sampling_rate(SAMPLING_RATE)
+	tofino.install()
 
 	run(tofino, dispatcher, kitnet, tg_kernel, testbed, target_test)

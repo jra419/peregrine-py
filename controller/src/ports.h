@@ -479,7 +479,6 @@ public:
 	}
 
 	uint64_t get_port_rx(uint16_t port) { return port_stat.get_port_rx(port); }
-
 	uint64_t get_port_tx(uint16_t port) { return port_stat.get_port_tx(port); }
 
 private:

@@ -51,24 +51,44 @@ if __name__ == '__main__':
 
 	for pkt in in_pkts:
 		processed += 1
+
+		l2 = pkt
+		l3 = l2.payload
+		l4 = l3.payload
+
+		valid = True
+		valid &= Ether in l2
+		valid &= IP in l3
+		valid &= TCP in l4 or UDP in l4 or ICMP in l4
+
+		if not valid: continue
+		
+		length         = len(pkt) - ETHERNET_SIZE
+		payload_length = len(l4.payload)
+
+		if length + PEREGRINE_HDR_SIZE > MTU:
+			base           = length - payload_length
+			payload_length = (MTU - (base + PEREGRINE_HDR_SIZE))
+
+		l3.chksum = 0
+		l4.chksum = 0
+
+		l2.remove_payload()
+		l3.remove_payload()
+		l4.remove_payload()
+
+		out_pkt = l2 / l3 / l4 / Raw(payload_length * 'z')
+
 		print(f'Progress: {int(100.0 * processed / n_pkts)}%', end='\r')
 
-		if Ether not in pkt:
-			continue
-		
-		length = len(pkt) - ETHERNET_SIZE
+		if len(out_pkt) > MTU + PEREGRINE_HDR_SIZE:
+			pkt.show2()
 
-		if length > MTU:
-			payload = pkt.lastlayer()
-			base    = length - len(payload)
-			payload.load = (MTU - (base + PEREGRINE_HDR_SIZE)) * 'A'
-			
-			if   TCP  in pkt: pkt[TCP].chksum  = 0
-			elif UDP  in pkt: pkt[UDP].chksum  = 0
-			elif ICMP in pkt: pkt[ICMP].chksum = 0
-			else: continue
+			print('Length', len(pkt))
+			print('L4 payload lenght', len(l4.payload))
+			print('L4 payload', l4.payload)
+			exit(1)
 
-		out_pkt = pkt
 		pktdump.write(out_pkt)
 
 	print()

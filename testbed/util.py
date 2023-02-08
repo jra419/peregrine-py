@@ -64,24 +64,27 @@ def get_data_from_controller(controller_report_file):
 		ports_info = lines[1:]
 		stats_port = int(ports_info[-1].split('\t')[0])
 
-		rx_pkts    = -1
-		tx_samples = -1
+		total_rx_bytes   = -1
+		total_rx_pkts    = -1
+		total_tx_samples = -1
 
 		for port_info in ports_info:
 			port_info = port_info.split('\t')
 			port      = int(port_info[0])
-			rx        = int(port_info[1])
-			tx        = int(port_info[2])
+			rx_bytes  = int(port_info[1])
+			rx_pkts   = int(port_info[2])
+			tx_pkts   = int(port_info[3])
 
 			if port != stats_port:
-				rx_pkts += rx
+				total_rx_pkts  += rx_pkts
+				total_rx_bytes += rx_bytes
 			else:
-				tx_samples = tx
-				if rx_pkts > 0 and tx_samples > 0:
-					return rx_pkts,tx_samples
+				total_tx_samples = tx_pkts
+				if total_rx_pkts > 0 and total_tx_samples > 0:
+					return total_rx_bytes,total_rx_pkts,total_tx_samples
 				else:
-					return -1,-1
-		return rx_pkts,tx_samples
+					return -1,-1,-1
+		return total_rx_bytes,total_rx_pkts,total_tx_samples
 
 def get_processed_samples_from_dispatcher(dispatcher_report_file):
 	with open(dispatcher_report_file, 'r') as f:
@@ -94,6 +97,7 @@ def run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate):
 	dispatcher_report_file     = None
 
 	rx_pkts    = -1
+	rx_bytes   = -1
 	tx_samples = -1
 	processed  = -1
 	loss       = -1
@@ -125,10 +129,11 @@ def run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate):
 		controller_report_file = tofino.get_report()
 		dispatcher_report_file = dispatcher.get_report()
 
-		rx_pkts,tx_samples = get_data_from_controller(controller_report_file)
-		processed          = get_processed_samples_from_dispatcher(dispatcher_report_file)
-		loss               = abs(tx_samples - processed) / tx_samples
-		success            = rx_pkts > -1 and tx_samples > -1
+		rx_bytes,rx_pkts,tx_samples = get_data_from_controller(controller_report_file)
+
+		processed = get_processed_samples_from_dispatcher(dispatcher_report_file)
+		loss      = abs(tx_samples - processed) / tx_samples
+		success   = rx_pkts > -1 and tx_samples > -1
 
 		if not success:
 			print(f"  - Packets not flowing through Tofino. Repeating experiment.")
@@ -143,9 +148,10 @@ def run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate):
 	os.remove(dispatcher_report_file)
 
 	rx_rate_pps = int(rx_pkts / DURATION_SECONDS)
+	rx_rate_bps = int((rx_bytes/8) / DURATION_SECONDS)
 	tx_rate_pps = int(tx_samples / DURATION_SECONDS)
 
-	return rx_rate_pps, tx_rate_pps, loss
+	return rx_rate_bps, rx_rate_pps, tx_rate_pps, loss
 
 def find_stable_throughput(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, verbose=True):
 	upper_bound = 100.0
@@ -158,6 +164,7 @@ def find_stable_throughput(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, v
 
 	best_rate        = -1
 	best_rx_rate_pps = -1
+	best_rx_rate_bps = -1
 	best_tx_rate_pps = -1
 	best_loss        = -1
 
@@ -167,15 +174,24 @@ def find_stable_throughput(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, v
 		if rate < RATE_LOWER_THRESHOLD or i >= SEARCH_ITERATIONS:
 			break
 		
-		rx_rate_pps, tx_rate_pps, loss = run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate)
+		rx_rate_bps, rx_rate_pps, tx_rate_pps, loss = run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate)
 
 		if verbose:
-			print(f'  [{i+1:2d}/{SEARCH_ITERATIONS}] rate {rate:3.2f}% rx {compact(rx_rate_pps)}pps tx {compact(tx_rate_pps)}pps loss {100 * loss:.2f}%')
+			msg  = '  '
+			msg += f'[{i+1:2d}/{SEARCH_ITERATIONS}] '
+			msg += f'rate {rate:3.2f}% '
+			msg += f'rx {compact(rx_rate_pps, no_decimal=True)}pps '
+			msg += f'({compact(rx_rate_bps, no_decimal=True)}bps) '
+			msg += f'tx {compact(tx_rate_pps, no_decimal=True)}pps '
+			msg += f'loss {100 * loss:.2f}%'
+
+			print(msg)
 
 		if loss < LOSS_THRESHOLD:
 			if tx_rate_pps > best_tx_rate_pps:
 				best_rate        = rate
 				best_rx_rate_pps = rx_rate_pps
+				best_rx_rate_bps = rx_rate_bps
 				best_tx_rate_pps = tx_rate_pps
 				best_loss        = loss
 
@@ -191,6 +207,14 @@ def find_stable_throughput(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, v
 		i += 1
 	
 	if verbose:
-		print(f'  Best rate {best_rate:3.2f}% rx {compact(best_rx_rate_pps)}pps tx {compact(best_tx_rate_pps)}pps loss {100 * best_loss:.2f}%')
+		msg  = '  '
+		msg += f'Best rate '
+		msg += f'rate {best_rate:3.2f}% '
+		msg += f'rx {compact(best_rx_rate_pps, no_decimal=True)}pps '
+		msg += f'({compact(best_rx_rate_bps, no_decimal=True)}bps) '
+		msg += f'tx {compact(best_tx_rate_pps, no_decimal=True)}pps '
+		msg += f'loss {100 * loss:.2f}%'
 
-	return best_rate, best_rx_rate_pps, best_tx_rate_pps
+		print(msg)
+
+	return best_rate, best_rx_rate_bps, best_rx_rate_pps, best_tx_rate_pps
