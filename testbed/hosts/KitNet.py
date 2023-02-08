@@ -14,8 +14,8 @@ class KitNet(Host):
 	def __init__(self, hostname, peregrine_path, verbose=True):
 		super().__init__('kitnet', hostname, verbose)
 
-		self.peregrine_path = peregrine_path
-		self.kitnet_path = f'{peregrine_path}/plugins/kitnet'
+		self.peregrine_path  = peregrine_path
+		self.kitnet_path     = f'{peregrine_path}/plugins/kitnet'
 		self.kitnet_exe_path = f'{self.kitnet_path}/kitnet.py'
 
 		if not self.has_directory(self.peregrine_path):
@@ -28,7 +28,6 @@ class KitNet(Host):
 		self.stop()
 	
 	def start(self, feature_map_file, ensemble_layer_file, output_layer_file, train_stats_file):
-		python_env_setup = 'source ./env/bin/activate'
 		kitnet = self.kitnet_exe_path
 		args = [
 			'--feature_map', feature_map_file,
@@ -37,7 +36,7 @@ class KitNet(Host):
 			'--train_stats', train_stats_file,
 		]
 
-		cmd = f'{python_env_setup} && {kitnet} {" ".join(args)} > {KITNET_LOG_FILE} 2>&1'
+		cmd = f'{kitnet} {" ".join(args)} > {KITNET_LOG_FILE} 2>&1'
 		
 		# now launching kitnet model plugin
 		self.exec(cmd, path=self.kitnet_path, background=True)
@@ -47,7 +46,7 @@ class KitNet(Host):
 			time.sleep(1)
 
 			ret, out, err = self.exec(f'cat {KITNET_LOG_FILE}', capture_output=True)
-			
+
 			if not self.is_program_running(self.kitnet_exe_path):
 				self.log('ERROR: KitNet not running.')
 				self.log('Dumping of log file:')
@@ -56,6 +55,6 @@ class KitNet(Host):
 
 			if KITNET_READY_MSG in out:
 				break
-		
+
 	def stop(self):
 		self.kill(KITNET_EXE_NAME)

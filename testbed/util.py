@@ -94,7 +94,7 @@ def get_processed_samples_from_dispatcher(dispatcher_report_file):
 
 def run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate):
 	controller_report_file = None
-	dispatcher_report_file     = None
+	dispatcher_report_file = None
 
 	rx_pkts    = -1
 	rx_bytes   = -1
