@@ -9,7 +9,7 @@ BIND_DPDK_SCRIPT = '/home/fcp/bind-igb_uio.sh'
 PKTGEN_DIR       = '/opt/Pktgen-DPDK'
 PKTGEN_EXE_NAME  = 'pktgen'
 RESULTS_FILENAME = 'results.tsv'
-NUM_TX_CORES     = 2
+NUM_TX_CORES     = 4
 
 PKTGEN_SCRIPT_NAME     = 'replay.lua'
 PKTGEN_SCRIPT_TEMPLATE = \
