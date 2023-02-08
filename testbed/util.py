@@ -22,13 +22,13 @@ def get_testbed_cfg():
 def get_tests():
 	with open(TESTS_JSON, 'r') as f:
 		tests = json.load(f)
-		return tests
+		return tests['tests']
 
 def get_test(attack):
 	data  = None
 	tests = get_tests()
 
-	for test in tests['tests']:
+	for test in tests:
 		if attack == test['attack']:
 			data = test
 			break

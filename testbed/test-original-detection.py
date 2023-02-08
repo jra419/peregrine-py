@@ -111,7 +111,7 @@ if __name__ == '__main__':
 
 	target_test = None
 
-	for test in tests['tests']:
+	for test in tests:
 		if test['attack'] == 'os-scan':
 			target_test = test
 
