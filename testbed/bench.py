@@ -51,9 +51,9 @@ if __name__ == '__main__':
 		verbose=VERBOSE
 	)
 
-	print(f'[*] Installing...')
-	tofino.modify_sampling_rate(args.sampling)
-	tofino.install()
+	# print(f'[*] Installing...')
+	# tofino.modify_sampling_rate(args.sampling)
+	# tofino.install()
 
 	print(f"[*] attack={test['attack']} sampling_rate={args.sampling}")
 	util.find_stable_throughput(tofino, dispatcher, kitnet, tg_dpdk, testbed, test)

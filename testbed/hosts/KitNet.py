@@ -5,17 +5,17 @@ from .Host import Host
 import time
 import os
 
-KITNET_EXE_NAME        = 'python' # oof
+KITNET_EXE_NAME  = 'python' # oof
 
-KITNET_LOG_FILE        = '/tmp/kitnet.log'
-KITNET_READY_MSG       = 'Listening on'
+KITNET_LOG_FILE  = '/tmp/kitnet.log'
+KITNET_READY_MSG = 'Listening on'
 
 class KitNet(Host):
 	def __init__(self, hostname, peregrine_path, verbose=True):
 		super().__init__('kitnet', hostname, verbose)
 
 		self.peregrine_path = peregrine_path
-		self.kitnet_path = f'{peregrine_path}/dispatcher/models/kitnet'
+		self.kitnet_path = f'{peregrine_path}/plugins/kitnet'
 		self.kitnet_exe_path = f'{self.kitnet_path}/kitnet.py'
 
 		if not self.has_directory(self.peregrine_path):

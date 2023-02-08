@@ -148,7 +148,7 @@ def run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate):
 	os.remove(dispatcher_report_file)
 
 	rx_rate_pps = int(rx_pkts / DURATION_SECONDS)
-	rx_rate_bps = int((rx_bytes/8) / DURATION_SECONDS)
+	rx_rate_bps = int((rx_bytes * 8) / DURATION_SECONDS)
 	tx_rate_pps = int(tx_samples / DURATION_SECONDS)
 
 	return rx_rate_bps, rx_rate_pps, tx_rate_pps, loss
@@ -213,7 +213,7 @@ def find_stable_throughput(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, v
 		msg += f'rx {compact(best_rx_rate_pps, no_decimal=True)}pps '
 		msg += f'({compact(best_rx_rate_bps, no_decimal=True)}bps) '
 		msg += f'tx {compact(best_tx_rate_pps, no_decimal=True)}pps '
-		msg += f'loss {100 * loss:.2f}%'
+		msg += f'loss {100 * best_loss:.2f}%'
 
 		print(msg)
 

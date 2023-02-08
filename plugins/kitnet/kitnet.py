@@ -2,7 +2,6 @@
 
 from concurrent import futures
 
-import grpc
 import sys
 import os
 import time
@@ -19,33 +18,16 @@ import numpy as np
 from pathlib import Path
 
 SCRIPT_DIR=os.path.dirname(os.path.realpath(__file__))
-PROTOS_DIR=f'{SCRIPT_DIR}/../../protos'
 
-try:
-	import kitnet_pb2
-	import kitnet_pb2_grpc
-except ImportError:
-	python_bin = sys.executable
-	protoc = 'grpc_tools.protoc'
-
-	subprocess.run([
-		python_bin,
-		'-m', protoc,
-		f'-I{PROTOS_DIR}',
-		f'--python_out={SCRIPT_DIR}',
-		f'--grpc_python_out={SCRIPT_DIR}',
-		f'{PROTOS_DIR}/kitnet.proto'
-	])
-
-	import kitnet_pb2
-	import kitnet_pb2_grpc
-
-DEFAULT_GRPC_PORT=50051
+DEFAULT_HOST='127.0.0.1'
+DEFAULT_PORT=50051
 DEFAULT_MAX_AUTOENCODER_SIZE=10
 DEFAULT_FM_GRACE_PERIOD=100000
 DEFAULT_AD_GRACE_PERIOD=900000
 DEFAULT_LEARNING_RATE=0.1
 DEFAULT_HIDDEN_RATIO=0.75
+
+MAX_MESSAGE_SIZE = 1500
 
 LAMBDAS=4
 FEATURES=80
@@ -53,34 +35,45 @@ FEATURES=80
 server = None
 
 class Sample:
-	def __init__(self, process_sample_request):
-		self.mac_src                   = process_sample_request.mac_src.to_bytes(6, 'big')
-		self.ip_src                    = struct.pack('<L', process_sample_request.ip_src & 0xffffffff)
-		self.ip_dst                    = struct.pack('<L', process_sample_request.ip_dst & 0xffffffff)
-		self.ip_proto                  = process_sample_request.ip_proto & 0xff
-		self.port_src                  = self.big_to_little_16b(process_sample_request.port_src & 0xffff)
-		self.port_dst                  = self.big_to_little_16b(process_sample_request.port_dst & 0xffff)
-		self.decay                     = self.big_to_little_32b(process_sample_request.decay)
-		self.mac_ip_src_pkt_cnt        = self.big_to_little_32b(process_sample_request.mac_ip_src_pkt_cnt)
-		self.mac_ip_src_mean           = self.big_to_little_32b(process_sample_request.mac_ip_src_mean)
-		self.mac_ip_src_std_dev        = self.big_to_little_32b(process_sample_request.mac_ip_src_std_dev)
-		self.ip_src_pkt_cnt            = self.big_to_little_32b(process_sample_request.ip_src_pkt_cnt)
-		self.ip_src_mean               = self.big_to_little_32b(process_sample_request.ip_src_mean)
-		self.ip_src_std_dev            = self.big_to_little_32b(process_sample_request.ip_src_std_dev)
-		self.ip_pkt_cnt                = self.big_to_little_32b(process_sample_request.ip_pkt_cnt)
-		self.ip_mean_0                 = self.big_to_little_32b(process_sample_request.ip_mean_0)
-		self.ip_std_dev_0              = self.big_to_little_32b(process_sample_request.ip_std_dev_0)
-		self.ip_magnitude              = self.big_to_little_32b(process_sample_request.ip_magnitude)
-		self.ip_radius                 = self.big_to_little_32b(process_sample_request.ip_radius)
-		self.five_t_pkt_cnt            = self.big_to_little_32b(process_sample_request.five_t_pkt_cnt)
-		self.five_t_mean_0             = self.big_to_little_32b(process_sample_request.five_t_mean_0)
-		self.five_t_std_dev_0          = self.big_to_little_32b(process_sample_request.five_t_std_dev_0)
-		self.five_t_magnitude          = self.big_to_little_32b(process_sample_request.five_t_magnitude)
-		self.five_t_radius             = self.big_to_little_32b(process_sample_request.five_t_radius)
-		self.ip_sum_res_prod_cov       = self.big_to_little_64b(process_sample_request.ip_sum_res_prod_cov)
-		self.ip_pcc                    = self.big_to_little_64b(process_sample_request.ip_pcc)
-		self.five_t_sum_res_prod_cov   = self.big_to_little_64b(process_sample_request.five_t_sum_res_prod_cov)
-		self.five_t_pcc                = self.big_to_little_64b(process_sample_request.five_t_pcc)
+	def __init__(self, buffer):
+		self.buffer = buffer
+
+		self.mac_src                   = self.parse_buffer(6)
+		self.ip_src                    = self.parse_buffer(4)
+		self.ip_dst                    = self.parse_buffer(4)
+		self.ip_proto                  = self.parse_buffer(1)
+		self.port_src                  = self.parse_buffer(2)
+		self.port_dst                  = self.parse_buffer(2)
+		self.decay                     = self.parse_buffer(4)
+		self.mac_ip_src_pkt_cnt        = self.parse_buffer(4)
+		self.mac_ip_src_mean           = self.parse_buffer(4)
+		self.mac_ip_src_std_dev        = self.parse_buffer(4)
+		self.ip_src_pkt_cnt            = self.parse_buffer(4)
+		self.ip_src_mean               = self.parse_buffer(4)
+		self.ip_src_std_dev            = self.parse_buffer(4)
+		self.ip_pkt_cnt                = self.parse_buffer(4)
+		self.ip_mean_0                 = self.parse_buffer(4)
+		self.ip_std_dev_0              = self.parse_buffer(4)
+		self.ip_magnitude              = self.parse_buffer(4)
+		self.ip_radius                 = self.parse_buffer(4)
+		self.five_t_pkt_cnt            = self.parse_buffer(4)
+		self.five_t_mean_0             = self.parse_buffer(4)
+		self.five_t_std_dev_0          = self.parse_buffer(4)
+		self.five_t_magnitude          = self.parse_buffer(4)
+		self.five_t_radius             = self.parse_buffer(4)
+		self.ip_sum_res_prod_cov       = self.parse_buffer(8)
+		self.ip_pcc                    = self.parse_buffer(8)
+		self.five_t_sum_res_prod_cov   = self.parse_buffer(8)
+		self.five_t_pcc                = self.parse_buffer(8)
+	
+	def parse_buffer(self, size_bytes):
+		assert self.buffer
+		value = 0
+		for i in range(size_bytes):
+			byte = (self.buffer[i] & 0xff) << (i * 8)
+			value |= byte
+		self.buffer = self.buffer[size_bytes:]
+		return value
 	
 	def to_array(self):
 		return [
@@ -124,9 +117,9 @@ class Sample:
 
 	def dump(self):
 		print("Sample:")
-		print( "  mac_src:                 %02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", self.mac_src))
-		print(f"  ip_src:                  {socket.inet_ntoa(self.ip_src)}")
-		print(f"  ip_dst:                  {socket.inet_ntoa(self.ip_dst)}")
+		print( "  mac_src:                 %02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", self.mac_src.to_bytes(6, 'big')))
+		print(f"  ip_src:                  {socket.inet_ntoa(self.ip_src.to_bytes(4, 'little'))}")
+		print(f"  ip_dst:                  {socket.inet_ntoa(self.ip_dst.to_bytes(4, 'little'))}")
 		print(f"  ip_proto:                {self.ip_proto}")
 		print(f"  port_src:                {self.port_src}")
 		print(f"  port_dst:                {self.port_dst}")
@@ -152,7 +145,7 @@ class Sample:
 		print(f"  five_t_sum_res_prod_cov: {self.five_t_sum_res_prod_cov}")
 		print(f"  five_t_pcc:              {self.five_t_pcc}")
 
-class KitNet(kitnet_pb2_grpc.KitNetServicer):
+class KitNet():
 	def __init__(self, max_autoencoder_size, fm_grace_period, ad_grace_period,
 					learning_rate, hidden_ratio,
 					feature_map, ensemble_layer, output_layer, train_stats,
@@ -219,9 +212,7 @@ class KitNet(kitnet_pb2_grpc.KitNetServicer):
 		self.stats_ip = {}
 		self.stats_five_t = {}
 
-	def ProcessSample(self, request, context):
-		sample = Sample(request)
-
+	def ProcessSample(self, sample):
 		if self.verbose:
 			sample.dump()
 		
@@ -230,9 +221,9 @@ class KitNet(kitnet_pb2_grpc.KitNetServicer):
 		cur_decay_pos = self.decay_to_pos[sample_array[6]]
 
 		hdr_mac_ip_src = f'{sample_array[0]}{sample_array[1]}'
-		hdr_ip_src = f'{sample_array[1]}'
-		hdr_ip = f'{sample_array[1]}{sample_array[2]}'
-		hdr_five_t = f'{sample_array[1]}{sample_array[2]}{sample_array[3]}{sample_array[4]}{sample_array[5]}'
+		hdr_ip_src     = f'{sample_array[1]}'
+		hdr_ip         = f'{sample_array[1]}{sample_array[2]}'
+		hdr_five_t     = f'{sample_array[1]}{sample_array[2]}{sample_array[3]}{sample_array[4]}{sample_array[5]}'
 
 		if hdr_mac_ip_src not in self.stats_mac_ip_src:
 			self.stats_mac_ip_src[hdr_mac_ip_src] = np.zeros(3 * LAMBDAS)
@@ -269,28 +260,26 @@ class KitNet(kitnet_pb2_grpc.KitNetServicer):
 		if self.train and self.processed_samples == self.fm_grace + self.ad_grace:
 			self.save_stats()
 
-		return kitnet_pb2.ProcessSampleReply(RMSE=rmse)
+		if self.verbose:
+			print(f'rmse: {rmse}')
 
-def serve(kitnet, port=DEFAULT_GRPC_PORT, verbose=False):
+		return rmse
+
+def serve(kitnet, host=DEFAULT_HOST, port=DEFAULT_PORT, verbose=False):
 	global server
 	
-	server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-	kitnet_pb2_grpc.add_KitNetServicer_to_server(kitnet, server)
-
-	server.add_insecure_port(f'[::]:{port}')
-	server.start()
+	server_socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+	server_socket.bind((host, port))
 
 	print(f"Listening on {port}...", flush=True)
 
+	while True:
+		msg, client = server_socket.recvfrom(MAX_MESSAGE_SIZE)
+		sample = Sample(msg)
+		rmse = kitnet.ProcessSample(sample)
+		server_socket.sendto(struct.pack("f", rmse), client)
 
 def handle_sigterm(*args):
-	global server
-	
-	print('\nStopping...')
-
-	done_event = server.stop(30)
-	done_event.wait(30)
-
 	print('Done.')
 	exit(0)
 
@@ -304,12 +293,9 @@ def print_header():
 	print()
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description='Peregrine-KitNet ML model plugin')
+	signal.signal(signal.SIGINT, handle_sigterm)
 
-	parser.add_argument('-p', '--port',
-		type=int,
-		default=DEFAULT_GRPC_PORT,
-		help='gRPC serving port')
+	parser = argparse.ArgumentParser(description='Peregrine-KitNet ML model plugin')
 	
 	parser.add_argument('--verbose',
 		action='store_true',
@@ -401,8 +387,4 @@ if __name__ == '__main__':
 		verbose=args.verbose
 	)
 
-	serve(kitnet, port=args.port, verbose=args.verbose)
-	signal.signal(signal.SIGINT, handle_sigterm)
-
-	while True:
-		time.sleep(5)
+	serve(kitnet, verbose=args.verbose)

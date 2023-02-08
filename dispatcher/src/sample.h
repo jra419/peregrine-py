@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <stdint.h>
 
 #include "packet.h"
@@ -66,8 +67,8 @@ struct sample_t {
 			mac_src[byte] = l2->src_mac[byte];
 		}
 
-		ip_src   = l3->src_ip;
-		ip_dst   = l3->dst_ip;
+		ip_src = l3->src_ip;
+		ip_dst = l3->dst_ip;
 		ip_proto = l3->protocol;
 
 		switch (ip_proto) {
@@ -111,6 +112,59 @@ struct sample_t {
 		ip_pcc = peregrine_hdr->ip_pcc;
 		five_t_sum_res_prod_cov = peregrine_hdr->five_t_sum_res_prod_cov;
 		five_t_pcc = peregrine_hdr->five_t_pcc;
+	}
+
+	void serialize_append(std::vector<uint8_t>& buffer, uint64_t value,
+						  size_t bytes) const {
+		for (auto i = 0; i < bytes; i++) {
+			auto byte = (value >> ((bytes - i - 1) * 8)) & 0xff;
+			buffer.push_back(byte);
+		}
+	}
+
+	uint64_t mac_to_uint64(const mac_t& mac) const {
+		uint64_t value = 0;
+
+		for (auto byte = 0u; byte < 6; byte++) {
+			value <<= 8;
+			value |= mac[byte];
+		}
+
+		return value;
+	}
+
+	std::vector<uint8_t> serialize() const {
+		auto buffer = std::vector<uint8_t>();
+
+		serialize_append(buffer, mac_to_uint64(mac_src), 6);
+		serialize_append(buffer, ip_src, 4);
+		serialize_append(buffer, ip_dst, 4);
+		serialize_append(buffer, ip_proto, 1);
+		serialize_append(buffer, port_src, 2);
+		serialize_append(buffer, port_dst, 2);
+		serialize_append(buffer, decay, 4);
+		serialize_append(buffer, mac_ip_src_pkt_cnt, 4);
+		serialize_append(buffer, mac_ip_src_mean, 4);
+		serialize_append(buffer, mac_ip_src_std_dev, 4);
+		serialize_append(buffer, ip_src_pkt_cnt, 4);
+		serialize_append(buffer, ip_src_mean, 4);
+		serialize_append(buffer, ip_src_std_dev, 4);
+		serialize_append(buffer, ip_pkt_cnt, 4);
+		serialize_append(buffer, ip_mean_0, 4);
+		serialize_append(buffer, ip_std_dev_0, 4);
+		serialize_append(buffer, ip_magnitude, 4);
+		serialize_append(buffer, ip_radius, 4);
+		serialize_append(buffer, five_t_pkt_cnt, 4);
+		serialize_append(buffer, five_t_mean_0, 4);
+		serialize_append(buffer, five_t_std_dev_0, 4);
+		serialize_append(buffer, five_t_magnitude, 4);
+		serialize_append(buffer, five_t_radius, 4);
+		serialize_append(buffer, ip_sum_res_prod_cov, 8);
+		serialize_append(buffer, ip_pcc, 8);
+		serialize_append(buffer, five_t_sum_res_prod_cov, 8);
+		serialize_append(buffer, five_t_pcc, 8);
+
+		return buffer;
 	}
 };
 
