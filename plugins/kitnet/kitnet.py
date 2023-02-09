@@ -67,11 +67,7 @@ class Sample:
 		self.five_t_pcc                = self.parse_buffer(8)
 	
 	def parse_buffer(self, size_bytes):
-		assert self.buffer
-		value = 0
-		for i in range(size_bytes):
-			byte = (self.buffer[i] & 0xff) << (i * 8)
-			value |= byte
+		value = int.from_bytes(self.buffer[:size_bytes], 'little')
 		self.buffer = self.buffer[size_bytes:]
 		return value
 	
@@ -117,9 +113,9 @@ class Sample:
 
 	def dump(self):
 		print("Sample:")
-		print( "  mac_src:                 %02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", self.mac_src.to_bytes(6, 'big')))
-		print(f"  ip_src:                  {socket.inet_ntoa(self.ip_src.to_bytes(4, 'little'))}")
-		print(f"  ip_dst:                  {socket.inet_ntoa(self.ip_dst.to_bytes(4, 'little'))}")
+		print( "  mac_src:                 %02x:%02x:%02x:%02x:%02x:%02x" % struct.unpack("BBBBBB", self.mac_src.to_bytes(6, 'little')))
+		print(f"  ip_src:                  {socket.inet_ntoa(self.ip_src.to_bytes(4, 'big'))}")
+		print(f"  ip_dst:                  {socket.inet_ntoa(self.ip_dst.to_bytes(4, 'big'))}")
 		print(f"  ip_proto:                {self.ip_proto}")
 		print(f"  port_src:                {self.port_src}")
 		print(f"  port_dst:                {self.port_dst}")
@@ -248,7 +244,7 @@ class KitNet():
 		processed_stats = np.concatenate((self.stats_mac_ip_src[hdr_mac_ip_src],
 										  self.stats_ip_src[hdr_ip_src],
 										  self.stats_ip[hdr_ip],
-										  self.stats_five_t[hdr_five_t]))	
+										  self.stats_five_t[hdr_five_t]))
 
 		# Convert any existing NaNs to 0.
 		processed_stats[np.isnan(processed_stats)] = 0
@@ -277,7 +273,7 @@ def serve(kitnet, host=DEFAULT_HOST, port=DEFAULT_PORT, verbose=False):
 		msg, client = server_socket.recvfrom(MAX_MESSAGE_SIZE)
 		sample = Sample(msg)
 		rmse = kitnet.ProcessSample(sample)
-		server_socket.sendto(struct.pack("f", rmse), client)
+		server_socket.sendto(struct.pack("f", rmse), client) 
 
 def handle_sigterm(*args):
 	print('Done.')
