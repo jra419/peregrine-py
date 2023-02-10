@@ -18,3 +18,4 @@ autogen
 __pycache__
 env
 *.tsv
+cache/**/*.txt
