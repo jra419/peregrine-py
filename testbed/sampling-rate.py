@@ -21,8 +21,8 @@ PLOT_PPS          = f'{TEST_RESULTS_DIR}/sampling-rate-pps.png'
 PLOT_BPS          = f'{TEST_RESULTS_DIR}/sampling-rate-bps.png'
 VERBOSE           = False
 
-MIN_SAMPLING_RATE = 1024
-MAX_SAMPLING_RATE = 65536
+MIN_SAMPLING_RATE_DEFAULT = 1024
+MAX_SAMPLING_RATE_DEFAULT = 65536
 
 def get_data():
 	data_files_pattern = f'{TEST_RESULTS_DIR}/*.csv'
@@ -44,7 +44,7 @@ def get_data():
 					continue
 
 				line = line.rstrip().split(',')
-				assert len(line) == 4
+				assert len(line) == 5
 
 				sampling_rate = int(line[0])
 				tg_rate       = float(line[1])
@@ -61,7 +61,8 @@ def get_sampling_rate_range(data):
 	max_sampling_rate = -1
 	
 	for attack in data.keys():
-		for sampling_rate,_,_,_ in data[attack]:
+		for values in data[attack]:
+			sampling_rate = values[0]
 			min_sampling_rate = min(min_sampling_rate, sampling_rate)
 			max_sampling_rate = max(max_sampling_rate, sampling_rate)
 	
@@ -80,8 +81,8 @@ def gen_plot(data, plot_file, pps=False, bps=False):
 
 	if bps:
 		vmin = 0
-		vmax = int(100e6)
-		units = 'Gbps'
+		vmax = int(100e9)
+		units = 'bps'
 	else:
 		vmin = 0
 		vmax = int(50e6)
@@ -154,7 +155,7 @@ def plot():
 
 	print('Done')
 
-def run_benchmarks(target_attack=None):
+def run_benchmarks(min_sampling_rate, max_sampling_rate, target_attack=None):
 	testbed = util.get_testbed_cfg()
 	tests   = util.get_tests()
 
@@ -187,10 +188,10 @@ def run_benchmarks(target_attack=None):
 		verbose=VERBOSE
 	)
 
-	sampling_rate = MIN_SAMPLING_RATE
+	sampling_rate = min_sampling_rate
 	results = {}
 
-	while sampling_rate <= MAX_SAMPLING_RATE:
+	while sampling_rate <= max_sampling_rate:
 		print(f'[*] installing for {sampling_rate} sampling...')
 
 		tofino.modify_sampling_rate(sampling_rate)
@@ -239,13 +240,27 @@ if __name__ == '__main__':
 		help='Skip plot'
 	)
 
+	parser.add_argument('--min-sampling',
+		type=int,
+		required=False,
+		default=MIN_SAMPLING_RATE_DEFAULT,
+		help=f'Min sampling rate value (default={MIN_SAMPLING_RATE_DEFAULT})'
+	)
+
+	parser.add_argument('--max-sampling',
+		type=int,
+		required=False,
+		default=MAX_SAMPLING_RATE_DEFAULT,
+		help=f'Max sampling rate value (default={MAX_SAMPLING_RATE_DEFAULT})'
+	)
+
 	args = parser.parse_args()
 
 	if not os.path.exists(TEST_RESULTS_DIR):
 		os.makedirs(TEST_RESULTS_DIR)
 
 	if not args.skip_bench:
-		run_benchmarks(args.attack)
+		run_benchmarks(args.min_sampling, args.max_sampling, args.attack)
 
 	if not args.skip_plot:
 		plot()
