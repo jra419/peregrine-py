@@ -2,172 +2,172 @@
 	"tests": [
 		{
 			"attack": "active-wiretap",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/active-wiretap-exec.pcap",
+			"pcap": "active-wiretap-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/active-wiretap-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/active-wiretap-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/active-wiretap-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/active-wiretap-m-10-train-stats.txt"
+				"fm": "active-wiretap-m-10-fm.txt",
+				"el": "active-wiretap-m-10-el.txt",
+				"ol": "active-wiretap-m-10-ol.txt",
+				"ts": "active-wiretap-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "arp-mitm",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/arp-mitm-exec.pcap",
+			"pcap": "arp-mitm-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/arp-mitm-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/arp-mitm-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/arp-mitm-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/arp-mitm-m-10-train-stats.txt"
+				"fm": "arp-mitm-m-10-fm.txt",
+				"el": "arp-mitm-m-10-el.txt",
+				"ol": "arp-mitm-m-10-ol.txt",
+				"ts": "arp-mitm-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "botnet",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/botnet-exec.pcap",
+			"pcap": "botnet-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/botnet-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/botnet-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/botnet-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/botnet-m-10-train-stats.txt"
+				"fm": "botnet-m-10-fm.txt",
+				"el": "botnet-m-10-el.txt",
+				"ol": "botnet-m-10-ol.txt",
+				"ts": "botnet-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "ddos-hoic",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/ddos-hoic-exec.pcap",
+			"pcap": "ddos-hoic-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/ddos-hoic-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/ddos-hoic-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/ddos-hoic-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/ddos-hoic-m-10-train-stats.txt"
+				"fm": "ddos-hoic-m-10-fm.txt",
+				"el": "ddos-hoic-m-10-el.txt",
+				"ol": "ddos-hoic-m-10-ol.txt",
+				"ts": "ddos-hoic-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "ddos-loit",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/ddos-loit-exec.pcap",
+			"pcap": "ddos-loit-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/ddos-loit-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/ddos-loit-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/ddos-loit-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/ddos-loit-m-10-train-stats.txt"
+				"fm": "ddos-loit-m-10-fm.txt",
+				"el": "ddos-loit-m-10-el.txt",
+				"ol": "ddos-loit-m-10-ol.txt",
+				"ts": "ddos-loit-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "dos-goldeneye",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/dos-goldeneye-exec.pcap",
+			"pcap": "dos-goldeneye-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/dos-goldeneye-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/dos-goldeneye-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/dos-goldeneye-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/dos-goldeneye-m-10-train-stats.txt"
+				"fm": "dos-goldeneye-m-10-fm.txt",
+				"el": "dos-goldeneye-m-10-el.txt",
+				"ol": "dos-goldeneye-m-10-ol.txt",
+				"ts": "dos-goldeneye-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "dos-hulk",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/dos-hulk-exec.pcap",
+			"pcap": "dos-hulk-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/dos-hulk-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/dos-hulk-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/dos-hulk-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/dos-hulk-m-10-train-stats.txt"
+				"fm": "dos-hulk-m-10-fm.txt",
+				"el": "dos-hulk-m-10-el.txt",
+				"ol": "dos-hulk-m-10-ol.txt",
+				"ts": "dos-hulk-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "dos-slowhttptest",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/dos-slowhttptest-exec.pcap",
+			"pcap": "dos-slowhttptest-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/dos-slowhttptest-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/dos-slowhttptest-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/dos-slowhttptest-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/dos-slowhttptest-m-10-train-stats.txt"
+				"fm": "dos-slowhttptest-m-10-fm.txt",
+				"el": "dos-slowhttptest-m-10-el.txt",
+				"ol": "dos-slowhttptest-m-10-ol.txt",
+				"ts": "dos-slowhttptest-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "dos-slowloris",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/dos-slowloris-exec.pcap",
+			"pcap": "dos-slowloris-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/dos-slowloris-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/dos-slowloris-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/dos-slowloris-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/dos-slowloris-m-10-train-stats.txt"
+				"fm": "dos-slowloris-m-10-fm.txt",
+				"el": "dos-slowloris-m-10-el.txt",
+				"ol": "dos-slowloris-m-10-ol.txt",
+				"ts": "dos-slowloris-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "dos-syn",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/dos-syn-exec.pcap",
+			"pcap": "dos-syn-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/dos-syn-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/dos-syn-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/dos-syn-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/dos-syn-m-10-train-stats.txt"
+				"fm": "dos-syn-m-10-fm.txt",
+				"el": "dos-syn-m-10-el.txt",
+				"ol": "dos-syn-m-10-ol.txt",
+				"ts": "dos-syn-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "fuzzing",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/fuzzing-exec.pcap",
+			"pcap": "fuzzing-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/fuzzing-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/fuzzing-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/fuzzing-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/fuzzing-m-10-train-stats.txt"
+				"fm": "fuzzing-m-10-fm.txt",
+				"el": "fuzzing-m-10-el.txt",
+				"ol": "fuzzing-m-10-ol.txt",
+				"ts": "fuzzing-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "os-scan",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/os-scan-exec.pcap",
+			"pcap": "os-scan-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/os-scan-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/os-scan-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/os-scan-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/os-scan-m-10-train-stats.txt"
+				"fm": "os-scan-m-10-fm.txt",
+				"el": "os-scan-m-10-el.txt",
+				"ol": "os-scan-m-10-ol.txt",
+				"ts": "os-scan-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "port-scan",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/port-scan-exec.pcap",
+			"pcap": "port-scan-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/port-scan-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/port-scan-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/port-scan-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/port-scan-m-10-train-stats.txt"
+				"fm": "port-scan-m-10-fm.txt",
+				"el": "port-scan-m-10-el.txt",
+				"ol": "port-scan-m-10-ol.txt",
+				"ts": "port-scan-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "ssdp-flood",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/ssdp-flood-exec.pcap",
+			"pcap": "ssdp-flood-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/ssdp-flood-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/ssdp-flood-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/ssdp-flood-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/ssdp-flood-m-10-train-stats.txt"
+				"fm": "ssdp-flood-m-10-fm.txt",
+				"el": "ssdp-flood-m-10-el.txt",
+				"ol": "ssdp-flood-m-10-ol.txt",
+				"ts": "ssdp-flood-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "ssh-bruteforce",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/ssh-bruteforce-exec.pcap",
+			"pcap": "ssh-bruteforce-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/ssh-bruteforce-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/ssh-bruteforce-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/ssh-bruteforce-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/ssh-bruteforce-m-10-train-stats.txt"
+				"fm": "ssh-bruteforce-m-10-fm.txt",
+				"el": "ssh-bruteforce-m-10-el.txt",
+				"ol": "ssh-bruteforce-m-10-ol.txt",
+				"ts": "ssh-bruteforce-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "ssl-renegotiation",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/ssl-renegotiation-exec.pcap",
+			"pcap": "ssl-renegotiation-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/ssl-renegotiation-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/ssl-renegotiation-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/ssl-renegotiation-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/ssl-renegotiation-m-10-train-stats.txt"
+				"fm": "ssl-renegotiation-m-10-fm.txt",
+				"el": "ssl-renegotiation-m-10-el.txt",
+				"ol": "ssl-renegotiation-m-10-ol.txt",
+				"ts": "ssl-renegotiation-m-10-train-stats.txt"
 			}
 		},
 		{
 			"attack": "video-injection",
-			"pcap": "/home/fcp/bench/pcaps/peregrine/curated/video-injection-exec.pcap",
+			"pcap": "video-injection-exec.pcap",
 			"models": {
-				"fm": "/home/fcp/models/peregrine/video-injection-m-10-fm.txt",
-				"el": "/home/fcp/models/peregrine/video-injection-m-10-el.txt",
-				"ol": "/home/fcp/models/peregrine/video-injection-m-10-ol.txt",
-				"ts": "/home/fcp/models/peregrine/video-injection-m-10-train-stats.txt"
+				"fm": "video-injection-m-10-fm.txt",
+				"el": "video-injection-m-10-el.txt",
+				"ol": "video-injection-m-10-ol.txt",
+				"ts": "video-injection-m-10-train-stats.txt"
 			}
 		}
 	]

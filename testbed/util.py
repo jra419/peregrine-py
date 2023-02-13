@@ -113,14 +113,18 @@ def run(tofino, dispatcher, kitnet, tg_dpdk, testbed, test, rate):
 
 		tofino.start()
 		dispatcher.start(testbed['dispatcher']['listen-iface'])
+
 		kitnet.start(
-			test['models']['fm'],
-			test['models']['el'],
-			test['models']['ol'],
-			test['models']['ts'],
+			f"{testbed['plugins']['kitnet']['models']}/{test['models']['fm']}",
+			f"{testbed['plugins']['kitnet']['models']}/{test['models']['el']}",
+			f"{testbed['plugins']['kitnet']['models']}/{test['models']['ol']}",
+			f"{testbed['plugins']['kitnet']['models']}/{test['models']['ts']}",
 		)
 
-		tg_dpdk.run(test['pcap'], testbed['tg']['tx-dpdk-port'], rate, DURATION_SECONDS)
+		pcap    = f"{testbed['tg']['pcaps']}/{test['pcap']}"
+		tx_port = testbed['tg']['tx-dpdk-port']
+
+		tg_dpdk.run(pcap, tx_port, rate, DURATION_SECONDS)
 
 		tofino.stop()
 		dispatcher.stop()

@@ -15,13 +15,8 @@ VERBOSE    = False
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(prog='bench')
-	parser.add_argument('attack',
-		type=str,
-		help='Target attack')
-	
-	parser.add_argument('sampling',
-		type=int,
-		help='Target sampling rate')
+	parser.add_argument('attack', type=str, help='Target attack')	
+	parser.add_argument('sampling', type=int, help='Target sampling rate')
 
 	args = parser.parse_args()
 

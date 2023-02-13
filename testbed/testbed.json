@@ -6,7 +6,8 @@
 	"tg": {
 		"hostname": "gsd+e291427x1300275",
 		"tx-kernel-iface": "enp175s0f1",
-		"tx-dpdk-port": "1"
+		"tx-dpdk-port": "1",
+		"pcaps": "/home/fcp/bench/pcaps/peregrine/curated/"
 	},
 	"dispatcher": {
 		"hostname": "gsd+e291427x1300274",
@@ -16,7 +17,8 @@
 	"plugins": {
 		"kitnet": {
 			"hostname": "gsd+e291427x1300274",
-			"peregrine-path": "/home/fcp/peregrine"
+			"peregrine-path": "/home/fcp/peregrine",
+			"models": "/home/fcp/models/peregrine/"
 		}
 	}
 }
