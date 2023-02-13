@@ -1,3 +1,6 @@
 [submodule "whisper"]
 	path = plugins/whisper
 	url = https://github.com/fchamicapereira/peregrine-plugin-whisper
+[submodule "kitsune"]
+	path = sota/kitsune
+	url = https://github.com/jra419/Kitsune-py.git
