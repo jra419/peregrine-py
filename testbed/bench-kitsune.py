@@ -40,10 +40,17 @@ def run_benchmarks(attacks, pcaps_dir):
 		with open(csv, 'r') as f:
 			lines = f.readlines()
 			assert len(lines) >= 1
+			
 			line = lines[0].rstrip('\n')
-			training_time, execution_time, pps = line.split(',')
-			results.append((name, training_time, execution_time, pps))
-			print(f"      rate={util.compact(int(pps))}pps")
+			line = line.split(',')
+
+			training_time  = line[0]
+			execution_time = line[1]
+			pps            = int(line[2])
+			bps            = int(line[3])
+
+			results.append((name, training_time, execution_time, pps, bps))
+			print(f"      rate {util.compact(int(pps))}pps {util.compact(int(bps))}bps")
 
 		os.remove(csv)
 	
@@ -51,6 +58,7 @@ def run_benchmarks(attacks, pcaps_dir):
 
 def dump_stats():
 	ppss = []
+	bpss = []
 
 	with open(TEST_RESULTS, 'r') as f:
 		lines = f.readlines()
@@ -59,27 +67,42 @@ def dump_stats():
 			line = line.split(',')
 
 			if not line: continue
-			assert len(line) == 4
+			assert len(line) == 5
 
-			name = line[0]
-			training_time = line[1]
+			name           = line[0]
+			training_time  = line[1]
 			execution_time = line[2]
-			pps = int(line[3])
+			pps            = int(line[3])
+			bps            = int(line[4])
+
 			ppss.append(pps)
+			bpss.append(bps)
 
 	with open(TEST_STATS, 'w') as f:
 		if len(ppss) == 1:
-			m     = ppss[0]
-			mean  = ppss[0]
-			stdev = 0
-			M     = ppss[0]
-		else:
-			m     = min(ppss)
-			mean  = statistics.mean(ppss)
-			stdev = statistics.stdev(ppss)
-			M     = max(ppss)
+			pps_m     = ppss[0]
+			pps_mean  = int(ppss[0])
+			pps_stdev = int(0)
+			pps_M     = ppss[0]
 
-		f.write(f"{m},{mean},{stdev},{M}\n")	
+			bps_m     = bpss[0]
+			bps_mean  = int(bpss[0])
+			bps_stdev = int(0)
+			bps_M     = bpss[0]
+		else:
+			pps_m     = min(ppss)
+			pps_mean  = int(statistics.mean(ppss))
+			pps_stdev = int(statistics.stdev(ppss))
+			pps_M     = max(ppss)
+
+			bps_m     = min(bpss)
+			bps_mean  = int(statistics.mean(bpss))
+			bps_stdev = int(statistics.stdev(bpss))
+			bps_M     = max(bpss)
+
+		f.write(f"{pps_m},{pps_mean},{pps_stdev},{pps_M},")
+		f.write(f"{bps_m},{bps_mean},{bps_stdev},{bps_M}")
+		f.write(f"\n")
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Benchmark Kitsune')
@@ -105,7 +128,7 @@ if __name__ == '__main__':
 		results = run_benchmarks(target_tests, args.pcaps_dir)
 
 		with open(TEST_RESULTS, 'w') as f:
-			for attack, training_time, execution_time, pps in results:
-				f.write(f'{attack},{training_time},{execution_time},{pps}\n')
+			for attack, training_time, execution_time, pps, bps in results:
+				f.write(f'{attack},{training_time},{execution_time},{pps},{bps}\n')
 	
 	dump_stats()
