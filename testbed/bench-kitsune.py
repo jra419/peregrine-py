@@ -25,7 +25,7 @@ def run_benchmarks(attacks, pcaps_dir):
 		pcap_basename = pcap.split('/')[-1].split('.pcap')[0]
 		csv           = f"{TEST_RESULTS_DIR}/{pcap_basename}.csv"
 
-		print(f"attack={name}")
+		print(f"[*] attack={name}")
 
 		cmd = [ KITSUNE_BENCH_SCRIPT, pcap ]
 
@@ -43,6 +43,7 @@ def run_benchmarks(attacks, pcaps_dir):
 			line = lines[0].rstrip('\n')
 			training_time, execution_time, pps = line.split(',')
 			results.append((name, training_time, execution_time, pps))
+			print(f"      rate={util.compact(int(pps))}pps")
 
 		os.remove(csv)
 	
