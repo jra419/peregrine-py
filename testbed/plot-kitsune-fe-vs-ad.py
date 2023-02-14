@@ -56,7 +56,7 @@ def gen_plot(data):
 	dt_fes_labels = [ f'{v:.1f}%' if v > 5 else '' for v in dt_fes_perc ]
 	dt_ads_labels = [ f'{v:.1f}%' if v > 5 else '' for v in dt_ads_perc ]
 
-	p = ax.barh(y_pos, dt_fes_perc, color=COLORS[0], label='Feature Extraction')
+	p = ax.barh(y_pos, dt_fes_perc, color=COLORS[0], label='Feature Computation')
 	ax.bar_label(p, labels=dt_fes_labels, label_type='center')
 
 	p = ax.barh(y_pos, dt_ads_perc, color=COLORS[1], label='Anomaly Detection', left=dt_fes_perc)
