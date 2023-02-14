@@ -16,7 +16,8 @@ TEST_RESULTS_DIR   = f'{SCRIPT_DIR}/results'
 PLOT               = f'{TEST_RESULTS_DIR}/component-bench.png'
 KITSUNE_DATA       = f'{TEST_RESULTS_DIR}/kitsune/stats.csv'
 PEREGRINE_DATA_DIR = f'{TEST_RESULTS_DIR}/sampling-rate/'
-SAMPLING_RATE      = 65536
+REPORT_BYTES       = 162 # Bytes: 14B ethernet + 148B report header
+TOFINO_RATE        = 6.4e12 # bps
 
 COLORS = [
 	'#2171B5',
@@ -43,10 +44,13 @@ def get_kitsune_data():
 
 		assert len(line) == 8
 
-		bps_m     = int(line[4])
-		bps_avg   = int(line[5])
-		bps_stdev = int(line[6])
-		bps_M     = int(line[7])
+		pps_avg   = int(line[1])
+		pps_stdev = int(line[2])
+
+		# To compare Kitsune and Peregrine in a fair way,
+		# let's assume the same packet sizes.
+		bps_avg   = pps_avg * REPORT_BYTES * 8
+		bps_stdev = pps_stdev * REPORT_BYTES * 8
 		
 		return bps_avg, bps_stdev
 
@@ -76,9 +80,7 @@ def get_peregrine_ad_data():
 				rx_rate_pps   = int(line[3])
 				tx_rate_pps   = int(line[4])
 
-				if sampling_rate == SAMPLING_RATE:
-					bps = rx_rate_bps
-					break
+				bps = max(bps, tx_rate_pps * REPORT_BYTES * 8)
 
 			assert bps >= 0
 			data.append(bps)
@@ -145,10 +147,13 @@ def gen_plot(peregrine_pp_data,	peregrine_fc_data, peregrine_ad_data, kitsune_da
 	plt.savefig(PLOT, bbox_inches='tight')
 
 def plot():
-	peregrine_pp_data = (1e12, 0)
-	peregrine_fc_data = (1e12, 0)
+	peregrine_pp_data = (TOFINO_RATE, 0)
+	peregrine_fc_data = (TOFINO_RATE, 0)
 	peregrine_ad_data = get_peregrine_ad_data()
 	kitsune_data      = get_kitsune_data()
+
+	print('Peregrine:', peregrine_ad_data)
+	print('Kitsune:  ', kitsune_data)
 	
 	gen_plot(
 		peregrine_pp_data,
