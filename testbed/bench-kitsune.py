@@ -72,12 +72,13 @@ def dump_stats():
 
 			if not line: continue
 
-			training_time  = line[0]
-			execution_time = line[1]
-			dt_fe          = line[2]
-			dt_ad          = line[3]
-			pps            = int(line[4])
-			bps            = int(line[5])
+			attack         = line[0]
+			training_time  = line[1]
+			execution_time = line[2]
+			dt_fe          = line[3]
+			dt_ad          = line[4]
+			pps            = int(line[5])
+			bps            = int(line[6])
 
 			ppss.append(pps)
 			bpss.append(bps)
