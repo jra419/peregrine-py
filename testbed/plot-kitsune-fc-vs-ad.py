@@ -59,7 +59,7 @@ def gen_plot(data):
 	p = ax.barh(y_pos, dt_fes_perc, color=COLORS[0], label='Feature Computation')
 	ax.bar_label(p, labels=dt_fes_labels, label_type='center')
 
-	p = ax.barh(y_pos, dt_ads_perc, color=COLORS[1], label='Anomaly Detection', left=dt_fes_perc)
+	p = ax.barh(y_pos, dt_ads_perc, color=COLORS[1], label='ML-based Detection', left=dt_fes_perc)
 	ax.bar_label(p, labels=dt_ads_labels, label_type='center')
 
 	ax.set_yticks(y_pos, labels=attacks)
