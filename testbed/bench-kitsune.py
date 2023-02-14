@@ -46,15 +46,19 @@ def run_benchmarks(attacks, pcaps_dir):
 
 			training_time  = line[0]
 			execution_time = line[1]
-			pps            = int(line[2])
-			bps            = int(line[3])
+			dt_fe          = line[2]
+			dt_ad          = line[3]
+			pps            = int(line[4])
+			bps            = int(line[5])
 
-			results.append((name, training_time, execution_time, pps, bps))
+			results.append((name, training_time, dt_fe, dt_ad, execution_time, pps, bps))
 			print(f"      rate {util.compact(int(pps))}pps {util.compact(int(bps))}bps")
 
 		os.remove(csv)
 	
-	return results
+	with open(TEST_RESULTS, 'w') as f:
+		for result in results:
+			f.write(f'{",".join(str(r) for r in result)}\n')
 
 def dump_stats():
 	ppss = []
@@ -67,13 +71,13 @@ def dump_stats():
 			line = line.split(',')
 
 			if not line: continue
-			assert len(line) == 5
 
-			name           = line[0]
-			training_time  = line[1]
-			execution_time = line[2]
-			pps            = int(line[3])
-			bps            = int(line[4])
+			training_time  = line[0]
+			execution_time = line[1]
+			dt_fe          = line[2]
+			dt_ad          = line[3]
+			pps            = int(line[4])
+			bps            = int(line[5])
 
 			ppss.append(pps)
 			bpss.append(bps)
@@ -125,10 +129,6 @@ if __name__ == '__main__':
 		os.makedirs(TEST_RESULTS_DIR)
 	
 	if not args.skip_bench:
-		results = run_benchmarks(target_tests, args.pcaps_dir)
-
-		with open(TEST_RESULTS, 'w') as f:
-			for attack, training_time, execution_time, pps, bps in results:
-				f.write(f'{attack},{training_time},{execution_time},{pps},{bps}\n')
+		run_benchmarks(target_tests, args.pcaps_dir)
 	
 	dump_stats()
