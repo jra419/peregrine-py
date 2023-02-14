@@ -22,7 +22,7 @@ TOFINO_RATE        = 6.4e12 # bps
 COLORS = [
 	'#2171B5',
 	'#2171B5',
-	'#2171B5',
+	'#50938a',
 	'#74C476',
 ]
 
@@ -89,7 +89,7 @@ def get_peregrine_ad_data():
 		return statistics.mean(data), statistics.stdev(data)
 	return data[0], 0
 
-def gen_plot(peregrine_pp_data,	peregrine_fc_data, peregrine_ad_data, kitsune_data):
+def gen_plot_log(peregrine_pp_data, peregrine_fc_data, peregrine_ad_data, kitsune_data):
 	fig, ax = plt.subplots()
 
 	x = np.arange(4)
@@ -115,7 +115,7 @@ def gen_plot(peregrine_pp_data,	peregrine_fc_data, peregrine_ad_data, kitsune_da
 		'Kitsune',
 	]
 
-	patterns = [ None, "/" , "x" , None  ]
+	patterns = [ None, "/" , None , None  ]
 	# patterns = [ None for _ in range(len(bps)) ]
 	ax.bar(x, bps,
 		yerr=bps_err,
@@ -146,6 +146,113 @@ def gen_plot(peregrine_pp_data,	peregrine_fc_data, peregrine_ad_data, kitsune_da
 	# plt.show()
 	plt.savefig(PLOT, bbox_inches='tight')
 
+def gen_plot_linear(peregrine_pp_data, peregrine_fc_data, peregrine_ad_data, kitsune_data):
+	fig, (top_ax,bottom_ax) = plt.subplots(2, 1, sharex=True)
+
+	bottom_sep = 3e6
+	top_sep    = 100e9
+
+	x = np.arange(4)
+	
+	bps = [
+		peregrine_pp_data[0],
+		peregrine_fc_data[0],
+		peregrine_ad_data[0],
+		kitsune_data[0]
+	]
+
+	bottom_bps = [ v if v <= bottom_sep else top_sep for v in bps ]
+	top_bps    = [ v if v >= top_sep else 0 for v in bps ]
+	assert not [ v for v in bps if bottom_sep < v < top_sep ]
+
+	bps_err = [
+		peregrine_pp_data[1],
+		peregrine_fc_data[1],
+		peregrine_ad_data[1],
+		kitsune_data[1]
+	]
+
+	bottom_bps_err = [ err if v <= bottom_sep else 0 for v,err in zip(bps,bps_err) ]
+	top_bps_err    = [ err if v >= top_sep else 0 for v,err in zip(bps,bps_err) ]
+	assert not [ err for v,err in zip(bps,bps_err) if bottom_sep < v < top_sep ]
+
+	bar_labels = [
+		'Peregrine Packet Processing',
+		'Peregrine Feature Computation',
+		'Peregrine ML-based Detection',
+		'Kitsune',
+	]
+
+	bottom_ax.spines['top'].set_visible(False)
+	top_ax.spines['bottom'].set_visible(False)
+
+	top_ax.tick_params(axis='x', which='both', bottom=False)
+
+	bottom_ax.set_ylim(0, bottom_sep)
+	top_ax.set_ylim(top_sep, 10e12)
+
+	bottom_ax.set_yticks([ 0, 1e6, 2e6, 3e6 ])
+	top_ax.set_yticks([ 1e12, 5e12, 10e12 ])
+
+	bottom_ax.set_yticklabels([ '0', '1Mbps', '2Mbps', '3Mbps' ])
+	top_ax.set_yticklabels([ '1Tbps', '5Tbps', '10Tbps' ])
+
+	patterns = [ None, "/" , None , None  ]
+
+	print('bottom', bottom_bps)
+	print('top', top_bps)
+
+	bottom_bars = bottom_ax.bar(x, bottom_bps,
+		yerr=bottom_bps_err,
+		width=0.5,
+		label=bar_labels,
+		color=COLORS,
+		edgecolor='black',
+		hatch=patterns
+	)
+
+	top_bars = top_ax.bar(x, top_bps,
+		yerr=top_bps_err,
+		width=0.5,
+		label=bar_labels,
+		color=COLORS,
+		edgecolor='black',
+		hatch=patterns
+	)
+	
+	bottom_ax.set_ylabel('Throughput')
+	bottom_ax.yaxis.set_label_coords(-0.13,1.1)
+
+	plt.tick_params(
+		axis='x',
+		which='both',
+		bottom=False,
+		top=False,
+		labelbottom=False
+	)
+
+	d = .015  
+	kwargs = dict(transform=top_ax.transAxes, color='k', clip_on=False)
+	top_ax.plot((-d, +d), (-d, +d), **kwargs)      
+	top_ax.plot((1 - d, 1 + d), (-d, +d), **kwargs)
+	kwargs.update(transform=bottom_ax.transAxes)  
+	bottom_ax.plot((-d, +d), (1 - d, 1 + d), **kwargs)  
+	bottom_ax.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)
+
+	for b1, b2 in zip(top_bars, bottom_bars):
+		posx = b2.get_x() + b2.get_width()/2.
+		if b2.get_height() > bottom_sep:
+			bottom_ax.plot((posx-3*d, posx+3*d), (1 - d, 1 + d), color='k', clip_on=False,
+				transform=bottom_ax.get_xaxis_transform())
+		if b1.get_height() > top_sep:
+			top_ax.plot((posx-3*d, posx+3*d), (- d, + d), color='k', clip_on=False,
+				transform=top_ax.get_xaxis_transform())
+
+	bottom_ax.legend(bbox_to_anchor=(0.44, 2.2))
+
+	# plt.show()
+	plt.savefig(PLOT, bbox_inches='tight')
+
 def plot():
 	peregrine_pp_data = (TOFINO_RATE, 0)
 	peregrine_fc_data = (TOFINO_RATE, 0)
@@ -155,7 +262,14 @@ def plot():
 	print('Peregrine:', peregrine_ad_data)
 	print('Kitsune:  ', kitsune_data)
 	
-	gen_plot(
+	# gen_plot_log(
+	# 	peregrine_pp_data,
+	# 	peregrine_fc_data,
+	# 	peregrine_ad_data,
+	# 	kitsune_data
+	# )
+
+	gen_plot_linear(
 		peregrine_pp_data,
 		peregrine_fc_data,
 		peregrine_ad_data,
