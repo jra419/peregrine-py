@@ -41,13 +41,13 @@
 			}
 		},
 		{
-			"attack": "ddos-loit",
-			"pcap": "ddos-loit-exec.pcap",
+			"attack": "ddos-loic",
+			"pcap": "ddos-loic-exec.pcap",
 			"models": {
-				"fm": "ddos-loit-m-10-fm.txt",
-				"el": "ddos-loit-m-10-el.txt",
-				"ol": "ddos-loit-m-10-ol.txt",
-				"ts": "ddos-loit-m-10-train-stats.txt"
+				"fm": "ddos-loic-m-10-fm.txt",
+				"el": "ddos-loic-m-10-el.txt",
+				"ol": "ddos-loic-m-10-ol.txt",
+				"ts": "ddos-loic-m-10-train-stats.txt"
 			}
 		},
 		{

@@ -51,7 +51,7 @@ def run_benchmarks(attacks, pcaps_dir):
 			pps            = int(line[4])
 			bps            = int(line[5])
 
-			results.append((name, training_time, dt_fe, dt_ad, execution_time, pps, bps))
+			results.append((name, training_time, execution_time,dt_fe, dt_ad, pps, bps))
 			print(f"      rate {util.compact(int(pps))}pps {util.compact(int(bps))}bps")
 
 		os.remove(csv)

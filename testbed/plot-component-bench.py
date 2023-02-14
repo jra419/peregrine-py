@@ -14,6 +14,7 @@ SCRIPT_DIR       = os.path.dirname(os.path.realpath(__file__))
 TEST_RESULTS_DIR = f'{SCRIPT_DIR}/results'
 PLOT             = f'{TEST_RESULTS_DIR}/component-bench.png'
 KITSUNE_DATA     = f'{TEST_RESULTS_DIR}/kitsune/stats.csv'
+PEREGRINE_DATA   = f'{TEST_RESULTS_DIR}/sampling-rate/stats.csv'
 
 def get_kitsune_data():
 	with open(KITSUNE_DATA, 'r') as f:
@@ -24,14 +25,14 @@ def get_kitsune_data():
 		line = line.rstrip('\n')
 		line = line.split(',')
 
-		assert len(line) == 4
+		assert len(line) == 8
 
-		m     = int(line[0])
-		avg   = int(line[1])
-		stdev = int(line[2])
-		M     = int(line[3])
+		bps_m     = int(line[4])
+		bps_avg   = int(line[5])
+		bps_stdev = int(line[6])
+		bps_M     = int(line[7])
 		
-		return avg, stdev
+		return bps_avg, bps_stdev
 
 def gen_plot(data, plot_file, pps=False, bps=False):
 	assert pps or bps
@@ -106,7 +107,9 @@ def gen_plot(data, plot_file, pps=False, bps=False):
 	# plt.show()
 
 def plot():
-	peregrine_dataplane_data = ()
+	peregrine_pp_data = (1e12, 0)
+	peregrine_fc_data = (1e12, 0)
+	peregrine_ad_data = (1e12, 0)
 	kitsune_data = get_kitsune_data()
 	print(kitsune_data)
 
