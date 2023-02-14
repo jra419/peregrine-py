@@ -5,16 +5,32 @@ import hosts
 import os
 import argparse
 import glob
+import statistics
 
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 
-SCRIPT_DIR       = os.path.dirname(os.path.realpath(__file__))
-TEST_RESULTS_DIR = f'{SCRIPT_DIR}/results'
-PLOT             = f'{TEST_RESULTS_DIR}/component-bench.png'
-KITSUNE_DATA     = f'{TEST_RESULTS_DIR}/kitsune/stats.csv'
-PEREGRINE_DATA   = f'{TEST_RESULTS_DIR}/sampling-rate/stats.csv'
+SCRIPT_DIR         = os.path.dirname(os.path.realpath(__file__))
+TEST_RESULTS_DIR   = f'{SCRIPT_DIR}/results'
+PLOT               = f'{TEST_RESULTS_DIR}/component-bench.png'
+KITSUNE_DATA       = f'{TEST_RESULTS_DIR}/kitsune/stats.csv'
+PEREGRINE_DATA_DIR = f'{TEST_RESULTS_DIR}/sampling-rate/'
+SAMPLING_RATE      = 65536
+
+COLORS = [
+	'#2171B5',
+	'#2171B5',
+	'#2171B5',
+	'#74C476',
+]
+
+# COLORS = [
+# 	'#ff7b59',
+# 	'#ffb66c',
+# 	'#50938a',
+# 	'#74C476',
+# ]
 
 def get_kitsune_data():
 	with open(KITSUNE_DATA, 'r') as f:
@@ -34,96 +50,112 @@ def get_kitsune_data():
 		
 		return bps_avg, bps_stdev
 
-def gen_plot(data, plot_file, pps=False, bps=False):
-	assert pps or bps
-
-	fig = plt.figure()
-	plt.clf()
-
-	ax = fig.add_subplot(111)
-	ax.set_aspect(1)
-
-	min_sampling_rate, max_sampling_rate = get_sampling_rate_range(data)
-
-	if bps:
-		vmin = 0
-		vmax = int(100e9)
-		units = 'bps'
-	else:
-		vmin = 0
-		vmax = int(50e6)
-		units = 'pps'
+def get_peregrine_ad_data():
+	data_files_pattern = f'{PEREGRINE_DATA_DIR}/*.csv'
+	data_files = glob.glob(data_files_pattern)
 	
-	attacks        = sorted(list(data.keys()))
-	sampling_rates = []
-	matrix         = [ [] for _ in range(len(attacks)) ]
+	data = []
 
-	for i, attack in enumerate(attacks):
-		attack_vector = data[attack]
-		attack_vector.sort(key=lambda v: v[0])
+	for data_file in data_files:
+		basename = os.path.basename(data_file)
+		attack   = os.path.splitext(basename)[0]
 
-		for sampling_rate,tg_rate,rx_rate_bps,rx_rate_pps,tx_rate_pps in attack_vector:
-			if pps: matrix[i].append(rx_rate_pps)
-			else:   matrix[i].append(rx_rate_bps)
+		with open(data_file, 'r') as f:
+			lines = f.readlines()
+			bps = -1
+			for line in lines:
+				if line and line[0] == '#':
+					continue
 
-			sampling_rates = list(set(sampling_rates + [ sampling_rate ]))
+				line = line.rstrip().split(',')
+				assert len(line) == 5
 
-	# print('Sampling rates', sampling_rates)
-	# print('Attacks', attacks)
+				sampling_rate = int(line[0])
+				tg_rate       = float(line[1])
+				rx_rate_bps   = int(line[2])
+				rx_rate_pps   = int(line[3])
+				tx_rate_pps   = int(line[4])
 
-	# colormap = plt.cm.jet
-	colormap = mpl.colormaps['RdYlGn']
+				if sampling_rate == SAMPLING_RATE:
+					bps = rx_rate_bps
+					break
+
+			assert bps >= 0
+			data.append(bps)
+
+	if len(data) > 1:
+		return statistics.mean(data), statistics.stdev(data)
+	return data[0], 0
+
+def gen_plot(peregrine_pp_data,	peregrine_fc_data, peregrine_ad_data, kitsune_data):
+	fig, ax = plt.subplots()
+
+	x = np.arange(4)
 	
-	nodes  = [ 0.0, 0.5, 1.0 ]
-	colors = [ 'crimson', 'yellow', 'mediumseagreen' ]
-	cmap   = mpl.colors.LinearSegmentedColormap.from_list("mycmap", list(zip(nodes, colors)))
-	cmap.set_under('black')
+	bps = [
+		peregrine_pp_data[0],
+		peregrine_fc_data[0],
+		peregrine_ad_data[0],
+		kitsune_data[0]
+	]
 
-	res = ax.imshow(matrix, cmap=cmap, vmin=vmin, vmax=vmax, interpolation='nearest', aspect='auto')
+	bps_err = [
+		peregrine_pp_data[1],
+		peregrine_fc_data[1],
+		peregrine_ad_data[1],
+		kitsune_data[1]
+	]
 
-	for x in range(len(matrix)):
-		for y in range(len(matrix[x])):
-			v = matrix[x][y]
-			ax.annotate(f'{util.compact(v, no_decimal=True)}{units}', xy=(y,x), va='center', ha='center')
+	bar_labels = [
+		'Peregrine Packet Processing',
+		'Peregrine Feature Computation',
+		'Peregrine ML-based Detection',
+		'Kitsune',
+	]
 
-	n_ticks = 6
-	ticks = []
-	labels = []
-	for i in range(n_ticks):
-		tick = int(vmax*i/(n_ticks-1))
-		ticks.append(tick)
-		labels.append(f'{util.compact(tick, no_decimal=True)}{units}')
+	patterns = [ None, "/" , "x" , None  ]
+	# patterns = [ None for _ in range(len(bps)) ]
+	ax.bar(x, bps,
+		yerr=bps_err,
+		width=0.5,
+		label=bar_labels,
+		color=COLORS,
+		edgecolor='black',
+		hatch=patterns
+	)
+	
+	ax.set_yscale('log')
+	ax.set_ylabel('Throughput')
+	ax.set_yticks([ 1, 1e3, 1e6, 1e9, 1e12 ])
+	ax.set_yticklabels([ '', 'Kbps', 'Mbps', 'Gbps', 'Tbps' ])
 
-	cbar = fig.colorbar(res, ticks=ticks)
-	cbar.ax.set_yticklabels(labels)
+	ax.yaxis.set_label_coords(-0.12, 0.6)
 
-	width  = len(sampling_rates)
-	height = len(attacks)
+	plt.tick_params(
+		axis='x',
+		which='both',
+		bottom=False,
+		top=False,
+		labelbottom=False
+	)
 
-	plt.xticks(range(width), sampling_rates)
-	plt.yticks(range(height), attacks)
+	ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.2), ncols=2)
 
-	plt.savefig(plot_file, bbox_inches='tight')
 	# plt.show()
+	plt.savefig(PLOT, bbox_inches='tight')
 
 def plot():
 	peregrine_pp_data = (1e12, 0)
 	peregrine_fc_data = (1e12, 0)
-	peregrine_ad_data = (1e12, 0)
-	kitsune_data = get_kitsune_data()
-	print(kitsune_data)
-
-	# if not data:
-	# 	print('No data.')
-	# 	exit(0)
-
-	# print('Generating pps plot')
-	# gen_plot(data, PLOT_PPS, pps=True)
-
-	# print('Generating bps plot')
-	# gen_plot(data, PLOT_BPS, bps=True)
-
-	print('Done')
+	peregrine_ad_data = get_peregrine_ad_data()
+	kitsune_data      = get_kitsune_data()
+	
+	gen_plot(
+		peregrine_pp_data,
+		peregrine_fc_data,
+		peregrine_ad_data,
+		kitsune_data
+	)
 
 if __name__ == '__main__':
 	plot()
