@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 SCRIPT_DIR       = os.path.dirname(os.path.realpath(__file__))
 TEST_RESULTS_DIR = f'{SCRIPT_DIR}/results'
-PLOT             = f'{TEST_RESULTS_DIR}/kitsune-fe-vs-ad.png'
+PLOT             = f'{TEST_RESULTS_DIR}/kitsune-fc-vs-ad.png'
 KITSUNE_DATA     = f'{TEST_RESULTS_DIR}/kitsune/results.csv'
 
 COLORS = [
