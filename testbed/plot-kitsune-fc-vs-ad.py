@@ -45,7 +45,7 @@ def gen_plot(data):
 	fig, ax = plt.subplots()
 
 	y_pos = np.arange(len(attacks))
-	
+
 	dt_fes_perc = [ data[attack][0] for attack in attacks ]
 	dt_ads_perc = [ data[attack][1] for attack in attacks ]
 

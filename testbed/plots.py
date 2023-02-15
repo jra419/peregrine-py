@@ -23,11 +23,30 @@ mpl.rcParams.update(
 	}
 )
 
+# attacks = [
+# 	'active-wiretap',
+# 	'arp-mitm',
+# 	'dos-syn',
+# 	'fuzzing',
+# 	'os-scan',
+# 	'ssdp-flood',
+# 	'ssl-renegotiation',
+# 	'video-injection',
+# 	'botnet',
+# 	'ddos-hoic',
+# 	'ddos-loic',
+# 	'dos-goldeneye',
+# 	'dos-hulk',
+# 	'dos-slowhttptest',
+# 	'dos-slowloris',
+# 	'port-scan',
+# 	'ssh-bruteforce',
+# ]
+
+# We only show some of the attacks
 attacks = [
 	'active-wiretap',
 	'arp-mitm',
-	'dos-syn',
-	'fuzzing',
 	'os-scan',
 	'ssdp-flood',
 	'ssl-renegotiation',
@@ -36,11 +55,8 @@ attacks = [
 	'ddos-hoic',
 	'ddos-loic',
 	'dos-goldeneye',
-	'dos-hulk',
-	'dos-slowhttptest',
 	'dos-slowloris',
 	'port-scan',
-	'ssh-bruteforce',
 ]
 
 attacks_prettyfied = {
