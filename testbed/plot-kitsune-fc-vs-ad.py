@@ -53,10 +53,10 @@ def gen_plot(data):
 	dt_ads_labels = [ f'{v:.1f}\%' if v > 5 else '' for v in dt_ads_perc ]
 
 	p = ax.barh(y_pos, dt_fes_perc, color=COLORS[0], label='FC')
-	ax.bar_label(p, labels=dt_fes_labels, label_type='center')
+	ax.bar_label(p, labels=dt_fes_labels, label_type='center', fontsize=7)
 
 	p = ax.barh(y_pos, dt_ads_perc, color=COLORS[1], label='MD', left=dt_fes_perc)
-	ax.bar_label(p, labels=dt_ads_labels, label_type='center')
+	ax.bar_label(p, labels=dt_ads_labels, label_type='center', fontsize=7)
 
 	ax.set_yticks(y_pos)
 	ax.set_yticklabels([ attacks_prettyfied[a] for a in attacks ], rotation=25, ha='right')
