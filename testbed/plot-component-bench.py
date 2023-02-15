@@ -8,12 +8,11 @@ import glob
 import statistics
 
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+from plots import mpl,plt
 
 SCRIPT_DIR         = os.path.dirname(os.path.realpath(__file__))
 TEST_RESULTS_DIR   = f'{SCRIPT_DIR}/results'
-PLOT               = f'{TEST_RESULTS_DIR}/component-bench.png'
+PLOT               = f'{TEST_RESULTS_DIR}/component-bench.pdf'
 KITSUNE_DATA       = f'{TEST_RESULTS_DIR}/kitsune/stats.csv'
 PEREGRINE_DATA_DIR = f'{TEST_RESULTS_DIR}/sampling-rate/'
 REPORT_BYTES       = 162 # Bytes: 14B ethernet + 148B report header
@@ -25,13 +24,6 @@ COLORS = [
 	'#50938a',
 	'#74C476',
 ]
-
-# COLORS = [
-# 	'#ff7b59',
-# 	'#ffb66c',
-# 	'#50938a',
-# 	'#74C476',
-# ]
 
 def get_kitsune_data():
 	with open(KITSUNE_DATA, 'r') as f:
@@ -144,7 +136,7 @@ def gen_plot_log(peregrine_pp_data, peregrine_fc_data, peregrine_ad_data, kitsun
 	ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.2), ncols=2)
 
 	# plt.show()
-	plt.savefig(PLOT, bbox_inches='tight')
+	plt.savefig(PLOT, bbox_inches='tight', pad_inches=0, format="pdf")
 
 def gen_plot_linear(peregrine_pp_data, peregrine_fc_data, peregrine_ad_data, kitsune_data):
 	fig, (top_ax,bottom_ax) = plt.subplots(2, 1, sharex=True)
@@ -177,9 +169,9 @@ def gen_plot_linear(peregrine_pp_data, peregrine_fc_data, peregrine_ad_data, kit
 	assert not [ err for v,err in zip(bps,bps_err) if bottom_sep < v < top_sep ]
 
 	bar_labels = [
-		'Peregrine Packet Processing',
-		'Peregrine Feature Computation',
-		'Peregrine ML-based Detection',
+		'Peregrine PP',
+		'Peregrine FC',
+		'Peregrine MD',
 		'Kitsune',
 	]
 
@@ -221,7 +213,8 @@ def gen_plot_linear(peregrine_pp_data, peregrine_fc_data, peregrine_ad_data, kit
 	)
 	
 	bottom_ax.set_ylabel('Throughput')
-	bottom_ax.yaxis.set_label_coords(-0.13,1.1)
+	# bottom_ax.yaxis.set_label_coords(-0.13,1.1)
+	bottom_ax.yaxis.set_label_coords(-0.21,1.15)
 
 	plt.tick_params(
 		axis='x',
@@ -248,10 +241,11 @@ def gen_plot_linear(peregrine_pp_data, peregrine_fc_data, peregrine_ad_data, kit
 			top_ax.plot((posx-3*d, posx+3*d), (- d, + d), color='k', clip_on=False,
 				transform=top_ax.get_xaxis_transform())
 
-	bottom_ax.legend(bbox_to_anchor=(0.44, 2.2))
+	# bottom_ax.legend(bbox_to_anchor=(0.5, 2.2))
+	bottom_ax.legend(loc="upper left", bbox_to_anchor=(-0.2, 2.8), ncols=2)
 
 	# plt.show()
-	plt.savefig(PLOT, bbox_inches='tight')
+	plt.savefig(PLOT, bbox_inches='tight', pad_inches=0, format="pdf")
 
 def plot():
 	peregrine_pp_data = (TOFINO_RATE, 0)

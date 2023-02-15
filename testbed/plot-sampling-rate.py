@@ -8,12 +8,11 @@ import glob
 import statistics
 
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+from plots import mpl,plt
 
 SCRIPT_DIR        = os.path.dirname(os.path.realpath(__file__))
 TEST_RESULTS_DIR  = f'{SCRIPT_DIR}/results'
-PLOT              = f'{TEST_RESULTS_DIR}/sampling-rate-summary.png'
+PLOT              = f'{TEST_RESULTS_DIR}/sampling-rate-summary.pdf'
 SAMPLING_RATE_DIR = f'{TEST_RESULTS_DIR}/sampling-rate/'
 
 COLOR = '#2171B5'
@@ -84,7 +83,7 @@ def gen_plot(data):
 	ax.set_yticks( [ 0, 20, 40, 60, 80, 100 ])
 	
 	# plt.show()
-	plt.savefig(PLOT, bbox_inches='tight')
+	plt.savefig(PLOT, bbox_inches='tight', pad_inches=0, format="pdf")
 
 def plot():
 	data = get_data()

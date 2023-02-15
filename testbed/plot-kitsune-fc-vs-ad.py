@@ -7,12 +7,11 @@ import argparse
 import glob
 
 import numpy as np
-import matplotlib as mpl
-import matplotlib.pyplot as plt
+from plots import mpl,plt,attacks,attacks_prettyfied
 
 SCRIPT_DIR       = os.path.dirname(os.path.realpath(__file__))
 TEST_RESULTS_DIR = f'{SCRIPT_DIR}/results'
-PLOT             = f'{TEST_RESULTS_DIR}/kitsune-fc-vs-ad.png'
+PLOT             = f'{TEST_RESULTS_DIR}/kitsune-fc-vs-ad.pdf'
 KITSUNE_DATA     = f'{TEST_RESULTS_DIR}/kitsune/results.csv'
 
 COLORS = [
@@ -43,9 +42,6 @@ def get_data():
 	return data
 
 def gen_plot(data):
-	attacks = list(data.keys())
-
-	plt.rcdefaults()
 	fig, ax = plt.subplots()
 
 	y_pos = np.arange(len(attacks))
@@ -53,25 +49,27 @@ def gen_plot(data):
 	dt_fes_perc = [ data[attack][0] for attack in attacks ]
 	dt_ads_perc = [ data[attack][1] for attack in attacks ]
 
-	dt_fes_labels = [ f'{v:.1f}%' if v > 5 else '' for v in dt_fes_perc ]
-	dt_ads_labels = [ f'{v:.1f}%' if v > 5 else '' for v in dt_ads_perc ]
+	dt_fes_labels = [ f'{v:.1f}\%' if v > 5 else '' for v in dt_fes_perc ]
+	dt_ads_labels = [ f'{v:.1f}\%' if v > 5 else '' for v in dt_ads_perc ]
 
-	p = ax.barh(y_pos, dt_fes_perc, color=COLORS[0], label='Feature Computation')
+	p = ax.barh(y_pos, dt_fes_perc, color=COLORS[0], label='FC')
 	ax.bar_label(p, labels=dt_fes_labels, label_type='center')
 
-	p = ax.barh(y_pos, dt_ads_perc, color=COLORS[1], label='ML-based Detection', left=dt_fes_perc)
+	p = ax.barh(y_pos, dt_ads_perc, color=COLORS[1], label='MD', left=dt_fes_perc)
 	ax.bar_label(p, labels=dt_ads_labels, label_type='center')
 
-	ax.set_yticks(y_pos, labels=attacks)
+	ax.set_yticks(y_pos)
+	ax.set_yticklabels([ attacks_prettyfied[a] for a in attacks ], rotation=25, ha='right')
+	# ax.set_yticklabels(attacks)
 	ax.invert_yaxis()
 
-	ax.set_xlabel('Total processing time (%)')
+	ax.set_xlabel('Total processing time (\%)')
 	ax.set_xlim([0, 100])
 
-	ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.1), ncols=2)
+	ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.15), ncols=2)
 
-	plt.savefig(PLOT, bbox_inches='tight')
 	# plt.show()
+	plt.savefig(PLOT, bbox_inches='tight', pad_inches=0, format="pdf")
 
 def plot():
 	data = get_data()
