@@ -20,7 +20,7 @@ TOFINO_RATE        = 6.4e12 # bps
 
 COLORS = [
 	'#2171B5',
-	'#2171B5',
+	'#033F72',
 	'#50938a',
 	'#74C476',
 ]
@@ -189,7 +189,8 @@ def gen_plot_linear(peregrine_pp_data, peregrine_fc_data, peregrine_ad_data, kit
 	bottom_ax.set_yticklabels([ '0', '1Mbps', '2Mbps', '3Mbps' ])
 	top_ax.set_yticklabels([ '1Tbps', '5Tbps', '10Tbps' ])
 
-	patterns = [ None, "/" , None , None  ]
+	# patterns = [ None, "/" , None , None  ]
+	patterns = [ None for _ in range(len(bps)) ]
 
 	print('bottom', bottom_bps)
 	print('top', top_bps)
@@ -199,7 +200,7 @@ def gen_plot_linear(peregrine_pp_data, peregrine_fc_data, peregrine_ad_data, kit
 		width=0.5,
 		label=bar_labels,
 		color=COLORS,
-		edgecolor='black',
+		edgecolor="none",
 		hatch=patterns
 	)
 
@@ -208,7 +209,7 @@ def gen_plot_linear(peregrine_pp_data, peregrine_fc_data, peregrine_ad_data, kit
 		width=0.5,
 		label=bar_labels,
 		color=COLORS,
-		edgecolor='black',
+		edgecolor="none",
 		hatch=patterns
 	)
 	
