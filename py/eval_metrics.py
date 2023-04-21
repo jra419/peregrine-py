@@ -3,22 +3,23 @@ from pathlib import Path
 from datetime import datetime
 import pandas as pd
 import numpy as np
-from matplotlib import colors
-from matplotlib import pyplot as plt
 from sklearn import metrics
 
 ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
 
 
 def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, train_skip,
-                 fm_grace, ad_grace, exec_phase, attack, sampling, max_ae, total_time):
+                 fm_grace, ad_grace, exec_phase, attack, sampling, max_ae, train_exact_ratio,
+                 total_time):
     outdir = str(Path(__file__).parents[0]) + '/eval/' + exec_phase
     if not os.path.exists(str(Path(__file__).parents[0]) + '/eval'):
         os.makedirs(outdir, exist_ok=True)
     outpath_peregrine = os.path.join(outdir, attack + '-m-' + str(max_ae) + '-'
-                                     + str(sampling) + '-rmse-' + ts_datetime + '.csv')
+                                     + str(sampling) + '-r-' + str(train_exact_ratio)
+                                     + '-rmse-' + ts_datetime + '.csv')
     outpath_cur_stats_global = os.path.join(outdir, attack + '-m-' + str(max_ae) + '-'
-                                            + str(sampling) + '-stats-' + ts_datetime + '.csv')
+                                            + str(sampling) + '-r-' + str(train_exact_ratio)
+                                            + '-stats-' + ts_datetime + '.csv')
 
     # Collect the global stats and save to a csv.
     df_cur_stats_global = pd.DataFrame(cur_stats_global)
@@ -116,7 +117,7 @@ def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, train_s
 
     # Write the eval to a txt.
     f = open(outdir + '/' + attack + '-m-' + str(max_ae) + '-' + str(sampling)
-             + '-metrics-' + ts_datetime + '.txt', 'a+')
+             + '-r-' + str(train_exact_ratio) + '-metrics-' + ts_datetime + '.txt', 'a+')
     f.write('Time elapsed: ' + str(total_time) + '\n')
     f.write('Threshold: ' + str(threshold) + '\n')
     f.write('TP: ' + str(TP) + '\n')

@@ -36,7 +36,6 @@ threshold = 0
 
 def pkt_callback(pkt):
     if PeregrineHdr in pkt:
-        print("YAY")
         global cur_stats
         global pkt_header
         global pkt_cnt_global
@@ -78,7 +77,8 @@ def pkt_callback(pkt):
 
 def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
                  exec_phase, fm_grace, ad_grace, max_ae, feature_map,
-                 ensemble_layer, output_layer, train_stats, attack, exact_stats):
+                 ensemble_layer, output_layer, train_stats, attack, exact_stats,
+                 train_exact_ratio):
     global cur_stats
     global threshold
     global rmse_list
@@ -101,13 +101,16 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
         bind_layers(Ether, PeregrineHdr, type=0x0800)
         bind_layers(PeregrineHdr, IP)
 
-    if feature_map is not None and ensemble_layer is not None and output_layer is not None and train_stats is not None:
+    if feature_map is not None and \
+            ensemble_layer is not None and \
+            output_layer is not None and \
+            train_stats is not None:
         train_skip = True
 
     # Build Peregrine.
     peregrine = Peregrine(max_ae, fm_grace, ad_grace, learning_rate, hidden_ratio, lambdas,
                           exec_phase, feature_map, ensemble_layer, output_layer, train_stats,
-                          attack, train_skip)
+                          attack, train_skip, train_exact_ratio)
 
     # Initialize the feature extraction and calculation of statistics class.
     peregrine_stats = StatsCalc(pcap_path, sampling_rate, fm_grace+ad_grace, train_skip)
@@ -128,7 +131,10 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
                 print('Processed packets: ', fm_grace + ad_grace + pkt_cnt_global)
 
         # Training phase.
-        if len(rmse_list) < fm_grace + ad_grace and not train_skip:
+        if len(rmse_list) < (train_exact_ratio * (fm_grace + ad_grace)) and not train_skip:
+            peregrine_stats.feature_extract()
+            cur_stats = peregrine_stats.process_exact('training')
+        elif len(rmse_list) < fm_grace + ad_grace and not train_skip:
             peregrine_stats.feature_extract()
             cur_stats = peregrine_stats.process('training')
 

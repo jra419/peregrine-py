@@ -21,7 +21,7 @@ class KitNET:
     # feature indices to be assigned to the i-th autoencoder in the ensemble. For example, [[2,5,3],[4,0,1],[6,7]]
     def __init__(self, n, max_autoencoder_size=10, fm_grace_period=None, ad_grace_period=10000,
                  learning_rate=0.1, hidden_ratio=0.75, feature_map=None, ensemble_layer=None,
-                 output_layer=None, attack=''):
+                 output_layer=None, attack='', train_exact_ratio=0):
         # Parameters:
         self.AD_grace_period = ad_grace_period
         if fm_grace_period is None:
@@ -42,6 +42,7 @@ class KitNET:
         self.ensembleLayer = []
         self.outputLayer = None
         self.attack = attack
+        self.train_exact_ratio = train_exact_ratio
 
         # Check if the feature map, ensemble layer and output layer are provided as input.
         # If so, skip the training phase.
@@ -105,11 +106,14 @@ class KitNET:
                 if not os.path.exists(str(Path(__file__).parents[0]) + '/models'):
                     os.mkdir(outdir)
 
-                with open(outdir + '/' + self.attack + '-m-' + str(self.m) + '-fm' + '.txt', 'wb') as f_fm:
+                with open(outdir + '/' + self.attack + '-m-' + str(self.m)
+                          + '-r-' + str(self.train_exact_ratio) + '-fm' + '.txt', 'wb') as f_fm:
                     pickle.dump(self.v, f_fm)
-                with open(outdir + '/' + self.attack + '-m-' + str(self.m) + '-el' + '.txt', 'wb') as f_el:
+                with open(outdir + '/' + self.attack + '-m-' + str(self.m)
+                          + '-r-' + str(self.train_exact_ratio) + '-el' + '.txt', 'wb') as f_el:
                     pickle.dump(self.ensembleLayer, f_el)
-                with open(outdir + '/' + self.attack + '-m-' + str(self.m) + '-ol' + '.txt', 'wb') as f_ol:
+                with open(outdir + '/' + self.attack + '-m-' + str(self.m)
+                          + '-r-' + str(self.train_exact_ratio) + '-ol' + '.txt', 'wb') as f_ol:
                     pickle.dump(self.outputLayer, f_ol)
             self.n_trained += 1
             return output

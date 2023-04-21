@@ -9,12 +9,13 @@ class Peregrine:
     def __init__(self, max_autoencoder_size=10, fm_grace_period=None, ad_grace_period=10000,
                  learning_rate=0.1, hidden_ratio=0.75, lambdas=4, exec_phase='dp',
                  feature_map=None, ensemble_layer=None, output_layer=None, train_stats=None,
-                 attack='', train_skip=False):
+                 attack='', train_skip=False, train_exact_ratio=0):
 
         # Initialize KitNET.
         self.AnomDetector = KitNET(80, max_autoencoder_size, fm_grace_period,
                                    ad_grace_period, learning_rate, hidden_ratio,
-                                   feature_map, ensemble_layer, output_layer, attack)
+                                   feature_map, ensemble_layer, output_layer,
+                                   attack, train_exact_ratio)
 
         self.decay_to_pos = {0: 0, 1: 0, 2: 1, 3: 2, 4: 3,
                              8192: 1, 16384: 2, 24576: 3}
@@ -25,6 +26,7 @@ class Peregrine:
         self.ad_grace = ad_grace_period
         self.attack = attack
         self.m = max_autoencoder_size
+        self.train_exact_ratio = train_exact_ratio
 
         # If train_skip is true, import the previously generated models.
         if train_skip:
@@ -91,7 +93,9 @@ class Peregrine:
         if not os.path.exists(str(Path(__file__).parents[0]) + '/KitNET/models'):
             os.mkdir(outdir)
 
-        with open(outdir + '/' + self.attack + '-m-' + str(self.m) + '-train-stats' + '.txt', 'wb') as f_stats:
+        with open(outdir + '/' + self.attack + '-m-' + str(self.m)
+                  + '-r-' + str(self.train_exact_ratio) + '-train-stats'
+                  + '.txt', 'wb') as f_stats:
             pickle.dump(train_stats, f_stats)
 
     def reset_stats(self):

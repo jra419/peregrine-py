@@ -692,6 +692,7 @@ if __name__ == "__main__":
     argparser.add_argument('--fm_grace', type=int, default=100000, help='FM grace period.')
     argparser.add_argument('--ad_grace', type=int, default=900000, help='AD grace period.')
     argparser.add_argument('--max_ae', type=int, default=10, help='KitNET: m value')
+    argparser.add_argument('--train_exact_ratio', type=float, default=0, help='Ratio of exact stats in the overall training phase.')
     argparser.add_argument('--train_stats', type=str, default=None, help='Prev. trained stats struct path')
     argparser.add_argument('--fm_model', type=str, default=None, help='Prev. trained FM model path')
     argparser.add_argument('--el_model', type=str, default=None, help='Prev. trained EL path')
@@ -734,7 +735,7 @@ if __name__ == "__main__":
     pipeline_out = pkt_pipeline(cur_eg_veth, args.trace, args.labels, args.sampling,
                                 args.exec_phase, args.fm_grace, args.ad_grace, args.max_ae,
                                 args.fm_model, args.el_model, args.ol_model, args.train_stats,
-                                args.attack, args.exact_stats)
+                                args.attack, args.exact_stats, args.train_exact_ratio)
 
     stop = time.time()
 
@@ -748,7 +749,7 @@ if __name__ == "__main__":
     # threshold [3], train_skip flag [4].
     eval_metrics(pipeline_out[0], pipeline_out[1], pipeline_out[2], pipeline_out[3],
                  pipeline_out[4], args.fm_grace, args.ad_grace, args.exec_phase,
-                 args.attack, args.sampling, args.max_ae, total_time)
+                 args.attack, args.sampling, args.max_ae, args.train_exact_ratio, total_time)
 
     # exit (bug workaround)
     logger.info("Exiting!")
