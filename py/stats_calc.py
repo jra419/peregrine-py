@@ -21,7 +21,7 @@ class StatsCalc:
     def __init__(self, file_path, sampling_rate, train_pkts, train_skip):
         self.file_path = file_path              # Path of the trace file / csv.
         self.df_csv = None                      # Dataframe for the trace csv.
-        self.cur_pkt = None                     # Stats of the packet being processed.
+        self.cur_pkt = pd.DataFrame()           # Stats of the packet being processed.
         self.sampling_rate = sampling_rate      # Sampling rate during the execution phase.
         self.train_pkts = train_pkts            # Number of packets in the training phase.
         if train_skip:

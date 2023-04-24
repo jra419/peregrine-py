@@ -1,6 +1,7 @@
 import os
 from KitNET.KitNET import KitNET
 import numpy as np
+import pandas as pd
 import pickle
 from pathlib import Path
 
@@ -27,6 +28,9 @@ class Peregrine:
         self.attack = attack
         self.m = max_autoencoder_size
         self.train_exact_ratio = train_exact_ratio
+
+        self.df_train_stats_list = []
+        self.df_exec_stats_list = []
 
         # If train_skip is true, import the previously generated models.
         if train_skip:
@@ -79,11 +83,16 @@ class Peregrine:
         # Convert any existing NaNs to 0.
         processed_stats[np.isnan(processed_stats)] = 0
 
+        if len(self.df_train_stats_list) < self.fm_grace + self.ad_grace:
+            self.df_train_stats_list.append(processed_stats)
+        else:
+            self.df_exec_stats_list.append(processed_stats)
+
+
         # Run KitNET with the current statistics.
         return self.AnomDetector.process(processed_stats)
 
-    def save_stats(self):
-
+    def save_train_stats(self):
         train_stats = [self.stats_mac_ip_src,
                        self.stats_ip_src,
                        self.stats_ip,
@@ -97,6 +106,27 @@ class Peregrine:
                   + '-r-' + str(self.train_exact_ratio) + '-train-stats'
                   + '.txt', 'wb') as f_stats:
             pickle.dump(train_stats, f_stats)
+
+        for i in range(0, len(self.df_train_stats_list), 50000):
+            self.df_train_stats_list[i:i + 50000]
+            df_train_stats = pd.DataFrame(self.df_train_stats_list[i:i + 50000])
+            df_train_stats.to_pickle(
+                f'{outdir}/{self.attack}-m-{self.m}-r-'
+                f'{self.train_exact_ratio}-train-full-{int(i/50000)}.pkl'
+            )
+
+    def save_exec_stats(self):
+        outdir = str(Path(__file__).parents[0]) + '/KitNET/models'
+        if not os.path.exists(str(Path(__file__).parents[0]) + '/KitNET/models'):
+            os.mkdir(outdir)
+
+        for i in range(0, len(self.df_exec_stats_list), 50000):
+            self.df_exec_stats_list[i:i + 50000]
+            df_exec_stats = pd.DataFrame(self.df_exec_stats_list[i:i + 50000])
+            df_exec_stats.to_pickle(
+                f'{outdir}/{self.attack}-m-{self.m}-r-'
+                f'{self.train_exact_ratio}-exec-full-{int(i/50000)}.pkl'
+            )
 
     def reset_stats(self):
         print('Reset stats')

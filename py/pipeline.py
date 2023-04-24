@@ -182,11 +182,12 @@ def pkt_pipeline(cur_eg_veth, pcap_path, trace_labels_path, sampling_rate,
             # Also, save the stored stat values.
             if not train_skip and len(rmse_list) == fm_grace + ad_grace:
                 threshold = max(rmse_list, key=float)
-                peregrine.save_stats()
+                peregrine.save_train_stats()
                 print('Starting execution phase...')
 
             # Break when we reach the end of the trace file.
             elif fm_grace + ad_grace + pkt_cnt_global == trace_size:
+                peregrine.save_exec_stats()
                 break
         else:
             print('TIMEOUT.')
