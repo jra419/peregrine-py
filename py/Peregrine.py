@@ -92,6 +92,7 @@ class Peregrine:
         # Run KitNET with the current statistics.
         return self.AnomDetector.process(processed_stats)
 
+
     def save_train_stats(self):
         train_stats = [self.stats_mac_ip_src,
                        self.stats_ip_src,
@@ -114,6 +115,65 @@ class Peregrine:
                 f'{outdir}/{self.attack}-m-{self.m}-r-'
                 f'{self.train_exact_ratio}-train-full-{int(i/50000)}.pkl'
             )
+
+        outdir_params = f'{Path(__file__).parents[0]}/KitNET/models/spatial/{self.attack}'\
+                        f'-m-{self.m}-r-{self.train_exact_ratio}/params'
+        if not os.path.exists(outdir_params):
+            os.makedirs(outdir_params)
+        outdir_norms = f'{Path(__file__).parents[0]}/KitNET/models/spatial/{self.attack}'\
+                       f'-m-{self.m}-r-{self.train_exact_ratio}/norms'
+        if not os.path.exists(outdir_norms):
+            os.makedirs(outdir_norms)
+        outdir_maps = f'{Path(__file__).parents[0]}/KitNET/models/spatial/{self.attack}'\
+                      f'-m-{self.m}-r-{self.train_exact_ratio}/maps'
+        if not os.path.exists(outdir_maps):
+            os.makedirs(outdir_maps)
+
+        for i in range(len(self.AnomDetector.ensembleLayer)):
+            pd.DataFrame(self.AnomDetector.ensembleLayer[i].W).to_csv(
+                f'{outdir_params}/L{i}_W.csv', header=False, index=False
+            )
+            pd.DataFrame(self.AnomDetector.ensembleLayer[i].hbias).to_csv(
+                f'{outdir_params}/L{i}_B1.csv', header=False, index=False
+            )
+            pd.DataFrame(self.AnomDetector.ensembleLayer[i].vbias).to_csv(
+                f'{outdir_params}/L{i}_B2.csv', header=False, index=False
+            )
+            pd.DataFrame(self.AnomDetector.ensembleLayer[i].norm_min).to_csv(
+                f'{outdir_norms}/L{i}_NORM_MIN.csv', header=False, index=False
+            )
+            pd.DataFrame(self.AnomDetector.ensembleLayer[i].norm_max).to_csv(
+                f'{outdir_norms}/L{i}_NORM_MAX.csv', header=False, index=False
+            )
+
+        pd.DataFrame(self.AnomDetector.outputLayer.W).to_csv(
+            f'{outdir_params}/OUTL_W.csv', header=False, index=False
+        )
+        pd.DataFrame(self.AnomDetector.outputLayer.hbias).to_csv(
+            f'{outdir_params}/OUTL_B1.csv', header=False, index=False
+        )
+        pd.DataFrame(self.AnomDetector.outputLayer.vbias).to_csv(
+            f'{outdir_params}/OUTL_B2.csv', header=False, index=False
+        )
+        pd.DataFrame(self.AnomDetector.outputLayer.norm_min).to_csv(
+            f'{outdir_norms}/OUTL_NORM_MIN.csv', header=False, index=False
+        )
+        pd.DataFrame(self.AnomDetector.outputLayer.norm_max).to_csv(
+            f'{outdir_norms}/OUTL_NORM_MAX.csv', header=False, index=False
+        )
+
+        for i in range(len(self.AnomDetector.v)):
+            pd.DataFrame(self.AnomDetector.v[i]).T.to_csv(
+                f'{outdir_maps}/L{i}_MAP.csv', header=False, index=False
+            )
+            pd.DataFrame([len(self.AnomDetector.v[i]),
+                          int(np.ceil(len(self.AnomDetector.v[i])*0.75))]).T.to_csv(
+                f'{outdir_maps}/L{i}_NEURONS.csv', header=False, index=False
+            )
+
+        pd.DataFrame([len(self.AnomDetector.v)]).T.to_csv(
+            f'{outdir_maps}/N_LAYERS.csv', header=False, index=False
+        )
 
     def save_exec_stats(self):
         outdir = str(Path(__file__).parents[0]) + '/KitNET/models'
