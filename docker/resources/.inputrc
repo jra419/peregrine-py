@@ -1,0 +1,11 @@
+$include /etc/inputrc
+
+set editing-mode vi
+$if mode=vi
+set show-mode-in-prompt on
+set vi-ins-mode-string "+ "
+set vi-cmd-mode-string ": "
+set keymap vi-insert
+# vi-insert mode
+Control-l: clear-screen
+$endif
