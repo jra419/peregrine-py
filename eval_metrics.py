@@ -8,27 +8,27 @@ from sklearn import metrics
 ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
 
 
-def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, train_skip,
-                 fm_grace, ad_grace, exec_phase, attack, sampling, max_ae, train_exact_ratio,
-                 total_time):
-    outdir = str(Path(__file__).parents[0]) + '/eval/' + exec_phase
+def eval_metrics(
+        rmse_list, cur_stats_global, peregrine_eval, threshold, train_skip, fm_grace,
+        ad_grace, attack, sampling, max_ae, train_exact_ratio, total_time):
+    outdir = str(Path(__file__).parents[0]) + '/eval'
     if not os.path.exists(str(Path(__file__).parents[0]) + '/eval'):
         os.makedirs(outdir, exist_ok=True)
-    outpath_peregrine = os.path.join(outdir, attack + '-m-' + str(max_ae) + '-'
-                                     + str(sampling) + '-r-' + str(train_exact_ratio)
-                                     + '-rmse-' + ts_datetime + '.csv')
-    outpath_cur_stats_global = os.path.join(outdir, attack + '-m-' + str(max_ae) + '-'
-                                            + str(sampling) + '-r-' + str(train_exact_ratio)
-                                            + '-stats-' + ts_datetime + '.csv')
+    outpath_peregrine = os.path.join(
+        outdir, attack + '-m-' + str(max_ae) + '-' + str(sampling) + '-r-'
+        + str(train_exact_ratio) + '-rmse-' + ts_datetime + '.csv')
+    outpath_cur_stats_global = os.path.join(
+        outdir, attack + '-m-' + str(max_ae) + '-' + str(sampling) + '-r-'
+        + str(train_exact_ratio) + '-stats-' + ts_datetime + '.csv')
 
     # Collect the global stats and save to a csv.
     df_cur_stats_global = pd.DataFrame(cur_stats_global)
     df_cur_stats_global.to_csv(outpath_cur_stats_global, index=None)
 
     # Collect the processed packets' RMSE, label, and save to a csv.
-    df_peregrine = pd.DataFrame(peregrine_eval,
-                                columns=['mac_src', 'ip_src', 'ip_dst', 'ip_type', 'src_proto',
-                                         'dst_proto', 'rmse', 'label'])
+    df_peregrine = pd.DataFrame(peregrine_eval, columns=[
+        'mac_src', 'ip_src', 'ip_dst', 'ip_type', 'src_proto',
+        'dst_proto', 'rmse', 'label'])
     df_peregrine.to_csv(outpath_peregrine, index=None)
 
     # Cut all training rows.
@@ -92,7 +92,8 @@ def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, train_s
     except ZeroDivisionError:
         f1_score = 0
 
-    roc_curve_fpr, roc_curve_tpr, roc_curve_thres = metrics.roc_curve(df_peregrine_cut.label, df_peregrine_cut.rmse)
+    roc_curve_fpr, roc_curve_tpr, roc_curve_thres = metrics.roc_curve(
+        df_peregrine_cut.label, df_peregrine_cut.rmse)
     roc_curve_fnr = 1 - roc_curve_tpr
 
     auc = metrics.roc_auc_score(df_peregrine_cut.label, df_peregrine_cut.rmse)
@@ -116,8 +117,9 @@ def eval_metrics(rmse_list, cur_stats_global, peregrine_eval, threshold, train_s
     print('EER sanity: ' + str(eer_sanity))
 
     # Write the eval to a txt.
-    f = open(outdir + '/' + attack + '-m-' + str(max_ae) + '-' + str(sampling)
-             + '-r-' + str(train_exact_ratio) + '-metrics-' + ts_datetime + '.txt', 'a+')
+    f = open(
+        outdir + '/' + attack + '-m-' + str(max_ae) + '-' + str(sampling)
+        + '-r-' + str(train_exact_ratio) + '-metrics-' + ts_datetime + '.txt', 'a+')
     f.write('Time elapsed: ' + str(total_time) + '\n')
     f.write('Threshold: ' + str(threshold) + '\n')
     f.write('TP: ' + str(TP) + '\n')

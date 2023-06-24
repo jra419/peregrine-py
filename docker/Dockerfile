@@ -27,7 +27,7 @@ RUN mkdir /home/docker/.ssh
 RUN chown -R docker:docker /home/docker/.ssh
 
 # Install some nice to have applications
-RUN sudo apt -y install \
+RUN sudo apt update && sudo apt -y install \
     man \
     build-essential \
     wget \
@@ -60,6 +60,9 @@ RUN sudo apt -y install \
     shellcheck \
     golang
 
+RUN echo "wireshark-common wireshark-common/install-setuid boolean true" | sudo debconf-set-selections && \
+    sudo apt install -y tshark
+
 RUN git clone --branch 0.23.1 https://github.com/junegunn/fzf.git && \
     cd fzf && \
     awk 'NR==110 {$0="	cp -f target/$(BINARY) /usr/bin/fzf"} 1' Makefile > Makefile.tmp && \
@@ -83,10 +86,13 @@ RUN tic -x /home/docker/alacritty.terminfo
 
 RUN echo "source ~/.profile" >> /home/docker/.bash_profile
 
+RUN pip3 install pyyaml
 RUN pip3 install scapy
 RUN pip3 install python-lsp-server
+RUN pip3 install python-lsp-ruff
 RUN pip3 install pandas
 RUN pip3 install scipy
+RUN pip3 install crcmod
 RUN pip3 install matplotlib
 RUN pip3 install scikit-learn
 RUN pip3 install virtualenv
@@ -98,7 +104,7 @@ RUN pip3 install -Iv grpcio-tools==1.48.1
 ENV CONDA_DIR /opt/conda
 RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda.sh && \
     sudo /bin/bash ~/miniconda.sh -b -p /opt/conda
-ENV PATH=$CONDA_DIR/bin:$PATH
+ENV PATH=$PATH:$CONDA_DIR/bin
 
 RUN conda init bash && \
     . /home/docker/.bashrc && \
