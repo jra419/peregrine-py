@@ -7,9 +7,8 @@ import logging
 import argparse
 import time
 import yaml
-import pipeline
-from pipeline import pkt_pipeline
-from eval_metrics import eval_metrics
+from eval_metrics import eval_kitnet
+from pipeline_kitnet import PipelineKitNET
 
 logger = None
 
@@ -29,11 +28,13 @@ if __name__ == "__main__":
     start = time.time()
 
     # Call function to run the packet processing pipeline.
-    # Encompasses both training phase + execution phase.
-    pipeline_out = pkt_pipeline(
-        conf['trace'], conf['labels'], conf['sampling'], conf['fm_grace'], conf['ad_grace'],
-        conf['max_ae'], conf['fm_model'], conf['el_model'], conf['ol_model'], conf['train_stats'],
-        conf['attack'], conf['exact_stats'], conf['train_exact_ratio'])
+    if args.plugin == 'kitnet':
+        pipeline = PipelineKitNET(
+            conf['trace'], conf['labels'], conf['sampling'], conf['fm_grace'], conf['ad_grace'],
+            conf['max_ae'], conf['fm_model'], conf['el_model'], conf['ol_model'],
+            conf['train_stats'], conf['attack'], conf['train_exact_ratio'])
+
+        pipeline.process()
 
     stop = time.time()
     total_time = stop - start
@@ -41,13 +42,12 @@ if __name__ == "__main__":
     print('Complete. Time elapsed: ', total_time)
     print('Threshold: ', pipeline.threshold)
 
-    # Call function to perform eval/csv, also based on kitsune's main.
-    # pipeline_out: rmse_list [0], cur_stats_global [1], peregrine_eval[2],
-    # threshold [3], train_skip flag [4].
-    eval_metrics(
-        pipeline_out[0], pipeline_out[1], pipeline_out[2], pipeline_out[3], pipeline_out[4],
-        conf['fm_grace'], conf['ad_grace'], conf['attack'], conf['sampling'], conf['max_ae'],
-        conf['train_exact_ratio'], total_time)
+    # Call function to perform eval/csv.
+    if args.plugin == 'kitnet':
+        eval_kitnet(
+            pipeline.rmse_list, pipeline.cur_stats_global, pipeline.peregrine_eval,
+            pipeline.threshold, pipeline.train_skip, conf['fm_grace'], conf['ad_grace'],
+            conf['attack'], conf['sampling'], conf['max_ae'], conf['train_exact_ratio'], total_time)
 
     # exit (bug workaround)
     logger.info("Exiting!")

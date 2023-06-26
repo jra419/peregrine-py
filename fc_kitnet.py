@@ -17,7 +17,7 @@ sqrt_mu = MathUnit(shift=-1, invert=False, scale=-7,
                    lookup=lookup_sqrt)
 
 
-class StatsCalc:
+class FCKitNET:
     def __init__(self, file_path, sampling_rate, train_pkts, train_skip):
         self.file_path = file_path              # Path of the trace file / csv.
         self.df_csv = None                      # Dataframe for the trace csv.
@@ -379,7 +379,7 @@ class StatsCalc:
             five_t_cov = 0
             five_t_pcc = 0
 
-        # Send to KitNet
+        # Send to KitNET.
         cur_stats = [self.decay_cntr,
                      int(mac_ip_src_pkt_cnt), int(mac_ip_src_mean), int(mac_ip_src_std_dev),
                      int(ip_src_pkt_cnt), int(ip_src_mean), int(ip_src_std_dev),
@@ -1399,6 +1399,7 @@ class StatsCalc:
                 [1, self.cur_pkt[0], pow(self.cur_pkt[0], 2), 0, 0, 0]
             self.stats_five_t[self.hash_five_t_0][4] = \
                 [1, self.cur_pkt[0], pow(self.cur_pkt[0], 2), 0, 0, 0]
+
     # Returns the nearest lower power of two.
     def pow_2(self, n):
         if n > 1:

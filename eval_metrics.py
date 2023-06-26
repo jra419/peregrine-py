@@ -7,8 +7,7 @@ from sklearn import metrics
 
 ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
 
-
-def eval_metrics(
+def eval_kitnet(
         rmse_list, cur_stats_global, peregrine_eval, threshold, train_skip, fm_grace,
         ad_grace, attack, sampling, max_ae, train_exact_ratio, total_time):
     outdir = str(Path(__file__).parents[0]) + '/eval'
