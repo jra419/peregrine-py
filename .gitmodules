@@ -1,3 +1,6 @@
 [submodule "plugins/KitNET"]
 	path = plugins/KitNET
 	url = https://github.com/jra419/peregrine-KitNET.git
+[submodule "plugins/ENIDrift"]
+	path = plugins/ENIDrift
+	url = https://github.com/jra419/peregrine-ENIDrift.git
