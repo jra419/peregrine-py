@@ -20,7 +20,6 @@ class PipelineKitNET:
             0: 0, 1: 0, 2: 1, 3: 2, 4: 3,
             8192: 1, 16384: 2, 24576: 3}
 
-        self.lambdas = LAMBDAS
         self.fm_grace = fm_grace
         self.ad_grace = ad_grace
         self.attack = attack
@@ -28,7 +27,7 @@ class PipelineKitNET:
         self.sampling_rate = sampling
         self.train_exact_ratio = train_exact_ratio
 
-        self.cur_stats_global = []
+        self.stats_global = []
         self.rmse_list = []
         self.peregrine_eval = []
 
@@ -106,19 +105,16 @@ class PipelineKitNET:
             # If any statistics were obtained, send them to the ML pipeline.
             # Execution phase: only proceed according to the sampling rate.
             if cur_stats != 0:
-                # print(self.fm_grace + self.ad_grace + self.pkt_cnt_global)
                 # Break when we reach the end of the trace file.
                 if self.fm_grace + self.ad_grace + self.pkt_cnt_global == self.trace_size:
                     break
                 if self.pkt_cnt_global % self.sampling_rate != 0:
-                # elif len(self.rmse_list) >= self.fm_grace + self.ad_grace and (self.fm_grace + \
-                #         self.ad_grace + self.pkt_cnt_global) % self.sampling_rate != 0:
                     continue
 
 
                 # Flatten the statistics' list of lists.
                 cur_stats = list(itertools.chain(*cur_stats))
-                self.cur_stats_global.append(cur_stats)
+                self.stats_global.append(cur_stats)
 
                 # Update the stored global stats with the latest packet stats.
                 input_stats = self.update_stats(cur_stats)
@@ -152,9 +148,6 @@ class PipelineKitNET:
                 print('TIMEOUT.')
                 break
 
-        return [self.rmse_list, self.cur_stats_global, self.peregrine_eval,
-                self.threshold, self.train_skip]
-
     def update_stats(self, cur_stats):
 
         cur_decay_pos = self.decay_to_pos[cur_stats[6]]
@@ -165,22 +158,22 @@ class PipelineKitNET:
         hdr_five_t = cur_stats[1] + cur_stats[2] + cur_stats[3] + cur_stats[4] + cur_stats[5]
 
         if hdr_mac_ip_src not in self.stats_mac_ip_src:
-            self.stats_mac_ip_src[hdr_mac_ip_src] = np.zeros(3 * self.lambdas)
+            self.stats_mac_ip_src[hdr_mac_ip_src] = np.zeros(3 * LAMBDAS)
         self.stats_mac_ip_src[hdr_mac_ip_src][(3*cur_decay_pos):(3*cur_decay_pos+3)] = \
             cur_stats[7:10]
 
         if hdr_ip_src not in self.stats_ip_src:
-            self.stats_ip_src[hdr_ip_src] = np.zeros(3 * self.lambdas)
+            self.stats_ip_src[hdr_ip_src] = np.zeros(3 * LAMBDAS)
         self.stats_ip_src[hdr_ip_src][(3*cur_decay_pos):(3*cur_decay_pos+3)] = \
             cur_stats[10:13]
 
         if hdr_ip not in self.stats_ip:
-            self.stats_ip[hdr_ip] = np.zeros(7 * self.lambdas)
+            self.stats_ip[hdr_ip] = np.zeros(7 * LAMBDAS)
         self.stats_ip[hdr_ip][(7*cur_decay_pos):(7*cur_decay_pos+7)] = \
             cur_stats[13:20]
 
         if hdr_five_t not in self.stats_five_t:
-            self.stats_five_t[hdr_five_t] = np.zeros(7 * self.lambdas)
+            self.stats_five_t[hdr_five_t] = np.zeros(7 * LAMBDAS)
         self.stats_five_t[hdr_five_t][(7*cur_decay_pos):(7*cur_decay_pos+7)] = \
             cur_stats[20:]
 
@@ -198,7 +191,6 @@ class PipelineKitNET:
         else:
             self.df_exec_stats_list.append(input_stats)
 
-        # Run KitNET with the current statistics.
         return input_stats
 
 
