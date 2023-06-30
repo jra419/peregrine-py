@@ -7,8 +7,10 @@ import logging
 import argparse
 import time
 import yaml
-from eval_metrics import eval_kitnet
+import numpy as np
+from eval_metrics import eval_kitnet, eval_enidrift
 from pipeline_kitnet import PipelineKitNET
+from pipeline_enidrift import PipelineENIDrift
 
 logger = None
 
@@ -33,21 +35,29 @@ if __name__ == "__main__":
             conf['trace'], conf['labels'], conf['sampling'], conf['fm_grace'], conf['ad_grace'],
             conf['max_ae'], conf['fm_model'], conf['el_model'], conf['ol_model'],
             conf['train_stats'], conf['attack'], conf['train_exact_ratio'])
+    elif args.plugin == 'enidrift':
+        pipeline = PipelineENIDrift(
+            conf['trace'], conf['labels'], conf['sampling'], conf['attack'], conf['hypr'],
+            conf['delta'], conf['incr'], conf['release_speed'])
 
-        pipeline.process()
+    pipeline.process()
 
     stop = time.time()
     total_time = stop - start
 
     print('Complete. Time elapsed: ', total_time)
-    print('Threshold: ', pipeline.threshold)
 
     # Call function to perform eval/csv.
     if args.plugin == 'kitnet':
+        print('Threshold: ', pipeline.threshold)
         eval_kitnet(
-            pipeline.rmse_list, pipeline.cur_stats_global, pipeline.peregrine_eval,
-            pipeline.threshold, pipeline.train_skip, conf['fm_grace'], conf['ad_grace'],
-            conf['attack'], conf['sampling'], conf['max_ae'], conf['train_exact_ratio'], total_time)
+            pipeline.rmse_list, pipeline.stats_global, pipeline.peregrine_eval,
+            pipeline.threshold, pipeline.train_skip, conf['fm_grace'],
+            conf['ad_grace'], conf['attack'], conf['sampling'], conf['max_ae'],
+            conf['train_exact_ratio'], total_time)
+    elif args.plugin == 'enidrift':
+        eval_enidrift(pipeline.prediction, pipeline.stats_global, pipeline.peregrine_eval,
+                      conf['attack'], conf['sampling'],conf['release_speed'], total_time)
 
     # exit (bug workaround)
     logger.info("Exiting!")

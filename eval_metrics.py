@@ -8,21 +8,19 @@ from sklearn import metrics
 ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
 
 def eval_kitnet(
-        rmse_list, cur_stats_global, peregrine_eval, threshold, train_skip, fm_grace,
+        rmse_list, stats_global, peregrine_eval, threshold, train_skip, fm_grace,
         ad_grace, attack, sampling, max_ae, train_exact_ratio, total_time):
-    outdir = str(Path(__file__).parents[0]) + '/eval'
-    if not os.path.exists(str(Path(__file__).parents[0]) + '/eval'):
+    outdir = f'{Path(__file__).parents[0]}/eval/kitnet'
+    if not os.path.exists(f'{Path(__file__).parents[0]}/eval/kitnet'):
         os.makedirs(outdir, exist_ok=True)
     outpath_peregrine = os.path.join(
-        outdir, attack + '-m-' + str(max_ae) + '-' + str(sampling) + '-r-'
-        + str(train_exact_ratio) + '-rmse-' + ts_datetime + '.csv')
-    outpath_cur_stats_global = os.path.join(
-        outdir, attack + '-m-' + str(max_ae) + '-' + str(sampling) + '-r-'
-        + str(train_exact_ratio) + '-stats-' + ts_datetime + '.csv')
+        outdir, f'{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}-rmse-{ts_datetime}.csv')
+    outpath_stats_global = os.path.join(
+        outdir, f'{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}-stats-{ts_datetime}.csv')
 
     # Collect the global stats and save to a csv.
-    df_cur_stats_global = pd.DataFrame(cur_stats_global)
-    df_cur_stats_global.to_csv(outpath_cur_stats_global, index=None)
+    df_stats_global = pd.DataFrame(stats_global)
+    df_stats_global.to_csv(outpath_stats_global, index=None)
 
     # Collect the processed packets' RMSE, label, and save to a csv.
     df_peregrine = pd.DataFrame(peregrine_eval, columns=[
@@ -99,41 +97,149 @@ def eval_kitnet(
     eer = roc_curve_fpr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
     eer_sanity = roc_curve_fnr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
 
-    print('TP: ' + str(TP))
-    print('TN: ' + str(TN))
-    print('FP: ' + str(FP))
-    print('FN: ' + str(FN))
-    print('TPR: ' + str(TPR))
-    print('TNR: ' + str(TNR))
-    print('FPR: ' + str(FPR))
-    print('FNR: ' + str(FNR))
-    print('Accuracy: ' + str(accuracy))
-    print('precision: ' + str(precision))
-    print('Recall: ' + str(recall))
-    print('F1 Score: ' + str(f1_score))
-    print('AuC: ' + str(auc))
-    print('EER: ' + str(eer))
-    print('EER sanity: ' + str(eer_sanity))
+    print(f'TP: {TP}')
+    print(f'TN: {TN}')
+    print(f'FP: {FP}')
+    print(f'FN: {FN}')
+    print(f'TPR: {TPR}')
+    print(f'TNR: {TNR}')
+    print(f'FPR: {FPR}')
+    print(f'FNR: {FNR}')
+    print(f'Accuracy: {accuracy}')
+    print(f'Precision: {precision}')
+    print(f'Recall: {recall}')
+    print(f'F1 Score: {f1_score}')
+    print(f'AuC: {auc}')
+    print(f'EER: {eer}')
+    print(f'EER sanity: {eer_sanity}')
 
     # Write the eval to a txt.
-    f = open(
-        outdir + '/' + attack + '-m-' + str(max_ae) + '-' + str(sampling)
-        + '-r-' + str(train_exact_ratio) + '-metrics-' + ts_datetime + '.txt', 'a+')
-    f.write('Time elapsed: ' + str(total_time) + '\n')
-    f.write('Threshold: ' + str(threshold) + '\n')
-    f.write('TP: ' + str(TP) + '\n')
-    f.write('TN: ' + str(TN) + '\n')
-    f.write('FP: ' + str(FP) + '\n')
-    f.write('FN: ' + str(FN) + '\n')
-    f.write('TPR: ' + str(TPR) + '\n')
-    f.write('TNR: ' + str(TNR) + '\n')
-    f.write('FPR: ' + str(FPR) + '\n')
-    f.write('FNR: ' + str(FNR) + '\n')
-    f.write('Accuracy: ' + str(accuracy) + '\n')
-    f.write('Precision: ' + str(precision) + '\n')
-    f.write('Recall: ' + str(recall) + '\n')
-    f.write('F1 Score: ' + str(f1_score) + '\n')
-    f.write('AuC: ' + str(auc) + '\n')
-    f.write('EER: ' + str(eer) + '\n')
-    f.write('EER sanity: ' + str(eer_sanity) + '\n')
-    f.close()
+    f = open(f'{outdir}/{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}\
+             -metrics-{ts_datetime}.txt', 'a+')
+    f.write(f'Time elapsed: {total_time}\n')
+    f.write(f'Threshold: {threshold}\n')
+    f.write(f'TP: {TP}\n')
+    f.write(f'TN: {TN}\n')
+    f.write(f'FP: {FP}\n')
+    f.write(f'FN: {FN}\n')
+    f.write(f'TPR: {TPR}\n')
+    f.write(f'TNR: {TNR}\n')
+    f.write(f'FPR: {FPR}\n')
+    f.write(f'FNR: {FNR}\n')
+    f.write(f'Accuracy: {accuracy}\n')
+    f.write(f'Precision: {precision}\n')
+    f.write(f'Recall: {recall}\n')
+    f.write(f'F1 Score: {f1_score}\n')
+    f.write(f'AuC: {auc}\n')
+    f.write(f'EER: {eer}\n')
+    f.write(f'EER sanity: {eer_sanity}\n')
+
+def eval_enidrift(
+        predictions, stats_global, peregrine_eval, attack, sampling,
+        release_speed, total_time):
+    outdir = f'{Path(__file__).parents[0]}/eval/enidrift'
+    if not os.path.exists(f'{Path(__file__).parents[0]}/eval/enidrift'):
+        os.makedirs(outdir, exist_ok=True)
+    outpath_peregrine = os.path.join(
+        outdir, f'{attack}-{sampling}-r-{release_speed}-prediction-{ts_datetime}.csv')
+    outpath_stats_global = os.path.join(
+        outdir, f'{attack}-{sampling}-r-{release_speed}-stats-{ts_datetime}.csv')
+
+    # Collect the global stats and save to a csv.
+    df_stats_global = pd.DataFrame(stats_global)
+    df_stats_global.to_csv(outpath_stats_global, index=None)
+
+    # Collect the processed packets' prediction, label, and save to a csv.
+    df_peregrine = pd.DataFrame(peregrine_eval, columns=[
+        'mac_src', 'ip_src', 'ip_dst', 'ip_type', 'src_proto',
+        'dst_proto', 'prediction', 'label'])
+    df_peregrine.to_csv(outpath_peregrine, index=None)
+
+    # Calculate statistics.
+    TP = df_peregrine[(df_peregrine['label'] == 1) & (df_peregrine['prediction'] == 1)].shape[0]
+    FP = df_peregrine[(df_peregrine['label'] == 0) & (df_peregrine['prediction'] == 1)].shape[0]
+    TN = df_peregrine[(df_peregrine['label'] == 0) & (df_peregrine['prediction'] == 0)].shape[0]
+    FN = df_peregrine[(df_peregrine['label'] == 1) & (df_peregrine['prediction'] == 0)].shape[0]
+
+    try:
+        TPR = TP / (TP + FN)
+    except ZeroDivisionError:
+        TPR = 0
+
+    try:
+        TNR = TN / (TN + FP)
+    except ZeroDivisionError:
+        TNR = 0
+
+    try:
+        FPR = FP / (FP + TN)
+    except ZeroDivisionError:
+        FPR = 0
+
+    try:
+        FNR = FN / (FN + TP)
+    except ZeroDivisionError:
+        FNR = 0
+
+    try:
+        accuracy = (TP + TN) / (TP + FP + FN + TN)
+    except ZeroDivisionError:
+        accuracy = 0
+
+    try:
+        precision = TP / (TP + FP)
+    except ZeroDivisionError:
+        precision = 0
+
+    try:
+        recall = TP / (TP + FN)
+    except ZeroDivisionError:
+        recall = 0
+
+    try:
+        f1_score = 2 * (recall * precision) / (recall + precision)
+    except ZeroDivisionError:
+        f1_score = 0
+
+    # roc_curve_fpr, roc_curve_tpr, roc_curve_thres = metrics.roc_curve(
+    #     df_peregrine.label, df_peregrine.rmse)
+    # roc_curve_fnr = 1 - roc_curve_tpr
+
+    # auc = metrics.roc_auc_score(df_peregrine.label, df_peregrine.rmse)
+    # eer = roc_curve_fpr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
+    # eer_sanity = roc_curve_fnr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
+
+    print(f'TP: {TP}')
+    print(f'TN: {TN}')
+    print(f'FP: {FP}')
+    print(f'FN: {FN}')
+    print(f'TPR: {TPR}')
+    print(f'TNR: {TNR}')
+    print(f'FPR: {FPR}')
+    print(f'FNR: {FNR}')
+    print(f'Accuracy: {accuracy}')
+    print(f'Precision: {precision}')
+    print(f'Recall: {recall}')
+    print(f'F1 Score: {f1_score}')
+    # print(f'AuC: {auc}')
+    # print(f'EER: {eer}')
+    # print(f'EER sanity: {eer_sanity}')
+
+    # Write the eval to a txt.
+    f = open(f'{outdir}/{attack}-{sampling}-r-{release_speed}-metrics-{ts_datetime}.txt', 'a+')
+    f.write(f'Time elapsed: {total_time}\n')
+    f.write(f'TP: {TP}\n')
+    f.write(f'TN: {TN}\n')
+    f.write(f'FP: {FP}\n')
+    f.write(f'FN: {FN}\n')
+    f.write(f'TPR: {TPR}\n')
+    f.write(f'TNR: {TNR}\n')
+    f.write(f'FPR: {FPR}\n')
+    f.write(f'FNR: {FNR}\n')
+    f.write(f'Accuracy: {accuracy}\n')
+    f.write(f'Precision: {precision}\n')
+    f.write(f'Recall: {recall}\n')
+    f.write(f'F1 Score: {f1_score}\n')
+    # f.write(f'AuC: {auc}\n')
+    # f.write(f'EER: {eer}\n')
+    # f.write(f'EER sanity: {eer_sanity}\n')
