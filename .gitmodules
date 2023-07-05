@@ -4,3 +4,6 @@
 [submodule "plugins/ENIDrift"]
 	path = plugins/ENIDrift
 	url = https://github.com/jra419/peregrine-ENIDrift.git
+[submodule "plugins/Whisper"]
+	path = plugins/Whisper
+	url = https://github.com/fchamicapereira/peregrine-plugin-whisper.git
