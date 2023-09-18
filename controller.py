@@ -7,10 +7,10 @@ import logging
 import argparse
 import time
 import yaml
-import numpy as np
-from eval_metrics import eval_kitnet, eval_enidrift
+from eval_metrics import eval_kitnet, eval_enidrift, eval_whisper
 from pipeline_kitnet import PipelineKitNET
 from pipeline_enidrift import PipelineENIDrift
+from pipeline_whisper import PipelineWhisper
 
 logger = None
 
@@ -39,6 +39,9 @@ if __name__ == "__main__":
         pipeline = PipelineENIDrift(
             conf['trace'], conf['labels'], conf['sampling'], conf['attack'], conf['hypr'],
             conf['delta'], conf['incr'], conf['release_speed'])
+    elif args.plugin == 'whisper':
+        pipeline = PipelineWhisper(conf['trace'], conf['labels'], conf['sampling'],
+                                   conf['train_size'], conf['dst_mac'])
 
     pipeline.process()
 
@@ -58,6 +61,8 @@ if __name__ == "__main__":
     elif args.plugin == 'enidrift':
         eval_enidrift(pipeline.prediction, pipeline.stats_global, pipeline.peregrine_eval,
                       conf['attack'], conf['sampling'],conf['release_speed'], total_time)
+    elif args.plugin == 'whisper':
+        eval_whisper(pipeline.stats_global, conf['attack'], conf['sampling'], total_time)
 
     # exit (bug workaround)
     logger.info("Exiting!")

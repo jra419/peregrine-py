@@ -201,14 +201,6 @@ def eval_enidrift(
     except ZeroDivisionError:
         f1_score = 0
 
-    # roc_curve_fpr, roc_curve_tpr, roc_curve_thres = metrics.roc_curve(
-    #     df_peregrine.label, df_peregrine.rmse)
-    # roc_curve_fnr = 1 - roc_curve_tpr
-
-    # auc = metrics.roc_auc_score(df_peregrine.label, df_peregrine.rmse)
-    # eer = roc_curve_fpr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
-    # eer_sanity = roc_curve_fnr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
-
     print(f'TP: {TP}')
     print(f'TN: {TN}')
     print(f'FP: {FP}')
@@ -221,9 +213,6 @@ def eval_enidrift(
     print(f'Precision: {precision}')
     print(f'Recall: {recall}')
     print(f'F1 Score: {f1_score}')
-    # print(f'AuC: {auc}')
-    # print(f'EER: {eer}')
-    # print(f'EER sanity: {eer_sanity}')
 
     # Write the eval to a txt.
     f = open(f'{outdir}/{attack}-{sampling}-r-{release_speed}-metrics-{ts_datetime}.txt', 'a+')
@@ -240,6 +229,13 @@ def eval_enidrift(
     f.write(f'Precision: {precision}\n')
     f.write(f'Recall: {recall}\n')
     f.write(f'F1 Score: {f1_score}\n')
-    # f.write(f'AuC: {auc}\n')
-    # f.write(f'EER: {eer}\n')
-    # f.write(f'EER sanity: {eer_sanity}\n')
+
+def eval_whisper(stats_global, attack, sampling, total_time):
+    outdir = f'{Path(__file__).parents[0]}/eval/whisper'
+    if not os.path.exists(f'{Path(__file__).parents[0]}/eval/whisper'):
+        os.makedirs(outdir, exist_ok=True)
+    outpath_stats_global = os.path.join(outdir, f'{attack}-{sampling}-stats-{ts_datetime}.csv')
+
+    # Collect the global stats and save to a csv.
+    df_stats_global = pd.DataFrame(stats_global)
+    df_stats_global.to_csv(outpath_stats_global, index=None)
