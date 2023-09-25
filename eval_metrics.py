@@ -9,24 +9,26 @@ ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
 
 def eval_kitnet(
         rmse_list, stats_global, peregrine_eval, threshold, train_skip, fm_grace,
-        ad_grace, attack, sampling, max_ae, train_exact_ratio, total_time):
+        ad_grace, attack, sampling, max_ae, train_exact_ratio,
+        save_stats_global, total_time):
     outdir = f'{Path(__file__).parents[0]}/eval/kitnet'
     if not os.path.exists(f'{Path(__file__).parents[0]}/eval/kitnet'):
         os.makedirs(outdir, exist_ok=True)
     outpath_peregrine = os.path.join(
         outdir, f'{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}-rmse-{ts_datetime}.csv')
-    outpath_stats_global = os.path.join(
-        outdir, f'{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}-stats-{ts_datetime}.csv')
 
     # Collect the global stats and save to a csv.
-    df_stats_global = pd.DataFrame(stats_global)
-    df_stats_global.to_csv(outpath_stats_global, index=None)
+    if save_stats_global:
+        outpath_stats_global = os.path.join(
+            outdir, f'{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}-stats-{ts_datetime}.csv')
+        df_stats_global = pd.DataFrame(stats_global)
+        df_stats_global.to_csv(outpath_stats_global, chunksize=10000, index=None)
 
     # Collect the processed packets' RMSE, label, and save to a csv.
     df_peregrine = pd.DataFrame(peregrine_eval, columns=[
         'mac_src', 'ip_src', 'ip_dst', 'ip_type', 'src_proto',
         'dst_proto', 'rmse', 'label'])
-    df_peregrine.to_csv(outpath_peregrine, index=None)
+    df_peregrine.to_csv(outpath_peregrine, chunksize=10000, index=None)
 
     # Cut all training rows.
     if train_skip is False:
@@ -39,9 +41,9 @@ def eval_kitnet(
 
     # Split by threshold.
     peregrine_benign = df_peregrine_cut[df_peregrine_cut.rmse < threshold]
-    print(peregrine_benign.shape[0])
+    # print(peregrine_benign.shape[0])
     peregrine_alert = df_peregrine_cut[df_peregrine_cut.rmse >= threshold]
-    print(peregrine_alert.shape[0])
+    # print(peregrine_alert.shape[0])
 
     # Calculate statistics.
     TP = peregrine_alert[peregrine_alert.label == 1].shape[0]
@@ -114,8 +116,8 @@ def eval_kitnet(
     print(f'EER sanity: {eer_sanity}')
 
     # Write the eval to a txt.
-    f = open(f'{outdir}/{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}\
-             -metrics-{ts_datetime}.txt', 'a+')
+    f = open(f'{outdir}/{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}'
+             f'-metrics-{ts_datetime}.txt', 'a+')
     f.write(f'Time elapsed: {total_time}\n')
     f.write(f'Threshold: {threshold}\n')
     f.write(f'TP: {TP}\n')
@@ -136,24 +138,25 @@ def eval_kitnet(
 
 def eval_enidrift(
         predictions, stats_global, peregrine_eval, attack, sampling,
-        release_speed, total_time):
+        release_speed, save_stats_global, total_time):
     outdir = f'{Path(__file__).parents[0]}/eval/enidrift'
     if not os.path.exists(f'{Path(__file__).parents[0]}/eval/enidrift'):
         os.makedirs(outdir, exist_ok=True)
     outpath_peregrine = os.path.join(
         outdir, f'{attack}-{sampling}-r-{release_speed}-prediction-{ts_datetime}.csv')
-    outpath_stats_global = os.path.join(
-        outdir, f'{attack}-{sampling}-r-{release_speed}-stats-{ts_datetime}.csv')
 
     # Collect the global stats and save to a csv.
-    df_stats_global = pd.DataFrame(stats_global)
-    df_stats_global.to_csv(outpath_stats_global, index=None)
+    if save_stats_global:
+        outpath_stats_global = os.path.join(
+            outdir, f'{attack}-{sampling}-r-{release_speed}-stats-{ts_datetime}.csv')
+        df_stats_global = pd.DataFrame(stats_global)
+        df_stats_global.to_csv(outpath_stats_global, chunksize=10000, index=None)
 
     # Collect the processed packets' prediction, label, and save to a csv.
     df_peregrine = pd.DataFrame(peregrine_eval, columns=[
         'mac_src', 'ip_src', 'ip_dst', 'ip_type', 'src_proto',
-        'dst_proto', 'prediction', 'label'])
-    df_peregrine.to_csv(outpath_peregrine, index=None)
+        'dst_proto', 'score', 'prediction', 'label'])
+    df_peregrine.to_csv(outpath_peregrine, chunksize=10000, index=None)
 
     # Calculate statistics.
     TP = df_peregrine[(df_peregrine['label'] == 1) & (df_peregrine['prediction'] == 1)].shape[0]
@@ -201,13 +204,13 @@ def eval_enidrift(
     except ZeroDivisionError:
         f1_score = 0
 
-    # roc_curve_fpr, roc_curve_tpr, roc_curve_thres = metrics.roc_curve(
-    #     df_peregrine.label, df_peregrine.rmse)
-    # roc_curve_fnr = 1 - roc_curve_tpr
+    roc_curve_fpr, roc_curve_tpr, roc_curve_thres = metrics.roc_curve(
+        df_peregrine.label, df_peregrine.score)
+    roc_curve_fnr = 1 - roc_curve_tpr
 
-    # auc = metrics.roc_auc_score(df_peregrine.label, df_peregrine.rmse)
-    # eer = roc_curve_fpr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
-    # eer_sanity = roc_curve_fnr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
+    auc = metrics.roc_auc_score(df_peregrine.label, df_peregrine.score)
+    eer = roc_curve_fpr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
+    eer_sanity = roc_curve_fnr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
 
     print(f'TP: {TP}')
     print(f'TN: {TN}')
@@ -221,9 +224,9 @@ def eval_enidrift(
     print(f'Precision: {precision}')
     print(f'Recall: {recall}')
     print(f'F1 Score: {f1_score}')
-    # print(f'AuC: {auc}')
-    # print(f'EER: {eer}')
-    # print(f'EER sanity: {eer_sanity}')
+    print(f'AuC: {auc}')
+    print(f'EER: {eer}')
+    print(f'EER sanity: {eer_sanity}')
 
     # Write the eval to a txt.
     f = open(f'{outdir}/{attack}-{sampling}-r-{release_speed}-metrics-{ts_datetime}.txt', 'a+')
@@ -240,6 +243,6 @@ def eval_enidrift(
     f.write(f'Precision: {precision}\n')
     f.write(f'Recall: {recall}\n')
     f.write(f'F1 Score: {f1_score}\n')
-    # f.write(f'AuC: {auc}\n')
-    # f.write(f'EER: {eer}\n')
-    # f.write(f'EER sanity: {eer_sanity}\n')
+    f.write(f'AuC: {auc}\n')
+    f.write(f'EER: {eer}\n')
+    f.write(f'EER sanity: {eer_sanity}\n')

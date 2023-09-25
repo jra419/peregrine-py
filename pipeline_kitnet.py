@@ -14,7 +14,7 @@ HIDDEN_RATIO = 0.75
 class PipelineKitNET:
     def __init__(
             self, trace, labels, sampling, fm_grace, ad_grace, max_ae, fm_model, el_layer,
-            ol_layer, train_stats, attack, train_exact_ratio):
+            ol_layer, train_stats, attack, train_exact_ratio, save_stats_global):
 
         self.decay_to_pos = {
             0: 0, 1: 0, 2: 1, 3: 2, 4: 3,
@@ -26,6 +26,7 @@ class PipelineKitNET:
         self.m = max_ae
         self.sampling_rate = sampling
         self.train_exact_ratio = train_exact_ratio
+        self.save_stats_global = save_stats_global
 
         self.stats_global = []
         self.rmse_list = []
@@ -114,7 +115,9 @@ class PipelineKitNET:
 
                 # Flatten the statistics' list of lists.
                 cur_stats = list(itertools.chain(*cur_stats))
-                self.stats_global.append(cur_stats)
+
+                if self.save_stats_global:
+                    self.stats_global.append(cur_stats)
 
                 # Update the stored global stats with the latest packet stats.
                 input_stats = self.update_stats(cur_stats)

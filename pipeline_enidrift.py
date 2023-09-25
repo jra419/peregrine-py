@@ -1,6 +1,5 @@
 import itertools
 import numpy as np
-import pandas as pd
 from fc_enidrift import FCENIDrift
 from plugins.ENIDrift.ENIDrift_main import ENIDrift_train
 
@@ -8,7 +7,8 @@ LAMBDAS = 4
 
 class PipelineENIDrift:
     def __init__(
-            self, trace, labels, sampling, attack, hypr, delta, incr, release_speed):
+            self, trace, labels, sampling, attack, hypr, delta, incr,
+            release_speed, save_stats_global):
 
         self.attack = attack
         self.sampling_rate = sampling
@@ -16,6 +16,7 @@ class PipelineENIDrift:
         self.delta = delta
         self.incr = incr
         self.release_speed = release_speed
+        self.save_stats_global = save_stats_global
 
         self.stats_global = []
         self.prediction = []
@@ -45,7 +46,6 @@ class PipelineENIDrift:
         self.trace_size = self.fc.trace_size()
 
     def process(self):
-        release_row = 0
         trace_labels_cur = []
 
         # Process the trace, packet by packet.
@@ -70,7 +70,9 @@ class PipelineENIDrift:
                 trace_labels_cur.append(self.trace_labels_global[self.pkt_cnt_global-1])
                 # Flatten the statistics' list of lists.
                 cur_stats = list(itertools.chain(*cur_stats))
-                self.stats_global.append(cur_stats)
+
+                if self.save_stats_global:
+                    self.stats_global.append(cur_stats)
 
                 # Update the stored global stats with the latest packet stats.
                 input_stats = self.update_stats(cur_stats)
@@ -80,22 +82,16 @@ class PipelineENIDrift:
 
                 # ENIDrift's sub-classifier generation.
                 if self.pkt_cnt_global % self.release_speed == 0:
-                    # self.enidrift.update(np.array(itertools.chain(
-                    #     *self.trace_labels.iloc[release_row:self.pkt_cnt_global+1].values)))
-                    # print(release_row)
-                    # print(self.pkt_cnt_global+1)
-                    # self.enidrift.update(self.trace_labels[release_row:self.pkt_cnt_global])
                     self.enidrift.update(np.array(trace_labels_cur))
                     trace_labels_cur = []
-                    release_row = self.pkt_cnt_global
 
-                self.prediction.append(prediction)
+                self.prediction.append(prediction[0])
                 self.trace_labels.append(self.trace_labels_global[self.pkt_cnt_global-1])
 
                 try:
                     self.peregrine_eval.append([
                         cur_stats[0], cur_stats[1], cur_stats[2], cur_stats[3],
-                        cur_stats[4], cur_stats[5], prediction,
+                        cur_stats[4], cur_stats[5], prediction[0], prediction[1],
                         self.trace_labels_global[self.pkt_cnt_global - 1]])
                 except IndexError:
                     print(self.trace_labels.shape[0])

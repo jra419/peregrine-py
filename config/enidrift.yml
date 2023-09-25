@@ -1,13 +1,13 @@
 # Pcap file path.
-trace: /home/docker/datasets/kitsune/os-scan/os-scan.pcap
+trace: /mnt/data/datasets/kitsune/active-wiretap/active-wiretap.pcap
 # Trace labels path.
-labels: /home/docker/datasets/kitsune/os-scan/os-scan-labels.csv
+labels: /mnt/data/datasets/kitsune/active-wiretap/active-wiretap-labels.csv
 # Current trace attack name.
-attack: os-scan
+attack: active-wiretap
 # Execution phase sampling rate.
 sampling: 64
 
 hypr: [0.1, 0.1]
 delta: [0.05, 0.05]
 incr: True
-release_speed: 8192
+release_speed: 1000
