@@ -1,0 +1,12 @@
+# Pcap file path.
+trace: /home/jra/datasets/cic-ids-2018/dos-goldeneye/dos-goldeneye.pcap
+# Trace labels path.
+labels: /home/jra/datasets/cic-ids-2018/dos-goldeneye/dos-goldeneye-labels.csv
+# Current trace attack name.
+attack: dos-goldeneye
+# Execution phase sampling rate.
+sampling: 1024
+
+train_size: 1000000
+
+dst_mac: 52:54:00:73:df:c5
