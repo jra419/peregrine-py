@@ -36,7 +36,7 @@ class PipelineENIDrift:
         self.stats_ip = {}
         self.stats_five_t = {}
 
-        # Initialize KitNET.
+        # Initialize ENIDrift.
         self.enidrift = ENIDrift_train(
             hypr=self.hypr, delta=self.delta, incremental=self.incr)
 
@@ -47,6 +47,7 @@ class PipelineENIDrift:
 
     def process(self):
         trace_labels_cur = []
+        cur_pkt = 0
 
         # Process the trace, packet by packet.
         while True:
@@ -67,6 +68,7 @@ class PipelineENIDrift:
                 if self.pkt_cnt_global % self.sampling_rate != 0:
                     continue
 
+                cur_pkt += 1
                 trace_labels_cur.append(self.trace_labels_global[self.pkt_cnt_global-1])
                 # Flatten the statistics' list of lists.
                 cur_stats = list(itertools.chain(*cur_stats))
@@ -81,7 +83,10 @@ class PipelineENIDrift:
                 prediction = self.enidrift.predict(input_stats.reshape(1, -1))
 
                 # ENIDrift's sub-classifier generation.
-                if self.pkt_cnt_global % self.release_speed == 0:
+                if cur_pkt % self.release_speed == 0:
+                    print(f'pkt_cnt_global: {self.pkt_cnt_global}')
+                    print(f'cur_pkt: {cur_pkt}')
+                    print(f'release_speed: {self.release_speed}')
                     self.enidrift.update(np.array(trace_labels_cur))
                     trace_labels_cur = []
 
@@ -90,8 +95,8 @@ class PipelineENIDrift:
 
                 try:
                     self.peregrine_eval.append([
-                        cur_stats[0], cur_stats[1], cur_stats[2], cur_stats[3],
-                        cur_stats[4], cur_stats[5], prediction[0], prediction[1],
+                        cur_stats[0], cur_stats[1], cur_stats[2], cur_stats[3], cur_stats[4],
+                        cur_stats[5], prediction[0], prediction[1], prediction[2],
                         self.trace_labels_global[self.pkt_cnt_global - 1]])
                 except IndexError:
                     print(self.trace_labels.shape[0])

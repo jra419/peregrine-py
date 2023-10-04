@@ -155,7 +155,7 @@ def eval_enidrift(
     # Collect the processed packets' prediction, label, and save to a csv.
     df_peregrine = pd.DataFrame(peregrine_eval, columns=[
         'mac_src', 'ip_src', 'ip_dst', 'ip_type', 'src_proto',
-        'dst_proto', 'score', 'prediction', 'label'])
+        'dst_proto', 'score', 'prediction', 'weighted_output', 'label'])
     df_peregrine.to_csv(outpath_peregrine, chunksize=10000, index=None)
 
     # Calculate statistics.
@@ -205,10 +205,10 @@ def eval_enidrift(
         f1_score = 0
 
     roc_curve_fpr, roc_curve_tpr, roc_curve_thres = metrics.roc_curve(
-        df_peregrine.label, df_peregrine.score)
+        df_peregrine.label, df_peregrine.weighted_output)
     roc_curve_fnr = 1 - roc_curve_tpr
 
-    auc = metrics.roc_auc_score(df_peregrine.label, df_peregrine.score)
+    auc = metrics.roc_auc_score(df_peregrine.label, df_peregrine.weighted_output)
     eer = roc_curve_fpr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
     eer_sanity = roc_curve_fnr[np.nanargmin(np.absolute((roc_curve_fnr - roc_curve_fpr)))]
 

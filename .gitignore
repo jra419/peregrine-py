@@ -16,3 +16,6 @@ __pycache__
 env
 *.tsv
 cache/**/*.txt
+config/kitnet-*.yml
+config/enidrift-*.yml
+run*.sh
