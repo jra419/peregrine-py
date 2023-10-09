@@ -156,6 +156,7 @@ def eval_enidrift(
     df_peregrine = pd.DataFrame(peregrine_eval, columns=[
         'mac_src', 'ip_src', 'ip_dst', 'ip_type', 'src_proto',
         'dst_proto', 'score', 'prediction', 'weighted_output', 'label'])
+    df_peregrine.replace([np.inf, -np.inf], 0, inplace=True)
     df_peregrine.to_csv(outpath_peregrine, chunksize=10000, index=None)
 
     # Calculate statistics.
