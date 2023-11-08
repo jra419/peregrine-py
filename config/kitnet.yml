@@ -6,6 +6,8 @@ labels: /home/docker/datasets/kitsune/os-scan/os-scan-labels.csv
 attack: os-scan
 # Execution phase sampling rate.
 sampling: 1024
+# Execution phase: packet number offset from which to start the sampling.
+exec_sampl_offset: 0
 # FM grace period.
 fm_grace: 100000
 # AD grace period.
@@ -26,4 +28,3 @@ ol_model:
 # Previously trained stats struct path.
 train_stats:
 # train_stats: plugins/KitNET/models/os-scan-m-10-r-0-train-stats.txt
-

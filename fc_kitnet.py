@@ -18,11 +18,12 @@ sqrt_mu = MathUnit(shift=-1, invert=False, scale=-7,
 
 
 class FCKitNET:
-    def __init__(self, file_path, sampling_rate, train_pkts, train_skip):
+    def __init__(self, file_path, sampling_rate, train_pkts, offset, train_skip):
         self.file_path = file_path              # Path of the trace file / csv.
         self.df_csv = None                      # Dataframe for the trace csv.
         self.cur_pkt = pd.DataFrame()           # Stats of the packet being processed.
         self.sampling_rate = sampling_rate      # Sampling rate during the execution phase.
+        self.exec_phase_offset = offset         # offset from which to start the sampling.
         self.train_pkts = train_pkts            # Number of packets in the training phase.
         if train_skip:
             self.global_pkt_index = train_pkts
@@ -102,6 +103,7 @@ class FCKitNET:
             self.five_t_res_sum = {}
             self.decay_cntr = 1
             self.phase_pkt_index = 0
+            self.global_pkt_index += self.exec_phase_offset
 
         timestamp = float(self.df_csv.iat[self.global_pkt_index, 0])
         mac_src = str(self.df_csv.iat[self.global_pkt_index, 2])

@@ -9,18 +9,18 @@ ts_datetime = datetime.now().strftime('%Y-%m-%d-%H-%M-%S-%f')[:-3]
 
 def eval_kitnet(
         rmse_list, stats_global, peregrine_eval, threshold, train_skip, fm_grace,
-        ad_grace, attack, sampling, max_ae, train_exact_ratio,
+        ad_grace, attack, sampling, offset, max_ae, train_exact_ratio,
         save_stats_global, total_time):
     outdir = f'{Path(__file__).parents[0]}/eval/kitnet'
     if not os.path.exists(f'{Path(__file__).parents[0]}/eval/kitnet'):
         os.makedirs(outdir, exist_ok=True)
     outpath_peregrine = os.path.join(
-        outdir, f'{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}-rmse-{ts_datetime}.csv')
+        outdir, f'{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}-o-{offset}-rmse-{ts_datetime}.csv')
 
     # Collect the global stats and save to a csv.
     if save_stats_global:
         outpath_stats_global = os.path.join(
-            outdir, f'{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}-stats-{ts_datetime}.csv')
+            outdir, f'{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}-o-{offset}-stats-{ts_datetime}.csv')
         df_stats_global = pd.DataFrame(stats_global)
         df_stats_global.to_csv(outpath_stats_global, chunksize=10000, index=None)
 
@@ -117,7 +117,7 @@ def eval_kitnet(
 
     # Write the eval to a txt.
     f = open(f'{outdir}/{attack}-m-{max_ae}-{sampling}-r-{train_exact_ratio}'
-             f'-metrics-{ts_datetime}.txt', 'a+')
+             f'-o-{offset}-metrics-{ts_datetime}.txt', 'a+')
     f.write(f'Time elapsed: {total_time}\n')
     f.write(f'Threshold: {threshold}\n')
     f.write(f'TP: {TP}\n')

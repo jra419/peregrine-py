@@ -11,10 +11,12 @@ LAMBDAS = 4
 LEARNING_RATE = 0.1
 HIDDEN_RATIO = 0.75
 
+
 class PipelineKitNET:
     def __init__(
-            self, trace, labels, sampling, fm_grace, ad_grace, max_ae, fm_model, el_layer,
-            ol_layer, train_stats, attack, train_exact_ratio, save_stats_global):
+            self, trace, labels, sampling, exec_sampl_offset, fm_grace, ad_grace, max_ae,
+            fm_model, el_layer, ol_layer, train_stats, attack, train_exact_ratio,
+            save_stats_global):
 
         self.decay_to_pos = {
             0: 0, 1: 0, 2: 1, 3: 2, 4: 3,
@@ -25,6 +27,7 @@ class PipelineKitNET:
         self.attack = attack
         self.m = max_ae
         self.sampling_rate = sampling
+        self.exec_sampl_offset = exec_sampl_offset
         self.train_exact_ratio = train_exact_ratio
         self.save_stats_global = save_stats_global
 
@@ -68,11 +71,18 @@ class PipelineKitNET:
             ol_layer, attack, train_exact_ratio)
 
         # Initialize feature extraction/computation.
-        self.fc = FCKitNET(trace, sampling, fm_grace+ad_grace, self.train_skip)
+        self.fc = FCKitNET(trace, sampling, fm_grace+ad_grace, exec_sampl_offset, self.train_skip)
 
         self.trace_size = self.fc.trace_size()
 
     def process(self):
+        # Offset value, corresponds to 0 during the training phase and
+        # to self.exec_sampl_offset during the exec phase.
+        if not self.train_skip:
+            offset = 0
+        else:
+            offset = self.exec_sampl_offset
+
         # Process the trace, packet by packet.
         while True:
             cur_stats = 0
@@ -82,7 +92,7 @@ class PipelineKitNET:
                         len(self.rmse_list) < self.fm_grace + self.ad_grace:
                     print(f'Processed pkts: {len(self.rmse_list)}')
                 elif self.pkt_cnt_global % 1000 == 0 and \
-                    len(self.rmse_list) >= self.fm_grace + self.ad_grace:
+                        len(self.rmse_list) >= self.fm_grace + self.ad_grace:
                     print(f'Processed pkts: {self.fm_grace + self.ad_grace + self.pkt_cnt_global}')
             else:
                 if self.pkt_cnt_global % 1000 == 0:
@@ -107,11 +117,10 @@ class PipelineKitNET:
             # Execution phase: only proceed according to the sampling rate.
             if cur_stats != 0:
                 # Break when we reach the end of the trace file.
-                if self.fm_grace + self.ad_grace + self.pkt_cnt_global == self.trace_size:
+                if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset >= self.trace_size:
                     break
                 if self.pkt_cnt_global % self.sampling_rate != 0:
                     continue
-
 
                 # Flatten the statistics' list of lists.
                 cur_stats = list(itertools.chain(*cur_stats))
@@ -130,21 +139,21 @@ class PipelineKitNET:
                         cur_stats[0], cur_stats[1], cur_stats[2],
                         cur_stats[3], cur_stats[4], cur_stats[5],
                         rmse, self.trace_labels.iat[
-                            self.fm_grace + self.ad_grace + self.pkt_cnt_global - 1, 0]])
+                            self.fm_grace + self.ad_grace + offset + self.pkt_cnt_global - 1, 0]])
                 except IndexError:
                     print(self.trace_labels.shape[0])
                     print(self.pkt_cnt_global)
-                    print(self.fm_grace + self.ad_grace + self.pkt_cnt_global - 1)
+                    print(self.fm_grace + self.ad_grace + offset + self.pkt_cnt_global - 1)
 
                 # At the end of the training phase, store the highest rmse value as the threshold.
                 # Also, save the stored stat values.
                 if not self.train_skip and len(self.rmse_list) == self.fm_grace + self.ad_grace:
+                    offset = self.exec_sampl_offset
                     self.threshold = max(self.rmse_list, key=float)
                     self.save_train_stats()
                     print('Starting execution phase...')
-
                 # Break when we reach the end of the trace file.
-                elif self.fm_grace + self.ad_grace + self.pkt_cnt_global == self.trace_size:
+                elif self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset >= self.trace_size:
                     self.save_exec_stats()
                     break
             else:
@@ -195,7 +204,6 @@ class PipelineKitNET:
             self.df_exec_stats_list.append(input_stats)
 
         return input_stats
-
 
     def save_train_stats(self):
         train_stats = [
@@ -274,7 +282,8 @@ class PipelineKitNET:
             df_exec_stats = pd.DataFrame(self.df_exec_stats_list[i:i + 50000])
             df_exec_stats.to_pickle(
                 f'{outdir}/{self.attack}-m-{self.m}-r-'
-                f'{self.train_exact_ratio}-exec-full-{int(i/50000)}.pkl')
+                f'{self.train_exact_ratio}-o-{self.exec_sampl_offset}'
+                f'-exec-full-{int(i/50000)}.pkl')
 
     def reset_stats(self):
         print('Reset stats')
