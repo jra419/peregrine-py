@@ -37,7 +37,7 @@ if __name__ == "__main__":
     elif args.plugin == 'enidrift':
         pipeline = PipelineENIDrift(
             conf['trace'], conf['labels'], conf['sampling'], conf['attack'], conf['hypr'],
-            conf['delta'], conf['incr'], conf['release_speed'], conf['save_stats_global'])
+            conf['delta'], conf['incr'], conf['release_speed'])
     elif args.plugin == 'whisper':
         pipeline = PipelineWhisper(conf['trace'], conf['labels'], conf['sampling'],
                                    conf['train_size'], conf['dst_mac'])
@@ -56,7 +56,7 @@ if __name__ == "__main__":
             pipeline.rmse_list, pipeline.stats_global, pipeline.peregrine_eval,
             pipeline.threshold, pipeline.train_skip, conf['fm_grace'],
             conf['ad_grace'], conf['attack'], conf['sampling'], conf['exec_sampl_offset'],
-            conf['max_ae'], conf['train_exact_ratio'], conf['save_stats_global'], total_time)
+            conf['max_ae'], conf['train_exact_ratio'], total_time)
     elif args.plugin == 'enidrift':
         eval_enidrift(pipeline.prediction, pipeline.stats_global, pipeline.peregrine_eval,
                       conf['attack'], conf['sampling'],conf['release_speed'],

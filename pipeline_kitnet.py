@@ -92,12 +92,18 @@ class PipelineKitNET:
                 if len(self.rmse_list) % 1000 == 0 and \
                         len(self.rmse_list) < self.fm_grace + self.ad_grace:
                     print(f'Processed pkts: {len(self.rmse_list)}')
+                    if self.save_stats_global:
+                        self.update_stats_global()
                 elif self.pkt_cnt_global % 1000 == 0 and \
                         len(self.rmse_list) >= self.fm_grace + self.ad_grace:
                     print(f'Processed pkts: {self.fm_grace + self.ad_grace + self.pkt_cnt_global}')
+                    if self.save_stats_global:
+                        self.update_stats_global()
             else:
                 if self.pkt_cnt_global % 1000 == 0:
                     print(f'Processed pkts: {self.fm_grace + self.ad_grace + self.pkt_cnt_global}')
+                    if self.save_stats_global:
+                        self.update_stats_global()
 
             # Training phase.
             if len(self.rmse_list) < (self.train_exact_ratio * (self.fm_grace + self.ad_grace)) \
@@ -130,11 +136,12 @@ class PipelineKitNET:
                 # Flatten the statistics' list of lists.
                 cur_stats = list(itertools.chain(*cur_stats))
 
-                if self.save_stats_global:
-                    self.stats_global.append(cur_stats)
-
                 # Update the stored global stats with the latest packet stats.
                 input_stats = self.update_stats(cur_stats)
+
+                if self.save_stats_global:
+                    self.stats_global.append(input_stats)
+
                 # Call function with the content of kitsune's main (before the eval/csv part).
                 rmse = self.kitnet.process(input_stats)
 
@@ -289,6 +296,18 @@ class PipelineKitNET:
                 f'{outdir}/{self.attack}-m-{self.m}-r-'
                 f'{self.train_exact_ratio}-o-{self.exec_sampl_offset}'
                 f'-exec-full-{int(i/50000)}.pkl')
+
+    def update_stats_global(self):
+        outdir = f'{Path(__file__).parents[0]}/eval/kitnet'
+        if not os.path.exists(f'{Path(__file__).parents[0]}/eval/kitnet'):
+            os.makedirs(outdir, exist_ok=True)
+        outpath_stats_global = os.path.join(
+            outdir, f'{self.attack}-m-{self.m}-{self.sampling_rate}-r-{self.train_exact_ratio}'
+                    f'-o-{self.exec_sampl_offset}-stats.csv')
+        df_stats_global = pd.DataFrame(self.stats_global)
+        df_stats_global.to_csv(outpath_stats_global, mode='a', chunksize=10000, index=None,
+                               header=False)
+        self.stats_global = []
 
     def reset_stats(self):
         print('Reset stats')
