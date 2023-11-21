@@ -14,8 +14,8 @@ HIDDEN_RATIO = 0.75
 
 class PipelineKitNET:
     def __init__(
-            self, trace, labels, sampling, exec_sampl_offset, fm_grace, ad_grace, max_ae,
-            fm_model, el_layer, ol_layer, train_stats, attack, train_exact_ratio,
+            self, trace, labels, sampling, fc_sampling, exec_sampl_offset, fm_grace, ad_grace,
+            max_ae, fm_model, el_layer, ol_layer, train_stats, attack, train_exact_ratio,
             save_stats_global):
 
         self.decay_to_pos = {
@@ -27,6 +27,7 @@ class PipelineKitNET:
         self.attack = attack
         self.m = max_ae
         self.sampling_rate = sampling
+        self.fc_sampling = fc_sampling
         self.exec_sampl_offset = exec_sampl_offset
         self.train_exact_ratio = train_exact_ratio
         self.save_stats_global = save_stats_global
@@ -111,6 +112,10 @@ class PipelineKitNET:
             else:
                 self.pkt_cnt_global += 1
                 self.fc.feature_extract()
+                if self.fc_sampling and self.pkt_cnt_global % self.sampling_rate != 0:
+                    if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset >= self.trace_size:
+                        break
+                    continue
                 cur_stats = self.fc.process('execution')
 
             # If any statistics were obtained, send them to the ML pipeline.
