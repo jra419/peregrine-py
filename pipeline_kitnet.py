@@ -119,7 +119,7 @@ class PipelineKitNET:
                 self.pkt_cnt_global += 1
                 self.fc.feature_extract()
                 if self.fc_sampling and self.pkt_cnt_global % self.sampling_rate != 0:
-                    if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset >= self.trace_size:
+                    if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset > self.trace_size:
                         break
                     continue
                 cur_stats = self.fc.process('execution')
@@ -128,7 +128,7 @@ class PipelineKitNET:
             # Execution phase: only proceed according to the sampling rate.
             if cur_stats != 0:
                 # Break when we reach the end of the trace file.
-                if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset >= self.trace_size:
+                if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset > self.trace_size:
                     break
                 if self.pkt_cnt_global % self.sampling_rate != 0:
                     continue
