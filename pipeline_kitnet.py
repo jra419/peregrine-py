@@ -1,4 +1,5 @@
 import os
+import time
 import pickle
 import itertools
 import numpy as np
@@ -16,7 +17,7 @@ class PipelineKitNET:
     def __init__(
             self, trace, labels, sampling, fc_sampling, exec_sampl_offset, fm_grace, ad_grace,
             max_ae, fm_model, el_layer, ol_layer, train_stats, attack, train_exact_ratio,
-            save_stats_global):
+            save_stats_global, time_start):
 
         self.decay_to_pos = {
             0: 0, 1: 0, 2: 1, 3: 2, 4: 3,
@@ -31,6 +32,12 @@ class PipelineKitNET:
         self.exec_sampl_offset = exec_sampl_offset
         self.train_exact_ratio = train_exact_ratio
         self.save_stats_global = save_stats_global
+        self.attack_init_ts = 0
+        self.attack_pkt_num_cntr = 0
+        self.attack_pkt_num_cntr_dp = 0
+        self.det_init_time = -1
+        self.det_init_pkt_num = -1
+        self.det_init_pkt_num_dp = -1
 
         self.stats_global = []
         self.rmse_list = []
@@ -75,6 +82,7 @@ class PipelineKitNET:
         self.fc = FCKitNET(trace, sampling, fm_grace+ad_grace, exec_sampl_offset, self.train_skip)
 
         self.trace_size = self.fc.trace_size()
+        self.trace_initial_ts = self.fc.trace_initial_ts()
 
     def process(self):
         # Offset value, corresponds to 0 during the training phase and
@@ -118,6 +126,9 @@ class PipelineKitNET:
             else:
                 self.pkt_cnt_global += 1
                 self.fc.feature_extract()
+                if self.attack_pkt_num_cntr_dp != -1 and int(self.trace_labels.iat[
+                        self.fm_grace + self.ad_grace + offset + self.pkt_cnt_global - 1, 0]) == 1:
+                    self.attack_pkt_num_cntr_dp += 1
                 if self.fc_sampling and self.pkt_cnt_global % self.sampling_rate != 0:
                     if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset > self.trace_size:
                         break
@@ -128,7 +139,7 @@ class PipelineKitNET:
             # Execution phase: only proceed according to the sampling rate.
             if cur_stats != 0:
                 # Break when we reach the end of the trace file.
-                if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset > self.trace_size:
+                if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset >= self.trace_size:
                     break
                 if self.pkt_cnt_global % self.sampling_rate != 0:
                     continue
@@ -143,14 +154,33 @@ class PipelineKitNET:
                     self.stats_global.append(input_stats)
 
                 # Call function with the content of kitsune's main (before the eval/csv part).
+                time_pkt_ml_start = time.time()
                 rmse = self.kitnet.process(input_stats)
+                time_pkt_ml_end = time.time()
 
                 self.rmse_list.append(rmse)
+
+                if self.attack_init_ts == 0 and int(self.trace_labels.iat[
+                        self.fm_grace + self.ad_grace + offset + self.pkt_cnt_global - 1, 0]) == 1:
+                    self.attack_init_ts = cur_stats[0]
+                    self.attack_pkt_num_cntr += 1
+
+                if int(rmse) == 1 and self.attack_pkt_num_cntr != -1 and int(self.trace_labels.iat[
+                        self.fm_grace + self.ad_grace + offset + self.pkt_cnt_global - 1, 0]) == 1:
+                    self.attack_pkt_num_cntr = -1
+                    self.attack_pkt_num_cntr_dp = -1
+
+                if self.attack_pkt_num_cntr != -1 and int(self.trace_labels.iat[
+                        self.fm_grace + self.ad_grace + offset + self.pkt_cnt_global - 1, 0]) == 1:
+                    self.attack_pkt_num_cntr += 1
+
                 try:
+                    # 1-5: pkt headers
+                    # time_pkt_ml: processing time (ML classifier only)
                     self.peregrine_eval.append([
-                        cur_stats[0], cur_stats[1], cur_stats[2],
-                        cur_stats[3], cur_stats[4], cur_stats[5],
-                        rmse, self.trace_labels.iat[
+                        cur_stats[1], cur_stats[2], cur_stats[3], cur_stats[4], cur_stats[5],
+                        cur_stats[6], time_pkt_ml_end - time_pkt_ml_start, rmse,
+                        self.trace_labels.iat[
                             self.fm_grace + self.ad_grace + offset + self.pkt_cnt_global - 1, 0]])
                 except IndexError:
                     print(self.trace_labels.shape[0])
@@ -174,32 +204,32 @@ class PipelineKitNET:
 
     def update_stats(self, cur_stats):
 
-        cur_decay_pos = self.decay_to_pos[cur_stats[6]]
+        cur_decay_pos = self.decay_to_pos[cur_stats[7]]
 
-        hdr_mac_ip_src = cur_stats[0] + cur_stats[1]
-        hdr_ip_src = cur_stats[1]
-        hdr_ip = cur_stats[1] + cur_stats[2]
-        hdr_five_t = cur_stats[1] + cur_stats[2] + cur_stats[3] + cur_stats[4] + cur_stats[5]
+        hdr_mac_ip_src = cur_stats[1] + cur_stats[2]
+        hdr_ip_src = cur_stats[2]
+        hdr_ip = cur_stats[2] + cur_stats[3]
+        hdr_five_t = cur_stats[2] + cur_stats[3] + cur_stats[4] + cur_stats[5] + cur_stats[6]
 
         if hdr_mac_ip_src not in self.stats_mac_ip_src:
             self.stats_mac_ip_src[hdr_mac_ip_src] = np.zeros(3 * LAMBDAS)
         self.stats_mac_ip_src[hdr_mac_ip_src][(3*cur_decay_pos):(3*cur_decay_pos+3)] = \
-            cur_stats[7:10]
+            cur_stats[8:11]
 
         if hdr_ip_src not in self.stats_ip_src:
             self.stats_ip_src[hdr_ip_src] = np.zeros(3 * LAMBDAS)
         self.stats_ip_src[hdr_ip_src][(3*cur_decay_pos):(3*cur_decay_pos+3)] = \
-            cur_stats[10:13]
+            cur_stats[11:14]
 
         if hdr_ip not in self.stats_ip:
             self.stats_ip[hdr_ip] = np.zeros(7 * LAMBDAS)
         self.stats_ip[hdr_ip][(7*cur_decay_pos):(7*cur_decay_pos+7)] = \
-            cur_stats[13:20]
+            cur_stats[14:21]
 
         if hdr_five_t not in self.stats_five_t:
             self.stats_five_t[hdr_five_t] = np.zeros(7 * LAMBDAS)
         self.stats_five_t[hdr_five_t][(7*cur_decay_pos):(7*cur_decay_pos+7)] = \
-            cur_stats[20:]
+            cur_stats[21:]
 
         input_stats = np.concatenate((
             self.stats_mac_ip_src[hdr_mac_ip_src],

@@ -77,6 +77,9 @@ class FCKitNET:
     def trace_size(self):
         return len(self.df_csv)
 
+    def trace_initial_ts(self):
+        return float(self.df_csv.iat[0, 0])
+
     def parse_pcap(self, pcap_path):
         fields = "-e frame.time_epoch -e frame.len -e eth.src -e eth.dst \
                     -e ip.src -e ip.dst -e ip.len -e ip.proto -e tcp.srcport \
@@ -390,7 +393,7 @@ class FCKitNET:
                      int(five_t_pkt_cnt_0), int(five_t_mean_0), int(five_t_std_dev_0),
                      int(five_t_magnitude), int(five_t_radius), int(five_t_cov), int(five_t_pcc)]
 
-        self.cur_pkt = self.cur_pkt[3:]
+        self.cur_pkt = [self.cur_pkt[1]] + self.cur_pkt[3:]
 
         return [self.cur_pkt, cur_stats]
 
@@ -657,7 +660,8 @@ class FCKitNET:
                      int(five_t_pkt_cnt_0), int(five_t_mean_0), int(five_t_std_dev_0),
                      int(five_t_magnitude), int(five_t_radius), int(five_t_cov), int(five_t_pcc)]
 
-        self.cur_pkt = self.cur_pkt[3:]
+        # Timestamp, mac src, ip_src, ip_dst, ip_proto, port_src, port_dst
+        self.cur_pkt = [self.cur_pkt[1]] + self.cur_pkt[3:]
 
         return [self.cur_pkt, cur_stats]
 
