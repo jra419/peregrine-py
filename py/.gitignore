@@ -18,5 +18,5 @@ env
 cache/**/*.txt
 config/cic-ids-2018/
 config/kitsune-dataset/
-run*.sh
+run-*.sh
 venv/

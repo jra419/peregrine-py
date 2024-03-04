@@ -1,9 +1,9 @@
 [submodule "plugins/KitNET"]
-	path = plugins/KitNET
+	path = py/plugins/KitNET
 	url = https://github.com/jra419/peregrine-KitNET.git
 [submodule "plugins/ENIDrift"]
-	path = plugins/ENIDrift
+	path = py/plugins/ENIDrift
 	url = https://github.com/jra419/peregrine-ENIDrift.git
 [submodule "plugins/Whisper"]
-	path = plugins/Whisper
+	path = py/plugins/Whisper
 	url = https://github.com/fchamicapereira/peregrine-plugin-whisper.git
