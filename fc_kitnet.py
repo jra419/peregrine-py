@@ -96,14 +96,14 @@ class FCKitNET:
     def feature_extract(self):
         # Parse the next packet from the csv.
         if self.global_pkt_index == self.train_pkts:
-            self.stats_mac_ip_src = {}
-            self.stats_ip_src = {}
-            self.stats_ip = {}
-            self.stats_five_t = {}
-            self.ip_res = {}
-            self.ip_res_sum = {}
-            self.five_t_res = {}
-            self.five_t_res_sum = {}
+            # self.stats_mac_ip_src = {}
+            # self.stats_ip_src = {}
+            # self.stats_ip = {}
+            # self.stats_five_t = {}
+            # self.ip_res = {}
+            # self.ip_res_sum = {}
+            # self.five_t_res = {}
+            # self.five_t_res_sum = {}
             self.decay_cntr = 1
             self.phase_pkt_index = 0
             self.global_pkt_index += self.exec_phase_offset

@@ -16,6 +16,7 @@ __pycache__
 env
 *.tsv
 cache/**/*.txt
-config/kitnet-*.yml
-config/enidrift-*.yml
+config/cic-ids-2018/
+config/kitsune-dataset/
 run*.sh
+venv/

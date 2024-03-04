@@ -92,6 +92,9 @@ class PipelineKitNET:
         else:
             offset = self.exec_sampl_offset
 
+        time_old = 0
+        time_new = 0
+
         # Process the trace, packet by packet.
         while True:
             cur_stats = 0
@@ -99,17 +102,31 @@ class PipelineKitNET:
             if not self.train_skip:
                 if len(self.rmse_list) % 1000 == 0 and \
                         len(self.rmse_list) < self.fm_grace + self.ad_grace:
-                    print(f'Processed pkts: {len(self.rmse_list)}')
+                    time_new = time.time()
+                    print(f'Processed pkts: {len(self.rmse_list)}. '
+                          f'Elapsed time: {time_new - time_old} '
+                          f'({int(1000/(time_new - time_old))} pps)')
+                    time_old = time_new
                     if self.save_stats_global:
                         self.update_stats_global()
                 elif self.pkt_cnt_global % 1000 == 0 and \
                         len(self.rmse_list) >= self.fm_grace + self.ad_grace:
-                    print(f'Processed pkts: {self.fm_grace + self.ad_grace + self.pkt_cnt_global}')
+                    time_new = time.time()
+                    print(f'Processed pkts: {self.fm_grace + self.ad_grace + self.pkt_cnt_global}. '
+                          f'Elapsed time: {time_new - time_old} '
+                          f'({int(1000/(time_new - time_old))} pps)')
+                    time_old = time_new
+                    # print(f'Processed pkts: {self.fm_grace + self.ad_grace + self.pkt_cnt_global}')
                     if self.save_stats_global:
                         self.update_stats_global()
             else:
                 if self.pkt_cnt_global % 1000 == 0:
-                    print(f'Processed pkts: {self.fm_grace + self.ad_grace + self.pkt_cnt_global}')
+                    time_new = time.time()
+                    print(f'Processed pkts: {self.fm_grace + self.ad_grace + self.pkt_cnt_global}. '
+                          f'Elapsed time: {time_new - time_old} '
+                          f'({int(1000/(time_new - time_old))} pps)')
+                    time_old = time_new
+                    # print(f'Processed pkts: {self.fm_grace + self.ad_grace + self.pkt_cnt_global}')
                     if self.save_stats_global:
                         self.update_stats_global()
 
@@ -125,13 +142,13 @@ class PipelineKitNET:
             # Execution phase.
             else:
                 self.pkt_cnt_global += 1
+                if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset > self.trace_size:
+                    break
                 self.fc.feature_extract()
                 if self.attack_pkt_num_cntr_dp != -1 and int(self.trace_labels.iat[
                         self.fm_grace + self.ad_grace + offset + self.pkt_cnt_global - 1, 0]) == 1:
                     self.attack_pkt_num_cntr_dp += 1
                 if self.fc_sampling and self.pkt_cnt_global % self.sampling_rate != 0:
-                    if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset > self.trace_size:
-                        break
                     continue
                 cur_stats = self.fc.process('execution')
 
@@ -139,7 +156,7 @@ class PipelineKitNET:
             # Execution phase: only proceed according to the sampling rate.
             if cur_stats != 0:
                 # Break when we reach the end of the trace file.
-                if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset >= self.trace_size:
+                if self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset > self.trace_size:
                     break
                 if self.pkt_cnt_global % self.sampling_rate != 0:
                     continue
@@ -154,9 +171,7 @@ class PipelineKitNET:
                     self.stats_global.append(input_stats)
 
                 # Call function with the content of kitsune's main (before the eval/csv part).
-                time_pkt_ml_start = time.time()
                 rmse = self.kitnet.process(input_stats)
-                time_pkt_ml_end = time.time()
 
                 self.rmse_list.append(rmse)
 
@@ -167,6 +182,9 @@ class PipelineKitNET:
 
                 if int(rmse) == 1 and self.attack_pkt_num_cntr != -1 and int(self.trace_labels.iat[
                         self.fm_grace + self.ad_grace + offset + self.pkt_cnt_global - 1, 0]) == 1:
+                    self.det_init_time = cur_stats[0] - self.attack_init_ts
+                    self.det_init_pkt_num = self.attack_pkt_num_cntr
+                    self.det_init_pkt_num_dp = self.attack_pkt_num_cntr_dp
                     self.attack_pkt_num_cntr = -1
                     self.attack_pkt_num_cntr_dp = -1
 
@@ -179,8 +197,7 @@ class PipelineKitNET:
                     # time_pkt_ml: processing time (ML classifier only)
                     self.peregrine_eval.append([
                         cur_stats[1], cur_stats[2], cur_stats[3], cur_stats[4], cur_stats[5],
-                        cur_stats[6], time_pkt_ml_end - time_pkt_ml_start, rmse,
-                        self.trace_labels.iat[
+                        cur_stats[6], rmse, self.trace_labels.iat[
                             self.fm_grace + self.ad_grace + offset + self.pkt_cnt_global - 1, 0]])
                 except IndexError:
                     print(self.trace_labels.shape[0])
@@ -194,6 +211,8 @@ class PipelineKitNET:
                     self.threshold = max(self.rmse_list, key=float)
                     self.save_train_stats()
                     print('Starting execution phase...')
+                # if len(self.rmse_list) == self.fm_grace + self.ad_grace:
+                    # self.reset_stats()
                 # Break when we reach the end of the trace file.
                 elif self.fm_grace + self.ad_grace + self.pkt_cnt_global + self.exec_sampl_offset >= self.trace_size:
                     self.save_exec_stats()

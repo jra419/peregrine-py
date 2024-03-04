@@ -20,7 +20,7 @@ def eval_kitnet(
     # Collect the processed packets' RMSE, label, and save to a csv.
     df_peregrine = pd.DataFrame(peregrine_eval, columns=[
         'mac_src', 'ip_src', 'ip_dst', 'ip_type', 'src_proto',
-        'dst_proto', 'processing_time_ml', 'rmse', 'label'])
+        'dst_proto', 'rmse', 'label'])
     df_peregrine.to_csv(outpath_peregrine, chunksize=10000, index=None)
 
     # Cut all training rows.
